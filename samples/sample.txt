@@ -1,0 +1,62 @@
+{#include <jiecunit.txt>}
+
+{#include "sample_pous.txt"}
+
+configuration MainConfiguration resource MainResource on PLC
+	_DEFINE_SYS_IN_RESOURCE_();
+	// List test program names.
+	_JIEC_TESTNAMES_LIST_(
+		'test_mean',
+		'test_RunningMean'
+	);
+end end
+
+// A single-cycle test sample of the mean function
+TEST_S(test_mean)
+	var
+		a3: array[0..2] of lreal;
+	end
+	{st}
+	a3[0] := 1.0;
+	a3[1] := 2.0;
+	a3[2] := 3.0;
+	EXPECT_EQ_DOUBLE(2.0, mean(a3));
+
+	a3[0] := 0.0;
+	a3[1] := 0.0;
+	a3[2] := 0.0;
+	EXPECT_EQ_DOUBLE(0.0, mean(a3));
+
+	a3[0] := -1.0;
+	a3[1] := -2.0;
+	a3[2] := -3.0;
+	EXPECT_EQ_DOUBLE(-2.0, mean(a3));
+	{end}
+END_TEST_S
+
+// A multiple-cycle test sample of the RunningMean function block
+TEST_M(test_RunningMean)
+	var
+		x: RunningMean;
+		m: lreal;
+		n: dint;
+	end
+	{st}
+	case CURRENT_CYCLE() of
+	0:
+		x(v:=2.0, m=>m, sample_size=>n);
+		ASSERT_EQ_DOUBLE(2.0, m);
+		ASSERT_EQ_DINT(1, n);
+	1:
+		x(v:=4.0, m=>m, sample_size=>n);
+		ASSERT_EQ_DOUBLE(3.0, m);
+		ASSERT_EQ_DINT(2, n);
+	2:
+		x(v:=9.0, m=>m, sample_size=>n);
+		ASSERT_EQ_DOUBLE(5.0, m);
+		ASSERT_EQ_DINT(3, n);
+		// End Of the Test.
+		EOT();
+	end_case;
+	{end}
+END_TEST_M

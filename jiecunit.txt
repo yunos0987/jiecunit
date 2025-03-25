@@ -1,0 +1,428 @@
+{#ifndef __JIECUNIT_TXT__}
+{#define __JIECUNIT_TXT__}
+
+{#include "src/jiecunit_config.txt"}
+{#include "src/jiecunit_core.txt"}
+
+{#define EXPECT_FALSE_MSG(condition, message)   _VALIDATE_EQ_BOOL_MSG(false, false, condition, message)}
+{#define EXPECT_TRUE_MSG(condition, message)    _VALIDATE_EQ_BOOL_MSG(false, true, condition, message)}
+
+{#define EXPECT_EQ_SINT_MSG(expected, actual, message)      _VALIDATE_EQ_INT32_MSG(false, expected, actual, message)}
+{#define EXPECT_EQ_INT_MSG(expected, actual, message)       _VALIDATE_EQ_INT32_MSG(false, expected, actual, message)}
+{#define EXPECT_EQ_DINT_MSG(expected, actual, message)      _VALIDATE_EQ_INT32_MSG(false, expected, actual, message)}
+{#define EXPECT_EQ_LINT_MSG(expected, actual, message)      _VALIDATE_EQ_INT64_MSG(false, expected, actual, message)}
+{#define EXPECT_EQ_INT32_MSG(expected, actual, message)     _VALIDATE_EQ_INT32_MSG(false, expected, actual, message)}
+{#define EXPECT_EQ_INT64_MSG(expected, actual, message)     _VALIDATE_EQ_INT64_MSG(false, expected, actual, message)}
+
+{#define EXPECT_EQ_USINT_MSG(expected, actual, message)     _VALIDATE_EQ_UINT32_MSG(false, expected, actual, message)}
+{#define EXPECT_EQ_UINT_MSG(expected, actual, message)      _VALIDATE_EQ_UINT32_MSG(false, expected, actual, message)}
+{#define EXPECT_EQ_UDINT_MSG(expected, actual, message)     _VALIDATE_EQ_UINT32_MSG(false, expected, actual, message)}
+{#define EXPECT_EQ_ULINT_MSG(expected, actual, message)     _VALIDATE_EQ_UINT64_MSG(false, expected, actual, message)}
+{#define EXPECT_EQ_UINT32_MSG(expected, actual, message)    _VALIDATE_EQ_UINT32_MSG(false, expected, actual, message)}
+{#define EXPECT_EQ_UINT64_MSG(expected, actual, message)    _VALIDATE_EQ_UINT64_MSG(false, expected, actual, message)}
+
+{#define EXPECT_EQ_BYTE_MSG(expected, actual, message)      _VALIDATE_EQ_BIT32_MSG(false, expected, actual, message)}
+{#define EXPECT_EQ_WORD_MSG(expected, actual, message)      _VALIDATE_EQ_BIT32_MSG(false, expected, actual, message)}
+{#define EXPECT_EQ_DWORD_MSG(expected, actual, message)     _VALIDATE_EQ_BIT32_MSG(false, expected, actual, message)}
+{#define EXPECT_EQ_LWORD_MSG(expected, actual, message)     _VALIDATE_EQ_BIT64_MSG(false, expected, actual, message)}
+{#define EXPECT_EQ_BIT32_MSG(expected, actual, message)     _VALIDATE_EQ_BIT32_MSG(false, expected, actual, message)}
+{#define EXPECT_EQ_BIT64_MSG(expected, actual, message)     _VALIDATE_EQ_BIT64_MSG(false, expected, actual, message)}
+
+{#define EXPECT_EQ_REAL_MSG(expected, actual, message)      _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, message)} (* Deprecated, use EXPECT_NEAR_MSG *)
+{#define EXPECT_EQ_LREAL_MSG(expected, actual, message)     _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, message)} (* Deprecated, use EXPECT_NEAR_MSG *)
+{#define EXPECT_EQ_FLOAT_MSG(expected, actual, message)     _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, message)} (* Deprecated, use EXPECT_NEAR_MSG *)
+{#define EXPECT_EQ_DOUBLE_MSG(expected, actual, message)    _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, message)} (* Deprecated, use EXPECT_NEAR_MSG *)
+
+{#define EXPECT_EQ_BOOL_MSG(expected, actual, message)      _VALIDATE_EQ_BOOL_MSG(false, expected, actual, message)}
+{#define EXPECT_EQ_TIME_MSG(expected, actual, message)      _VALIDATE_EQ_TIME_MSG(false, expected, actual, message)}
+{#define EXPECT_EQ_STRING_MSG(expected, actual, message)    _VALIDATE_EQ_STRING_MSG(false, expected, actual, message)}
+
+{#define EXPECT_LT_SINT_MSG(lval, rval, message)    _VALIDATE_LT_INT32_MSG(false, lval, rval, message)}
+{#define EXPECT_LT_INT_MSG(lval, rval, message)     _VALIDATE_LT_INT32_MSG(false, lval, rval, message)}
+{#define EXPECT_LT_DINT_MSG(lval, rval, message)    _VALIDATE_LT_INT32_MSG(false, lval, rval, message)}
+{#define EXPECT_LT_LINT_MSG(lval, rval, message)    _VALIDATE_LT_INT64_MSG(false, lval, rval, message)}
+{#define EXPECT_LT_INT32_MSG(lval, rval, message)   _VALIDATE_LT_INT32_MSG(false, lval, rval, message)}
+{#define EXPECT_LT_INT64_MSG(lval, rval, message)   _VALIDATE_LT_INT64_MSG(false, lval, rval, message)}
+
+{#define EXPECT_LT_USINT_MSG(lval, rval, message)   _VALIDATE_LT_UINT32_MSG(false, lval, rval, message)}
+{#define EXPECT_LT_UINT_MSG(lval, rval, message)    _VALIDATE_LT_UINT32_MSG(false, lval, rval, message)}
+{#define EXPECT_LT_UDINT_MSG(lval, rval, message)   _VALIDATE_LT_UINT32_MSG(false, lval, rval, message)}
+{#define EXPECT_LT_ULINT_MSG(lval, rval, message)   _VALIDATE_LT_UINT64_MSG(false, lval, rval, message)}
+{#define EXPECT_LT_UINT32_MSG(lval, rval, message)  _VALIDATE_LT_UINT32_MSG(false, lval, rval, message)}
+{#define EXPECT_LT_UINT64_MSG(lval, rval, message)  _VALIDATE_LT_UINT64_MSG(false, lval, rval, message)}
+
+{#define EXPECT_LE_SINT_MSG(lval, rval, message)    _VALIDATE_LE_INT32_MSG(false, lval, rval, message)}
+{#define EXPECT_LE_INT_MSG(lval, rval, message)     _VALIDATE_LE_INT32_MSG(false, lval, rval, message)}
+{#define EXPECT_LE_DINT_MSG(lval, rval, message)    _VALIDATE_LE_INT32_MSG(false, lval, rval, message)}
+{#define EXPECT_LE_LINT_MSG(lval, rval, message)    _VALIDATE_LE_INT64_MSG(false, lval, rval, message)}
+{#define EXPECT_LE_INT32_MSG(lval, rval, message)   _VALIDATE_LE_INT32_MSG(false, lval, rval, message)}
+{#define EXPECT_LE_INT64_MSG(lval, rval, message)   _VALIDATE_LE_INT64_MSG(false, lval, rval, message)}
+
+{#define EXPECT_LE_USINT_MSG(lval, rval, message)   _VALIDATE_LE_UINT32_MSG(false, lval, rval, message)}
+{#define EXPECT_LE_UINT_MSG(lval, rval, message)    _VALIDATE_LE_UINT32_MSG(false, lval, rval, message)}
+{#define EXPECT_LE_UDINT_MSG(lval, rval, message)   _VALIDATE_LE_UINT32_MSG(false, lval, rval, message)}
+{#define EXPECT_LE_ULINT_MSG(lval, rval, message)   _VALIDATE_LE_UINT64_MSG(false, lval, rval, message)}
+{#define EXPECT_LE_UINT32_MSG(lval, rval, message)  _VALIDATE_LE_UINT32_MSG(false, lval, rval, message)}
+{#define EXPECT_LE_UINT64_MSG(lval, rval, message)  _VALIDATE_LE_UINT64_MSG(false, lval, rval, message)}
+
+{#define EXPECT_GE_SINT_MSG(lval, rval, message)    _VALIDATE_GE_INT32_MSG(false, lval, rval, message)}
+{#define EXPECT_GE_INT_MSG(lval, rval, message)     _VALIDATE_GE_INT32_MSG(false, lval, rval, message)}
+{#define EXPECT_GE_DINT_MSG(lval, rval, message)    _VALIDATE_GE_INT32_MSG(false, lval, rval, message)}
+{#define EXPECT_GE_LINT_MSG(lval, rval, message)    _VALIDATE_GE_INT64_MSG(false, lval, rval, message)}
+{#define EXPECT_GE_INT32_MSG(lval, rval, message)   _VALIDATE_GE_INT32_MSG(false, lval, rval, message)}
+{#define EXPECT_GE_INT64_MSG(lval, rval, message)   _VALIDATE_GE_INT64_MSG(false, lval, rval, message)}
+
+{#define EXPECT_GE_USINT_MSG(lval, rval, message)   _VALIDATE_GE_UINT32_MSG(false, lval, rval, message)}
+{#define EXPECT_GE_UINT_MSG(lval, rval, message)    _VALIDATE_GE_UINT32_MSG(false, lval, rval, message)}
+{#define EXPECT_GE_UDINT_MSG(lval, rval, message)   _VALIDATE_GE_UINT32_MSG(false, lval, rval, message)}
+{#define EXPECT_GE_ULINT_MSG(lval, rval, message)   _VALIDATE_GE_UINT64_MSG(false, lval, rval, message)}
+{#define EXPECT_GE_UINT32_MSG(lval, rval, message)  _VALIDATE_GE_UINT32_MSG(false, lval, rval, message)}
+{#define EXPECT_GE_UINT64_MSG(lval, rval, message)  _VALIDATE_GE_UINT64_MSG(false, lval, rval, message)}
+
+{#define EXPECT_GT_SINT_MSG(lval, rval, message)    _VALIDATE_GT_INT32_MSG(false, lval, rval, message)}
+{#define EXPECT_GT_INT_MSG(lval, rval, message)     _VALIDATE_GT_INT32_MSG(false, lval, rval, message)}
+{#define EXPECT_GT_DINT_MSG(lval, rval, message)    _VALIDATE_GT_INT32_MSG(false, lval, rval, message)}
+{#define EXPECT_GT_LINT_MSG(lval, rval, message)    _VALIDATE_GT_INT64_MSG(false, lval, rval, message)}
+{#define EXPECT_GT_INT32_MSG(lval, rval, message)   _VALIDATE_GT_INT32_MSG(false, lval, rval, message)}
+{#define EXPECT_GT_INT64_MSG(lval, rval, message)   _VALIDATE_GT_INT64_MSG(false, lval, rval, message)}
+
+{#define EXPECT_GT_USINT_MSG(lval, rval, message)   _VALIDATE_GT_UINT32_MSG(false, lval, rval, message)}
+{#define EXPECT_GT_UINT_MSG(lval, rval, message)    _VALIDATE_GT_UINT32_MSG(false, lval, rval, message)}
+{#define EXPECT_GT_UDINT_MSG(lval, rval, message)   _VALIDATE_GT_UINT32_MSG(false, lval, rval, message)}
+{#define EXPECT_GT_ULINT_MSG(lval, rval, message)   _VALIDATE_GT_UINT64_MSG(false, lval, rval, message)}
+{#define EXPECT_GT_UINT32_MSG(lval, rval, message)  _VALIDATE_GT_UINT32_MSG(false, lval, rval, message)}
+{#define EXPECT_GT_UINT64_MSG(lval, rval, message)  _VALIDATE_GT_UINT64_MSG(false, lval, rval, message)}
+
+{#define EXPECT_NEAR_MSG(val1, al2_, abs_error, message)    _VALIDATE_NEAR_MSG(false, val1, val2, abs_error, message)}
+
+
+
+{#define EXPECT_FALSE(condition)    _VALIDATE_EQ_BOOL(false, false, condition)}
+{#define EXPECT_TRUE(condition)     _VALIDATE_EQ_BOOL(false, true, condition)}
+
+{#define EXPECT_EQ_SINT(expected, actual)       _VALIDATE_EQ_INT32(false, expected, actual)}
+{#define EXPECT_EQ_INT(expected, actual)        _VALIDATE_EQ_INT32(false, expected, actual)}
+{#define EXPECT_EQ_DINT(expected, actual)       _VALIDATE_EQ_INT32(false, expected, actual)}
+{#define EXPECT_EQ_LINT(expected, actual)       _VALIDATE_EQ_INT64(false, expected, actual)}
+{#define EXPECT_EQ_INT32(expected, actual)      _VALIDATE_EQ_INT32(false, expected, actual)}
+{#define EXPECT_EQ_INT64(expected, actual)      _VALIDATE_EQ_INT64(false, expected, actual)}
+
+{#define EXPECT_EQ_USINT(expected, actual)      _VALIDATE_EQ_UINT32(false, expected, actual)}
+{#define EXPECT_EQ_UINT(expected, actual)       _VALIDATE_EQ_UINT32(false, expected, actual)}
+{#define EXPECT_EQ_UDINT(expected, actual)      _VALIDATE_EQ_UINT32(false, expected, actual)}
+{#define EXPECT_EQ_ULINT(expected, actual)      _VALIDATE_EQ_UINT64(false, expected, actual)}
+{#define EXPECT_EQ_UINT32(expected, actual)     _VALIDATE_EQ_UINT32(false, expected, actual)}
+{#define EXPECT_EQ_UINT64(expected, actual)     _VALIDATE_EQ_UINT64(false, expected, actual)}
+
+{#define EXPECT_EQ_BYTE(expected, actual)       _VALIDATE_EQ_BIT32(false, expected, actual)}
+{#define EXPECT_EQ_WORD(expected, actual)       _VALIDATE_EQ_BIT32(false, expected, actual)}
+{#define EXPECT_EQ_DWORD(expected, actual)      _VALIDATE_EQ_BIT32(false, expected, actual)}
+{#define EXPECT_EQ_LWORD(expected, actual)      _VALIDATE_EQ_BIT64(false, expected, actual)}
+{#define EXPECT_EQ_BIT32(expected, actual)      _VALIDATE_EQ_BIT32(false, expected, actual)}
+{#define EXPECT_EQ_BIT64(expected, actual)      _VALIDATE_EQ_BIT64(false, expected, actual)}
+
+{#define EXPECT_EQ_REAL(expected, actual)       _VALIDATE_EQ_DOUBLE(false, expected, actual)} (* Deprecated, use EXPECT_NEAR *)
+{#define EXPECT_EQ_LREAL(expected, actual)      _VALIDATE_EQ_DOUBLE(false, expected, actual)} (* Deprecated, use EXPECT_NEAR *)
+{#define EXPECT_EQ_FLOAT(expected, actual)      _VALIDATE_EQ_DOUBLE(false, expected, actual)} (* Deprecated, use EXPECT_NEAR *)
+{#define EXPECT_EQ_DOUBLE(expected, actual)     _VALIDATE_EQ_DOUBLE(false, expected, actual)} (* Deprecated, use EXPECT_NEAR *)
+
+{#define EXPECT_EQ_BOOL(expected, actual)       _VALIDATE_EQ_BOOL(false, expected, actual)}
+{#define EXPECT_EQ_TIME(expected, actual)       _VALIDATE_EQ_TIME(false, expected, actual)}
+{#define EXPECT_EQ_STRING(expected, actual)     _VALIDATE_EQ_STRING(false, expected, actual)}
+
+{#define EXPECT_LT_SINT(lval, rval)     _VALIDATE_LT_INT32(false, lval, rval)}
+{#define EXPECT_LT_INT(lval, rval)      _VALIDATE_LT_INT32(false, lval, rval)}
+{#define EXPECT_LT_DINT(lval, rval)     _VALIDATE_LT_INT32(false, lval, rval)}
+{#define EXPECT_LT_LINT(lval, rval)     _VALIDATE_LT_INT64(false, lval, rval)}
+{#define EXPECT_LT_INT32(lval, rval)    _VALIDATE_LT_INT32(false, lval, rval)}
+{#define EXPECT_LT_INT64(lval, rval)    _VALIDATE_LT_INT64(false, lval, rval)}
+
+{#define EXPECT_LT_USINT(lval, rval)    _VALIDATE_LT_UINT32(false, lval, rval)}
+{#define EXPECT_LT_UINT(lval, rval)     _VALIDATE_LT_UINT32(false, lval, rval)}
+{#define EXPECT_LT_UDINT(lval, rval)    _VALIDATE_LT_UINT32(false, lval, rval)}
+{#define EXPECT_LT_ULINT(lval, rval)    _VALIDATE_LT_UINT64(false, lval, rval)}
+{#define EXPECT_LT_UINT32(lval, rval)   _VALIDATE_LT_UINT32(false, lval, rval)}
+{#define EXPECT_LT_UINT64(lval, rval)   _VALIDATE_LT_UINT64(false, lval, rval)}
+
+{#define EXPECT_LE_SINT(lval, rval)     _VALIDATE_LE_INT32(false, lval, rval)}
+{#define EXPECT_LE_INT(lval, rval)      _VALIDATE_LE_INT32(false, lval, rval)}
+{#define EXPECT_LE_DINT(lval, rval)     _VALIDATE_LE_INT32(false, lval, rval)}
+{#define EXPECT_LE_LINT(lval, rval)     _VALIDATE_LE_INT64(false, lval, rval)}
+{#define EXPECT_LE_INT32(lval, rval)    _VALIDATE_LE_INT32(false, lval, rval)}
+{#define EXPECT_LE_INT64(lval, rval)    _VALIDATE_LE_INT64(false, lval, rval)}
+
+{#define EXPECT_LE_USINT(lval, rval)    _VALIDATE_LE_UINT32(false, lval, rval)}
+{#define EXPECT_LE_UINT(lval, rval)     _VALIDATE_LE_UINT32(false, lval, rval)}
+{#define EXPECT_LE_UDINT(lval, rval)    _VALIDATE_LE_UINT32(false, lval, rval)}
+{#define EXPECT_LE_ULINT(lval, rval)    _VALIDATE_LE_UINT64(false, lval, rval)}
+{#define EXPECT_LE_UINT32(lval, rval)   _VALIDATE_LE_UINT32(false, lval, rval)}
+{#define EXPECT_LE_UINT64(lval, rval)   _VALIDATE_LE_UINT64(false, lval, rval)}
+
+{#define EXPECT_GE_SINT(lval, rval)     _VALIDATE_GE_INT32(false, lval, rval)}
+{#define EXPECT_GE_INT(lval, rval)      _VALIDATE_GE_INT32(false, lval, rval)}
+{#define EXPECT_GE_DINT(lval, rval)     _VALIDATE_GE_INT32(false, lval, rval)}
+{#define EXPECT_GE_LINT(lval, rval)     _VALIDATE_GE_INT64(false, lval, rval)}
+{#define EXPECT_GE_INT32(lval, rval)    _VALIDATE_GE_INT32(false, lval, rval)}
+{#define EXPECT_GE_INT64(lval, rval)    _VALIDATE_GE_INT64(false, lval, rval)}
+
+{#define EXPECT_GE_USINT(lval, rval)    _VALIDATE_GE_UINT32(false, lval, rval)}
+{#define EXPECT_GE_UINT(lval, rval)     _VALIDATE_GE_UINT32(false, lval, rval)}
+{#define EXPECT_GE_UDINT(lval, rval)    _VALIDATE_GE_UINT32(false, lval, rval)}
+{#define EXPECT_GE_ULINT(lval, rval)    _VALIDATE_GE_UINT64(false, lval, rval)}
+{#define EXPECT_GE_UINT32(lval, rval)   _VALIDATE_GE_UINT32(false, lval, rval)}
+{#define EXPECT_GE_UINT64(lval, rval)   _VALIDATE_GE_UINT64(false, lval, rval)}
+
+{#define EXPECT_GT_SINT(lval, rval)     _VALIDATE_GT_INT32(false, lval, rval)}
+{#define EXPECT_GT_INT(lval, rval)      _VALIDATE_GT_INT32(false, lval, rval)}
+{#define EXPECT_GT_DINT(lval, rval)     _VALIDATE_GT_INT32(false, lval, rval)}
+{#define EXPECT_GT_LINT(lval, rval)     _VALIDATE_GT_INT64(false, lval, rval)}
+{#define EXPECT_GT_INT32(lval, rval)    _VALIDATE_GT_INT32(false, lval, rval)}
+{#define EXPECT_GT_INT64(lval, rval)    _VALIDATE_GT_INT64(false, lval, rval)}
+
+{#define EXPECT_GT_USINT(lval, rval)    _VALIDATE_GT_UINT32(false, lval, rval)}
+{#define EXPECT_GT_UINT(lval, rval)     _VALIDATE_GT_UINT32(false, lval, rval)}
+{#define EXPECT_GT_UDINT(lval, rval)    _VALIDATE_GT_UINT32(false, lval, rval)}
+{#define EXPECT_GT_ULINT(lval, rval)    _VALIDATE_GT_UINT64(false, lval, rval)}
+{#define EXPECT_GT_UINT32(lval, rval)   _VALIDATE_GT_UINT32(false, lval, rval)}
+{#define EXPECT_GT_UINT64(lval, rval)   _VALIDATE_GT_UINT64(false, lval, rval)}
+
+{#define EXPECT_NEAR(val1, al2_, abs_error)     _VALIDATE_NEAR(false, val1, val2, abs_error)}
+
+
+
+{#define ASSERT_FALSE_MSG(condition, message)   _VALIDATE_EQ_BOOL_MSG(true, false, condition, message)}
+{#define ASSERT_TRUE_MSG(condition, message)    _VALIDATE_EQ_BOOL_MSG(true, true, condition, message)}
+
+{#define ASSERT_EQ_SINT_MSG(expected, actual, message)      _VALIDATE_EQ_INT32_MSG(true, expected, actual, message)}
+{#define ASSERT_EQ_INT_MSG(expected, actual, message)       _VALIDATE_EQ_INT32_MSG(true, expected, actual, message)}
+{#define ASSERT_EQ_DINT_MSG(expected, actual, message)      _VALIDATE_EQ_INT32_MSG(true, expected, actual, message)}
+{#define ASSERT_EQ_LINT_MSG(expected, actual, message)      _VALIDATE_EQ_INT64_MSG(true, expected, actual, message)}
+{#define ASSERT_EQ_INT32_MSG(expected, actual, message)     _VALIDATE_EQ_INT32_MSG(true, expected, actual, message)}
+{#define ASSERT_EQ_INT64_MSG(expected, actual, message)     _VALIDATE_EQ_INT64_MSG(true, expected, actual, message)}
+
+{#define ASSERT_EQ_USINT_MSG(expected, actual, message)     _VALIDATE_EQ_UINT32_MSG(true, expected, actual, message)}
+{#define ASSERT_EQ_UINT_MSG(expected, actual, message)      _VALIDATE_EQ_UINT32_MSG(true, expected, actual, message)}
+{#define ASSERT_EQ_UDINT_MSG(expected, actual, message)     _VALIDATE_EQ_UINT32_MSG(true, expected, actual, message)}
+{#define ASSERT_EQ_ULINT_MSG(expected, actual, message)     _VALIDATE_EQ_UINT64_MSG(true, expected, actual, message)}
+{#define ASSERT_EQ_UINT32_MSG(expected, actual, message)    _VALIDATE_EQ_UINT32_MSG(true, expected, actual, message)}
+{#define ASSERT_EQ_UINT64_MSG(expected, actual, message)    _VALIDATE_EQ_UINT64_MSG(true, expected, actual, message)}
+
+{#define ASSERT_EQ_BYTE_MSG(expected, actual, message)      _VALIDATE_EQ_BIT32_MSG(true, expected, actual, message)}
+{#define ASSERT_EQ_WORD_MSG(expected, actual, message)      _VALIDATE_EQ_BIT32_MSG(true, expected, actual, message)}
+{#define ASSERT_EQ_DWORD_MSG(expected, actual, message)     _VALIDATE_EQ_BIT32_MSG(true, expected, actual, message)}
+{#define ASSERT_EQ_LWORD_MSG(expected, actual, message)     _VALIDATE_EQ_BIT64_MSG(true, expected, actual, message)}
+{#define ASSERT_EQ_BIT32_MSG(expected, actual, message)     _VALIDATE_EQ_BIT32_MSG(true, expected, actual, message)}
+{#define ASSERT_EQ_BIT64_MSG(expected, actual, message)     _VALIDATE_EQ_BIT64_MSG(true, expected, actual, message)}
+
+{#define ASSERT_EQ_REAL_MSG(expected, actual, message)      _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, message)} (* Deprecated, use ASSERT_NEAR_MSG *)
+{#define ASSERT_EQ_LREAL_MSG(expected, actual, message)     _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, message)} (* Deprecated, use ASSERT_NEAR_MSG *)
+{#define ASSERT_EQ_FLOAT_MSG(expected, actual, message)     _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, message)} (* Deprecated, use ASSERT_NEAR_MSG *)
+{#define ASSERT_EQ_DOUBLE_MSG(expected, actual, message)    _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, message)} (* Deprecated, use ASSERT_NEAR_MSG *)
+
+{#define ASSERT_EQ_BOOL_MSG(expected, actual, message)      _VALIDATE_EQ_BOOL_MSG(true, expected, actual, message)}
+{#define ASSERT_EQ_TIME_MSG(expected, actual, message)      _VALIDATE_EQ_TIME_MSG(true, expected, actual, message)}
+{#define ASSERT_EQ_STRING_MSG(expected, actual, message)    _VALIDATE_EQ_STRING_MSG(true, expected, actual, message)}
+
+{#define ASSERT_LT_SINT_MSG(lval, rval, message)    _VALIDATE_LT_INT32_MSG(true, lval, rval, message)}
+{#define ASSERT_LT_INT_MSG(lval, rval, message)     _VALIDATE_LT_INT32_MSG(true, lval, rval, message)}
+{#define ASSERT_LT_DINT_MSG(lval, rval, message)    _VALIDATE_LT_INT32_MSG(true, lval, rval, message)}
+{#define ASSERT_LT_LINT_MSG(lval, rval, message)    _VALIDATE_LT_INT64_MSG(true, lval, rval, message)}
+{#define ASSERT_LT_INT32_MSG(lval, rval, message)   _VALIDATE_LT_INT32_MSG(true, lval, rval, message)}
+{#define ASSERT_LT_INT64_MSG(lval, rval, message)   _VALIDATE_LT_INT64_MSG(true, lval, rval, message)}
+
+{#define ASSERT_LT_USINT_MSG(lval, rval, message)   _VALIDATE_LT_UINT32_MSG(true, lval, rval, message)}
+{#define ASSERT_LT_UINT_MSG(lval, rval, message)    _VALIDATE_LT_UINT32_MSG(true, lval, rval, message)}
+{#define ASSERT_LT_UDINT_MSG(lval, rval, message)   _VALIDATE_LT_UINT32_MSG(true, lval, rval, message)}
+{#define ASSERT_LT_ULINT_MSG(lval, rval, message)   _VALIDATE_LT_UINT64_MSG(true, lval, rval, message)}
+{#define ASSERT_LT_UINT32_MSG(lval, rval, message)  _VALIDATE_LT_UINT32_MSG(true, lval, rval, message)}
+{#define ASSERT_LT_UINT64_MSG(lval, rval, message)  _VALIDATE_LT_UINT64_MSG(true, lval, rval, message)}
+
+{#define ASSERT_LE_SINT_MSG(lval, rval, message)    _VALIDATE_LE_INT32_MSG(true, lval, rval, message)}
+{#define ASSERT_LE_INT_MSG(lval, rval, message)     _VALIDATE_LE_INT32_MSG(true, lval, rval, message)}
+{#define ASSERT_LE_DINT_MSG(lval, rval, message)    _VALIDATE_LE_INT32_MSG(true, lval, rval, message)}
+{#define ASSERT_LE_LINT_MSG(lval, rval, message)    _VALIDATE_LE_INT64_MSG(true, lval, rval, message)}
+{#define ASSERT_LE_INT32_MSG(lval, rval, message)   _VALIDATE_LE_INT32_MSG(true, lval, rval, message)}
+{#define ASSERT_LE_INT64_MSG(lval, rval, message)   _VALIDATE_LE_INT64_MSG(true, lval, rval, message)}
+
+{#define ASSERT_LE_USINT_MSG(lval, rval, message)   _VALIDATE_LE_UINT32_MSG(true, lval, rval, message)}
+{#define ASSERT_LE_UINT_MSG(lval, rval, message)    _VALIDATE_LE_UINT32_MSG(true, lval, rval, message)}
+{#define ASSERT_LE_UDINT_MSG(lval, rval, message)   _VALIDATE_LE_UINT32_MSG(true, lval, rval, message)}
+{#define ASSERT_LE_ULINT_MSG(lval, rval, message)   _VALIDATE_LE_UINT64_MSG(true, lval, rval, message)}
+{#define ASSERT_LE_UINT32_MSG(lval, rval, message)  _VALIDATE_LE_UINT32_MSG(true, lval, rval, message)}
+{#define ASSERT_LE_UINT64_MSG(lval, rval, message)  _VALIDATE_LE_UINT64_MSG(true, lval, rval, message)}
+
+{#define ASSERT_GE_SINT_MSG(lval, rval, message)    _VALIDATE_GE_INT32_MSG(true, lval, rval, message)}
+{#define ASSERT_GE_INT_MSG(lval, rval, message)     _VALIDATE_GE_INT32_MSG(true, lval, rval, message)}
+{#define ASSERT_GE_DINT_MSG(lval, rval, message)    _VALIDATE_GE_INT32_MSG(true, lval, rval, message)}
+{#define ASSERT_GE_LINT_MSG(lval, rval, message)    _VALIDATE_GE_INT64_MSG(true, lval, rval, message)}
+{#define ASSERT_GE_INT32_MSG(lval, rval, message)   _VALIDATE_GE_INT32_MSG(true, lval, rval, message)}
+{#define ASSERT_GE_INT64_MSG(lval, rval, message)   _VALIDATE_GE_INT64_MSG(true, lval, rval, message)}
+
+{#define ASSERT_GE_USINT_MSG(lval, rval, message)   _VALIDATE_GE_UINT32_MSG(true, lval, rval, message)}
+{#define ASSERT_GE_UINT_MSG(lval, rval, message)    _VALIDATE_GE_UINT32_MSG(true, lval, rval, message)}
+{#define ASSERT_GE_UDINT_MSG(lval, rval, message)   _VALIDATE_GE_UINT32_MSG(true, lval, rval, message)}
+{#define ASSERT_GE_ULINT_MSG(lval, rval, message)   _VALIDATE_GE_UINT64_MSG(true, lval, rval, message)}
+{#define ASSERT_GE_UINT32_MSG(lval, rval, message)  _VALIDATE_GE_UINT32_MSG(true, lval, rval, message)}
+{#define ASSERT_GE_UINT64_MSG(lval, rval, message)  _VALIDATE_GE_UINT64_MSG(true, lval, rval, message)}
+
+{#define ASSERT_GT_SINT_MSG(lval, rval, message)    _VALIDATE_GT_INT32_MSG(true, lval, rval, message)}
+{#define ASSERT_GT_INT_MSG(lval, rval, message)     _VALIDATE_GT_INT32_MSG(true, lval, rval, message)}
+{#define ASSERT_GT_DINT_MSG(lval, rval, message)    _VALIDATE_GT_INT32_MSG(true, lval, rval, message)}
+{#define ASSERT_GT_LINT_MSG(lval, rval, message)    _VALIDATE_GT_INT64_MSG(true, lval, rval, message)}
+{#define ASSERT_GT_INT32_MSG(lval, rval, message)   _VALIDATE_GT_INT32_MSG(true, lval, rval, message)}
+{#define ASSERT_GT_INT64_MSG(lval, rval, message)   _VALIDATE_GT_INT64_MSG(true, lval, rval, message)}
+
+{#define ASSERT_GT_USINT_MSG(lval, rval, message)   _VALIDATE_GT_UINT32_MSG(true, lval, rval, message)}
+{#define ASSERT_GT_UINT_MSG(lval, rval, message)    _VALIDATE_GT_UINT32_MSG(true, lval, rval, message)}
+{#define ASSERT_GT_UDINT_MSG(lval, rval, message)   _VALIDATE_GT_UINT32_MSG(true, lval, rval, message)}
+{#define ASSERT_GT_ULINT_MSG(lval, rval, message)   _VALIDATE_GT_UINT64_MSG(true, lval, rval, message)}
+{#define ASSERT_GT_UINT32_MSG(lval, rval, message)  _VALIDATE_GT_UINT32_MSG(true, lval, rval, message)}
+{#define ASSERT_GT_UINT64_MSG(lval, rval, message)  _VALIDATE_GT_UINT64_MSG(true, lval, rval, message)}
+
+{#define ASSERT_NEAR_MSG(val1, al2_, abs_error, message)    _VALIDATE_NEAR_MSG(true, val1, val2, abs_error, message)}
+
+
+
+{#define ASSERT_FALSE(condition)    _VALIDATE_EQ_BOOL(true, false, condition)}
+{#define ASSERT_TRUE(condition)     _VALIDATE_EQ_BOOL(true, true, condition)}
+
+{#define ASSERT_EQ_SINT(expected, actual)       _VALIDATE_EQ_INT32(true, expected, actual)}
+{#define ASSERT_EQ_INT(expected, actual)        _VALIDATE_EQ_INT32(true, expected, actual)}
+{#define ASSERT_EQ_DINT(expected, actual)       _VALIDATE_EQ_INT32(true, expected, actual)}
+{#define ASSERT_EQ_LINT(expected, actual)       _VALIDATE_EQ_INT64(true, expected, actual)}
+{#define ASSERT_EQ_INT32(expected, actual)      _VALIDATE_EQ_INT32(true, expected, actual)}
+{#define ASSERT_EQ_INT64(expected, actual)      _VALIDATE_EQ_INT64(true, expected, actual)}
+
+{#define ASSERT_EQ_USINT(expected, actual)      _VALIDATE_EQ_UINT32(true, expected, actual)}
+{#define ASSERT_EQ_UINT(expected, actual)       _VALIDATE_EQ_UINT32(true, expected, actual)}
+{#define ASSERT_EQ_UDINT(expected, actual)      _VALIDATE_EQ_UINT32(true, expected, actual)}
+{#define ASSERT_EQ_ULINT(expected, actual)      _VALIDATE_EQ_UINT64(true, expected, actual)}
+{#define ASSERT_EQ_UINT32(expected, actual)     _VALIDATE_EQ_UINT32(true, expected, actual)}
+{#define ASSERT_EQ_UINT64(expected, actual)     _VALIDATE_EQ_UINT64(true, expected, actual)}
+
+{#define ASSERT_EQ_BYTE(expected, actual)       _VALIDATE_EQ_BIT32(true, expected, actual)}
+{#define ASSERT_EQ_WORD(expected, actual)       _VALIDATE_EQ_BIT32(true, expected, actual)}
+{#define ASSERT_EQ_DWORD(expected, actual)      _VALIDATE_EQ_BIT32(true, expected, actual)}
+{#define ASSERT_EQ_LWORD(expected, actual)      _VALIDATE_EQ_BIT64(true, expected, actual)}
+{#define ASSERT_EQ_BIT32(expected, actual)      _VALIDATE_EQ_BIT32(true, expected, actual)}
+{#define ASSERT_EQ_BIT64(expected, actual)      _VALIDATE_EQ_BIT64(true, expected, actual)}
+
+{#define ASSERT_EQ_REAL(expected, actual)       _VALIDATE_EQ_DOUBLE(true, expected, actual)} (* Deprecated, use ASSERT_NEAR *)
+{#define ASSERT_EQ_LREAL(expected, actual)      _VALIDATE_EQ_DOUBLE(true, expected, actual)} (* Deprecated, use ASSERT_NEAR *)
+{#define ASSERT_EQ_FLOAT(expected, actual)      _VALIDATE_EQ_DOUBLE(true, expected, actual)} (* Deprecated, use ASSERT_NEAR *)
+{#define ASSERT_EQ_DOUBLE(expected, actual)     _VALIDATE_EQ_DOUBLE(true, expected, actual)} (* Deprecated, use ASSERT_NEAR *)
+
+{#define ASSERT_EQ_BOOL(expected, actual)       _VALIDATE_EQ_BOOL(true, expected, actual)}
+{#define ASSERT_EQ_TIME(expected, actual)       _VALIDATE_EQ_TIME(true, expected, actual)}
+{#define ASSERT_EQ_STRING(expected, actual)     _VALIDATE_EQ_STRING(true, expected, actual)}
+
+{#define ASSERT_LT_SINT(lval, rval)     _VALIDATE_LT_INT32(true, lval, rval)}
+{#define ASSERT_LT_INT(lval, rval)      _VALIDATE_LT_INT32(true, lval, rval)}
+{#define ASSERT_LT_DINT(lval, rval)     _VALIDATE_LT_INT32(true, lval, rval)}
+{#define ASSERT_LT_LINT(lval, rval)     _VALIDATE_LT_INT64(true, lval, rval)}
+{#define ASSERT_LT_INT32(lval, rval)    _VALIDATE_LT_INT32(true, lval, rval)}
+{#define ASSERT_LT_INT64(lval, rval)    _VALIDATE_LT_INT64(true, lval, rval)}
+
+{#define ASSERT_LT_USINT(lval, rval)    _VALIDATE_LT_UINT32(true, lval, rval)}
+{#define ASSERT_LT_UINT(lval, rval)     _VALIDATE_LT_UINT32(true, lval, rval)}
+{#define ASSERT_LT_UDINT(lval, rval)    _VALIDATE_LT_UINT32(true, lval, rval)}
+{#define ASSERT_LT_ULINT(lval, rval)    _VALIDATE_LT_UINT64(true, lval, rval)}
+{#define ASSERT_LT_UINT32(lval, rval)   _VALIDATE_LT_UINT32(true, lval, rval)}
+{#define ASSERT_LT_UINT64(lval, rval)   _VALIDATE_LT_UINT64(true, lval, rval)}
+
+{#define ASSERT_LE_SINT(lval, rval)     _VALIDATE_LE_INT32(true, lval, rval)}
+{#define ASSERT_LE_INT(lval, rval)      _VALIDATE_LE_INT32(true, lval, rval)}
+{#define ASSERT_LE_DINT(lval, rval)     _VALIDATE_LE_INT32(true, lval, rval)}
+{#define ASSERT_LE_LINT(lval, rval)     _VALIDATE_LE_INT64(true, lval, rval)}
+{#define ASSERT_LE_INT32(lval, rval)    _VALIDATE_LE_INT32(true, lval, rval)}
+{#define ASSERT_LE_INT64(lval, rval)    _VALIDATE_LE_INT64(true, lval, rval)}
+
+{#define ASSERT_LE_USINT(lval, rval)    _VALIDATE_LE_UINT32(true, lval, rval)}
+{#define ASSERT_LE_UINT(lval, rval)     _VALIDATE_LE_UINT32(true, lval, rval)}
+{#define ASSERT_LE_UDINT(lval, rval)    _VALIDATE_LE_UINT32(true, lval, rval)}
+{#define ASSERT_LE_ULINT(lval, rval)    _VALIDATE_LE_UINT64(true, lval, rval)}
+{#define ASSERT_LE_UINT32(lval, rval)   _VALIDATE_LE_UINT32(true, lval, rval)}
+{#define ASSERT_LE_UINT64(lval, rval)   _VALIDATE_LE_UINT64(true, lval, rval)}
+
+{#define ASSERT_GE_SINT(lval, rval)     _VALIDATE_GE_INT32(true, lval, rval)}
+{#define ASSERT_GE_INT(lval, rval)      _VALIDATE_GE_INT32(true, lval, rval)}
+{#define ASSERT_GE_DINT(lval, rval)     _VALIDATE_GE_INT32(true, lval, rval)}
+{#define ASSERT_GE_LINT(lval, rval)     _VALIDATE_GE_INT64(true, lval, rval)}
+{#define ASSERT_GE_INT32(lval, rval)    _VALIDATE_GE_INT32(true, lval, rval)}
+{#define ASSERT_GE_INT64(lval, rval)    _VALIDATE_GE_INT64(true, lval, rval)}
+
+{#define ASSERT_GE_USINT(lval, rval)    _VALIDATE_GE_UINT32(true, lval, rval)}
+{#define ASSERT_GE_UINT(lval, rval)     _VALIDATE_GE_UINT32(true, lval, rval)}
+{#define ASSERT_GE_UDINT(lval, rval)    _VALIDATE_GE_UINT32(true, lval, rval)}
+{#define ASSERT_GE_ULINT(lval, rval)    _VALIDATE_GE_UINT64(true, lval, rval)}
+{#define ASSERT_GE_UINT32(lval, rval)   _VALIDATE_GE_UINT32(true, lval, rval)}
+{#define ASSERT_GE_UINT64(lval, rval)   _VALIDATE_GE_UINT64(true, lval, rval)}
+
+{#define ASSERT_GT_SINT(lval, rval)     _VALIDATE_GT_INT32(true, lval, rval)}
+{#define ASSERT_GT_INT(lval, rval)      _VALIDATE_GT_INT32(true, lval, rval)}
+{#define ASSERT_GT_DINT(lval, rval)     _VALIDATE_GT_INT32(true, lval, rval)}
+{#define ASSERT_GT_LINT(lval, rval)     _VALIDATE_GT_INT64(true, lval, rval)}
+{#define ASSERT_GT_INT32(lval, rval)    _VALIDATE_GT_INT32(true, lval, rval)}
+{#define ASSERT_GT_INT64(lval, rval)    _VALIDATE_GT_INT64(true, lval, rval)}
+
+{#define ASSERT_GT_USINT(lval, rval)    _VALIDATE_GT_UINT32(true, lval, rval)}
+{#define ASSERT_GT_UINT(lval, rval)     _VALIDATE_GT_UINT32(true, lval, rval)}
+{#define ASSERT_GT_UDINT(lval, rval)    _VALIDATE_GT_UINT32(true, lval, rval)}
+{#define ASSERT_GT_ULINT(lval, rval)    _VALIDATE_GT_UINT64(true, lval, rval)}
+{#define ASSERT_GT_UINT32(lval, rval)   _VALIDATE_GT_UINT32(true, lval, rval)}
+{#define ASSERT_GT_UINT64(lval, rval)   _VALIDATE_GT_UINT64(true, lval, rval)}
+
+{#define ASSERT_NEAR(val1, al2_, abs_error)     _VALIDATE_NEAR(true, val1, val2, abs_error)}
+
+
+
+{#define _JIEC_TESTNAMES_LIST_(...) $
+	var_global $
+		_JIECTESTNAMES_: array[MAX_TESTS] of string[TESTNAME_MAX_SIZE] := [__VA_ARGS__, (MAX_TESTS - __VA_ARGC__)('')]; $
+		_JIECTEST_: JiecTest_t; $
+	end $
+}
+
+
+
+// Test for a single-cycle test.
+{#define TEST_S(test_name) $
+	program ${single-body:true$} ${__func__:TestName$} test_name $
+	var_external _JIECTEST_: JiecTest_t; end $
+	${st$} $
+	if not JiecTest_isActive(_JIECTEST_) then $
+		return; $
+	end_if; $
+	${end$} $
+}
+{#define END_TEST_S $
+	${st$} $
+	EOT(); $
+	${end$} $
+end}
+
+// Test for the muiltiple-cycles test.
+{#define TEST_M(test_name) $
+	program ${single-body:true$} ${__func__:TestName$} test_name $
+	var_external _JIECTEST_: JiecTest_t; end $
+	${st$} $
+	if not JiecTest_isActive(_JIECTEST_) then $
+		return; $
+	end_if; $
+	${end$} $
+}
+{#define END_TEST_M $
+	${st$} $
+	${end$} $
+end}
+
+// End of Test. Terminate the current test.
+{#define EOT() JiecTest_deactivate(_JIECTEST_); return}
+
+(*
+ * The current cycle number.
+ *  Info.: In the unit test for the single-cycle test, the result is always 0.
+ *)
+{#define CURRENT_CYCLE() JiecTest_currentCycle(_JIECTEST_)}
+
+{#endif}

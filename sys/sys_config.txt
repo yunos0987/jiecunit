@@ -1,0 +1,9 @@
+{#ifndef __SYSCONFIG_TXT__}
+{#define __SYSCONFIG_TXT__}
+
+{#define STRING_MAX_SIZE 1986} // OMRON's limit.
+
+{#define CONSOLE_MAX_ROWS 1024} // num of lines
+{#define CONSOLE_MAX_COLS 512} // num of char for a line.
+
+{#endif}

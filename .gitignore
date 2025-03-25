@@ -1,0 +1,8 @@
+# General
+/build/
+/check/
+# Visual Studio Code
+/.vscode/
+
+/samples/*.xml
+/samples/*.pp.txt

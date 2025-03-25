@@ -1,0 +1,338 @@
+{#ifndef __JIECUNIT_JIECTEST_TXT__}
+{#define __JIECUNIT_JIECTEST_TXT__}
+
+{#include <sys.txt>}
+{#include <sys_conv.txt>}
+
+{#include "jiecunit_config.txt"}
+
+type
+	JiecTest_t: struct
+		num_of_tests: dint;
+		testnames: array[MAX_TESTS] of string[TESTNAME_MAX_SIZE];
+		//
+		tmp_cycle: dint; // There is a active test, if tmp_cycle >= 0.
+		num_of_failures: dint;
+	end
+end
+
+function JiecTest_initialize: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	var_temp
+		test_index: dint;
+	end
+	{st}
+	self.num_of_tests := 0;
+	for test_index := 0 to MAX_TESTS - 1 do
+		self.testnames[test_index] := '';
+	end_for;
+
+	self.tmp_cycle := dint#__DINT_MIN__;
+	self.num_of_failures := 0;
+	{end}
+end
+
+function JiecTest_register: dint
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		test_name: string[TESTNAME_MAX_SIZE];
+	end
+	var_temp
+		test_index: dint;
+	end
+	{st}
+	// ignore, if it is already registerd.
+	for test_index := 0 to self.num_of_tests - 1 do
+		if test_name = self.testnames[test_index] then
+			JiecTest_register := -1;
+			return;
+		end_if;
+	end_for;
+
+	self.testnames[self.num_of_tests] := test_name;
+	inc(self.num_of_tests);
+	JiecTest_register := self.num_of_tests;
+	{end}
+end
+
+function JiecTest_empty: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	{st}
+	JiecTest_empty := self.num_of_tests = 0;
+	{end}
+end
+
+function JiecTest_failure: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		message: string[STRING_MAX_SIZE] := '';
+		die: bool := true;
+		file: string[FILENAME_MAX_SIZE];
+		line: dint;
+	end
+	var_temp
+		msg: string[STRING_MAX_SIZE];
+	end
+	{st}
+	msg := concat(file, ':', dint_to_string(line));
+	msg := concat(msg, '@', dint_to_string(JiecTest_currentCycle(self)));
+	if message <> '' then
+		msg := concat(msg, ' ', message);
+	end_if;
+	puts(msg);
+
+	inc(self.num_of_failures);
+
+	eno := not die;
+	{end}
+end
+
+function JiecTest_isActive: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	{st}
+	JiecTest_isActive := self.tmp_cycle >= 0;
+	{end}
+end
+
+function JiecTest_activate: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	{st}
+	self.tmp_cycle := 0;
+	{end}
+end
+
+function JiecTest_deactivate: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	{st}
+	self.tmp_cycle := dint#__DINT_MIN__;
+	{end}
+end
+
+function JiecTest_currentCycle: dint
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	{st}
+	JiecTest_currentCycle := self.tmp_cycle;
+	{end}
+end
+
+function JiecTest_nextCycle: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	{st}
+	JiecTest_nextCycle := self.tmp_cycle <> dint#__DINT_MAX__; // false, if overflow happend.
+	self.tmp_cycle := self.tmp_cycle + 1;
+	{end}
+end
+
+function JiecTest_testname: string[TESTNAME_MAX_SIZE]
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	var_input test_index: dint; end
+	{st}
+	if (0 <= test_index) and (test_index < self.num_of_tests) then
+		JiecTest_testname := self.testnames[test_index];
+	else
+		JiecTest_testname := '!No available tests!';
+	end_if;
+	{end}
+end
+
+// ------------------------ Define validator functions ------------------------ //
+
+{#define DEFINE_JiecTest_validateEQ_DATATYPE(DATATYPE, datatype_, to_string) $
+	function JiecTest_validateEQ_ @@ DATATYPE: bool $
+	_PROLOGUE_OF_FUNCTION_() $
+	var_in_out self: JiecTest_t; end $
+	var_input $
+		expected, actual: datatype_; $
+		message: string[128]; $
+		die: bool := true; $
+		file: string[FILENAME_MAX_SIZE]; $
+		line: dint; $
+	end $
+	${st$} $
+	JiecTest_validateEQ_ @@ DATATYPE := expected = actual; $
+	if JiecTest_validateEQ_ @@ DATATYPE then $
+		return; $
+	end_if; $
+	 $
+	puts(concat('Expected: ', to_string(expected))); $
+	puts(concat('Actual: ', to_string(actual))); $
+	 $
+	JiecTest_failure(self:=self, message:=message, die:=die, file:=file, line:=line, eno=>eno); $
+	${end$} $
+	end}
+DEFINE_JiecTest_validateEQ_DATATYPE(INT32, dint, dint_to_string)
+DEFINE_JiecTest_validateEQ_DATATYPE(INT64, lint, lint_to_string)
+DEFINE_JiecTest_validateEQ_DATATYPE(UINT32, udint, udint_to_string)
+DEFINE_JiecTest_validateEQ_DATATYPE(UINT64, ulint, ulint_to_string)
+DEFINE_JiecTest_validateEQ_DATATYPE(BIT32, dword, dword_to_string)
+DEFINE_JiecTest_validateEQ_DATATYPE(BIT64, lword, lword_to_string)
+DEFINE_JiecTest_validateEQ_DATATYPE(DOUBLE, lreal, lreal_to_string)
+DEFINE_JiecTest_validateEQ_DATATYPE(BOOL, bool, bool_to_string)
+DEFINE_JiecTest_validateEQ_DATATYPE(TIME, time, time_to_string_sec)
+DEFINE_JiecTest_validateEQ_DATATYPE(STRING, string[STRING_MAX_SIZE], )
+
+
+
+{#define DEFINE_JiecTest_validateCMP_DATATYPE(CMP, DATATYPE, operator_, datatype_, to_string) $
+	function JiecTest_validate @@ CMP @@ _ @@ DATATYPE: bool $
+	_PROLOGUE_OF_FUNCTION_() $
+	var_in_out self: JiecTest_t; end $
+	var_input $
+		lval, rval: datatype_; $
+		message: string[128]; $
+		die: bool := true; $
+		file: string[FILENAME_MAX_SIZE]; $
+		line: dint; $
+	end $
+	${st$} $
+	JiecTest_validate @@ CMP @@ _ @@ DATATYPE := lval operator_ rval; $
+	if JiecTest_validate @@ CMP @@ _ @@ DATATYPE then $
+		return; $
+	end_if; $
+	 $
+	puts(concat('Expected: ', to_string(lval), @operator_, to_string(rval))); $
+	puts(concat('Actual: ', to_string(lval), ' vs ', to_string(rval))); $
+	 $
+	JiecTest_failure(self:=self, message:=message, die:=die, file:=file, line:=line, eno=>eno); $
+	${end$} $
+	end}
+DEFINE_JiecTest_validateCMP_DATATYPE(LT, INT32,  <,  dint,  dint_to_string)
+DEFINE_JiecTest_validateCMP_DATATYPE(LE, INT32,  <=, dint,  dint_to_string)
+DEFINE_JiecTest_validateCMP_DATATYPE(GE, INT32,  >=, dint,  dint_to_string)
+DEFINE_JiecTest_validateCMP_DATATYPE(GT, INT32,  >,  dint,  dint_to_string)
+DEFINE_JiecTest_validateCMP_DATATYPE(LT, INT64,  <,  lint,  lint_to_string)
+DEFINE_JiecTest_validateCMP_DATATYPE(LE, INT64,  <=, lint,  lint_to_string)
+DEFINE_JiecTest_validateCMP_DATATYPE(GE, INT64,  >=, lint,  lint_to_string)
+DEFINE_JiecTest_validateCMP_DATATYPE(GT, INT64,  >,  lint,  lint_to_string)
+DEFINE_JiecTest_validateCMP_DATATYPE(LT, UINT32, <,  udint, udint_to_string)
+DEFINE_JiecTest_validateCMP_DATATYPE(LE, UINT32, <=, udint, udint_to_string)
+DEFINE_JiecTest_validateCMP_DATATYPE(GE, UINT32, >=, udint, udint_to_string)
+DEFINE_JiecTest_validateCMP_DATATYPE(GT, UINT32, >,  udint, udint_to_string)
+DEFINE_JiecTest_validateCMP_DATATYPE(LT, UINT64, <,  ulint, ulint_to_string)
+DEFINE_JiecTest_validateCMP_DATATYPE(LE, UINT64, <=, ulint, ulint_to_string)
+DEFINE_JiecTest_validateCMP_DATATYPE(GE, UINT64, >=, ulint, ulint_to_string)
+DEFINE_JiecTest_validateCMP_DATATYPE(GT, UINT64, >,  ulint, ulint_to_string)
+DEFINE_JiecTest_validateCMP_DATATYPE(LT, DOUBLE, <,  lreal, lreal_to_string)
+DEFINE_JiecTest_validateCMP_DATATYPE(LE, DOUBLE, <=, lreal, lreal_to_string)
+DEFINE_JiecTest_validateCMP_DATATYPE(GE, DOUBLE, >=, lreal, lreal_to_string)
+DEFINE_JiecTest_validateCMP_DATATYPE(GT, DOUBLE, >,  lreal, lreal_to_string)
+
+
+
+function JiecTest_validateNEAR: bool
+_PROLOGUE_OF_FUNCTION_()
+var_in_out self: JiecTest_t; end
+var_input
+	val1, val2: lreal;
+	abs_error: lreal;
+	message: string[128];
+	die: bool := true;
+	file: string[FILENAME_MAX_SIZE];
+	line: dint;
+end
+{st}
+JiecTest_validateNEAR := abs(val1 - val2) < abs_error;
+if JiecTest_validateNEAR then
+	return;
+end_if;
+
+puts(concat('Value1: ', lreal_to_string(val1)));
+puts(concat('Value2: ', lreal_to_string(val2)));
+puts(concat('Value1 - Value2: ', lreal_to_string(val1 - val2)));
+
+JiecTest_failure(self:=self, message:=message, die:=die, file:=file, line:=line, eno=>eno);
+{end}
+end
+
+// ------------------------ Define low level macros ------------------------ //
+
+{#define _ON_FAILED_ACTION(die) $
+	if die then $
+		JiecTest_deactivate(_JIECTEST_); $
+		return; $
+	end_if $
+}
+
+{#define _VALIDATE_EQ_DATATYPE(DATATYPE, die_, expected_, actual_, message_) $
+	if not JiecTest_validateEQ_ @@ DATATYPE(self:=_JIECTEST_, expected:=expected_, actual:=actual_, message:=message_, die:=die_, file:=TestName, line:=__LINE__) then $
+		_ON_FAILED_ACTION(die_); $
+	end_if}
+{#define _VALIDATE_EQ_INT32_MSG(die, expected, actual, message)     _VALIDATE_EQ_DATATYPE(INT32, die, expected, actual, message)}
+{#define _VALIDATE_EQ_INT64_MSG(die, expected, actual, message)     _VALIDATE_EQ_DATATYPE(INT64, die, expected, actual, message)}
+{#define _VALIDATE_EQ_UINT32_MSG(die, expected, actual, message)    _VALIDATE_EQ_DATATYPE(UINT32, die, expected, actual, message)}
+{#define _VALIDATE_EQ_UINT64_MSG(die, expected, actual, message)    _VALIDATE_EQ_DATATYPE(UINT64, die, expected, actual, message)}
+{#define _VALIDATE_EQ_BIT32_MSG(die, expected, actual, message)     _VALIDATE_EQ_DATATYPE(BIT32, die, expected, actual, message)}
+{#define _VALIDATE_EQ_BIT64_MSG(die, expected, actual, message)     _VALIDATE_EQ_DATATYPE(BIT64, die, expected, actual, message)}
+{#define _VALIDATE_EQ_DOUBLE_MSG(die, expected, actual, message)    _VALIDATE_EQ_DATATYPE(DOUBLE, die, expected, actual, message)}
+{#define _VALIDATE_EQ_BOOL_MSG(die, expected, actual, message)      _VALIDATE_EQ_DATATYPE(BOOL, die, expected, actual, message)}
+{#define _VALIDATE_EQ_TIME_MSG(die, expected, actual, message)      _VALIDATE_EQ_DATATYPE(TIME, die, expected, actual, message)}
+{#define _VALIDATE_EQ_STRING_MSG(die, expected, actual, message)    _VALIDATE_EQ_DATATYPE(STRING, die, expected, actual, message)}
+
+{#define _VALIDATE_EQ_INT32(die, expected, actual)      _VALIDATE_EQ_DATATYPE(INT32, die, expected, actual, '')}
+{#define _VALIDATE_EQ_INT64(die, expected, actual)      _VALIDATE_EQ_DATATYPE(INT64, die, expected, actual, '')}
+{#define _VALIDATE_EQ_UINT32(die, expected, actual)     _VALIDATE_EQ_DATATYPE(UINT32, die, expected, actual, '')}
+{#define _VALIDATE_EQ_UINT64(die, expected, actual)     _VALIDATE_EQ_DATATYPE(UINT64, die, expected, actual, '')}
+{#define _VALIDATE_EQ_BIT32(die, expected, actual)      _VALIDATE_EQ_DATATYPE(BIT32, die, expected, actual, '')}
+{#define _VALIDATE_EQ_BIT64(die, expected, actual)      _VALIDATE_EQ_DATATYPE(BIT64, die, expected, actual, '')}
+{#define _VALIDATE_EQ_DOUBLE(die, expected, actual)     _VALIDATE_EQ_DATATYPE(DOUBLE, die, expected, actual, '')}
+{#define _VALIDATE_EQ_BOOL(die, expected, actual)       _VALIDATE_EQ_DATATYPE(BOOL, die, expected, actual, '')}
+{#define _VALIDATE_EQ_TIME(die, expected, actual)       _VALIDATE_EQ_DATATYPE(TIME, die, expected, actual, '')}
+{#define _VALIDATE_EQ_STRING(die, expected, actual)     _VALIDATE_EQ_DATATYPE(STRING, die, expected, actual, '')}
+
+{#define _VALIDATE_CMP_DATATYPE(CMP, DATATYPE, die_, lval_, rval_, message_) $
+	if not JiecTest_validate @@ CMP @@ _ @@ DATATYPE(self:=_JIECTEST_, lval:=lval_, rval:=rval_, message:=message_, die:=die_, file:=TestName, line:=__LINE__) then $
+		_ON_FAILED_ACTION(die_); $
+	end_if}
+{#define _VALIDATE_LT_INT32_MSG(die, lval, rval, message)   _VALIDATE_CMP_DATATYPE(LT, INT32, die, lval, rval, message)}
+{#define _VALIDATE_LE_INT32_MSG(die, lval, rval, message)   _VALIDATE_CMP_DATATYPE(LE, INT32, die, lval, rval, message)}
+{#define _VALIDATE_GE_INT32_MSG(die, lval, rval, message)   _VALIDATE_CMP_DATATYPE(GE, INT32, die, lval, rval, message)}
+{#define _VALIDATE_GT_INT32_MSG(die, lval, rval, message)   _VALIDATE_CMP_DATATYPE(GT, INT32, die, lval, rval, message)}
+{#define _VALIDATE_LT_UINT32_MSG(die, lval, rval, message)  _VALIDATE_CMP_DATATYPE(LT, UINT32, die, lval, rval, message)}
+{#define _VALIDATE_LE_UINT32_MSG(die, lval, rval, message)  _VALIDATE_CMP_DATATYPE(LE, UINT32, die, lval, rval, message)}
+{#define _VALIDATE_GE_UINT32_MSG(die, lval, rval, message)  _VALIDATE_CMP_DATATYPE(GE, UINT32, die, lval, rval, message)}
+{#define _VALIDATE_GT_UINT32_MSG(die, lval, rval, message)  _VALIDATE_CMP_DATATYPE(GT, UINT32, die, lval, rval, message)}
+{#define _VALIDATE_LT_INT64_MSG(die, lval, rval, message)   _VALIDATE_CMP_DATATYPE(LT, INT64, die, lval, rval, message)}
+{#define _VALIDATE_LE_INT64_MSG(die, lval, rval, message)   _VALIDATE_CMP_DATATYPE(LE, INT64, die, lval, rval, message)}
+{#define _VALIDATE_GE_INT64_MSG(die, lval, rval, message)   _VALIDATE_CMP_DATATYPE(GE, INT64, die, lval, rval, message)}
+{#define _VALIDATE_GT_INT64_MSG(die, lval, rval, message)   _VALIDATE_CMP_DATATYPE(GT, INT64, die, lval, rval, message)}
+{#define _VALIDATE_LT_DOUBLE_MSG(die, lval, rval, message)  _VALIDATE_CMP_DATATYPE(LT, DOUBLE, die, lval, rval, message)}
+{#define _VALIDATE_LE_DOUBLE_MSG(die, lval, rval, message)  _VALIDATE_CMP_DATATYPE(LE, DOUBLE, die, lval, rval, message)}
+{#define _VALIDATE_GE_DOUBLE_MSG(die, lval, rval, message)  _VALIDATE_CMP_DATATYPE(GE, DOUBLE, die, lval, rval, message)}
+{#define _VALIDATE_GT_DOUBLE_MSG(die, lval, rval, message)  _VALIDATE_CMP_DATATYPE(GT, DOUBLE, die, lval, rval, message)}
+
+{#define _VALIDATE_LT_INT32(die, lval, rval)    _VALIDATE_CMP_DATATYPE(LT, INT32, die, lval, rval, '')}
+{#define _VALIDATE_LE_INT32(die, lval, rval)    _VALIDATE_CMP_DATATYPE(LE, INT32, die, lval, rval, '')}
+{#define _VALIDATE_GE_INT32(die, lval, rval)    _VALIDATE_CMP_DATATYPE(GE, INT32, die, lval, rval, '')}
+{#define _VALIDATE_GT_INT32(die, lval, rval)    _VALIDATE_CMP_DATATYPE(GT, INT32, die, lval, rval, '')}
+{#define _VALIDATE_LT_UINT32(die, lval, rval)   _VALIDATE_CMP_DATATYPE(LT, UINT32, die, lval, rval, '')}
+{#define _VALIDATE_LE_UINT32(die, lval, rval)   _VALIDATE_CMP_DATATYPE(LE, UINT32, die, lval, rval, '')}
+{#define _VALIDATE_GE_UINT32(die, lval, rval)   _VALIDATE_CMP_DATATYPE(GE, UINT32, die, lval, rval, '')}
+{#define _VALIDATE_GT_UINT32(die, lval, rval)   _VALIDATE_CMP_DATATYPE(GT, UINT32, die, lval, rval, '')}
+{#define _VALIDATE_LT_INT64(die, lval, rval)    _VALIDATE_CMP_DATATYPE(LT, INT64, die, lval, rval, '')}
+{#define _VALIDATE_LE_INT64(die, lval, rval)    _VALIDATE_CMP_DATATYPE(LE, INT64, die, lval, rval, '')}
+{#define _VALIDATE_GE_INT64(die, lval, rval)    _VALIDATE_CMP_DATATYPE(GE, INT64, die, lval, rval, '')}
+{#define _VALIDATE_GT_INT64(die, lval, rval)    _VALIDATE_CMP_DATATYPE(GT, INT64, die, lval, rval, '')}
+{#define _VALIDATE_LT_DOUBLE(die, lval, rval)   _VALIDATE_CMP_DATATYPE(LT, DOUBLE, die, lval, rval, '')}
+{#define _VALIDATE_LE_DOUBLE(die, lval, rval)   _VALIDATE_CMP_DATATYPE(LE, DOUBLE, die, lval, rval, '')}
+{#define _VALIDATE_GE_DOUBLE(die, lval, rval)   _VALIDATE_CMP_DATATYPE(GE, DOUBLE, die, lval, rval, '')}
+{#define _VALIDATE_GT_DOUBLE(die, lval, rval)   _VALIDATE_CMP_DATATYPE(GT, DOUBLE, die, lval, rval, '')}
+
+{#define _VALIDATE_NEAR_DATATYPE(die_, val1_, val2_, abs_error_, message_) $
+	if not JiecTest_validateNEAR(self:=_JIECTEST_, val1:=val1_, val2:=val2_, abs_error:=abs_error_, message:=message_, die:=die_, file:=TestName, line:=__LINE__) then $
+		_ON_FAILED_ACTION(die_); $
+	end_if}
+{#define _VALIDATE_NEAR_MSG(die, val1, val2, abs_error, message)    _VALIDATE_NEAR_DATATYPE(DOUBLE, die, val1, val2, abs_error, message)}
+
+{#define _VALIDATE_NEAR(die, val1, val2, abs_error)                 _VALIDATE_NEAR_DATATYPE(DOUBLE, die, val1, val2, abs_error, '')}
+
+{#endif}

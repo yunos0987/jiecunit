@@ -1,0 +1,78 @@
+{#ifndef __SYS_TXT__}
+{#define __SYS_TXT__}
+
+{#include "sys_config.txt"}
+
+{#define _CONSOLE_ g_console}
+
+{#define _DEFINE_SYS_IN_RESOURCE_() $
+    var_global _CONSOLE_: Console_t := (row_index:=0, rows:=[CONSOLE_MAX_ROWS('')]); end $
+}
+{#define _DEFINE_SYS_IN_POU_() $
+    var_external _CONSOLE_: Console_t; end $
+}
+
+{#define _PROLOGUE_OF_FUNCTION_FOR_SYS_() $
+	var_input  en:  bool; end $
+	var_output eno: bool; end $
+}
+
+{#define _PROLOGUE_OF_FUNCTION_() $
+	_PROLOGUE_OF_FUNCTION_FOR_SYS_() $
+    _DEFINE_SYS_IN_POU_() $
+}
+
+{#define inc(v) v := v + 1}
+{#define dec(v) v := v - 1}
+
+{#define reset_console() Console_initialize(_CONSOLE_)}
+{#define puts(line) Console_puts(_CONSOLE_, line)}
+{#define print(text) Console_print(_CONSOLE_, text)}
+
+type
+	{doc: Pseudo console.}
+	Console_t: struct
+		row_index: dint;
+		rows: array[CONSOLE_MAX_ROWS] of string[CONSOLE_MAX_COLS];
+	end;
+end
+
+function Console_initialize: bool
+	_PROLOGUE_OF_FUNCTION_FOR_SYS_();
+	var_in_out self: Console_t; end
+	var_temp
+		row_index: dint;
+	end
+	{st}
+	for row_index := 0 to CONSOLE_MAX_ROWS - 1 do
+		self.rows[row_index] := '';
+	end_for;
+	self.row_index := 0;
+	{end}
+end
+
+function Console_print: bool
+	_PROLOGUE_OF_FUNCTION_FOR_SYS_();
+	var_in_out self: Console_t; end
+	var_input
+		txt: string[STRING_MAX_SIZE];
+	end
+	{st}
+	self.rows[self.row_index] := concat(self.rows[self.row_index], txt);
+	{end}
+end
+
+function Console_puts: dint
+	_PROLOGUE_OF_FUNCTION_FOR_SYS_();
+	var_in_out self: Console_t; end
+	var_input
+		line: string[STRING_MAX_SIZE];
+	end
+	{st}
+	self.rows[self.row_index] := line;
+	self.row_index := (self.row_index + 1) mod CONSOLE_MAX_ROWS;
+	Console_puts := self.row_index;
+	{end}
+end
+
+{#endif}

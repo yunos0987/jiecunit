@@ -1,0 +1,72 @@
+{#ifndef __SYSCONV_TXT__}
+{#define __SYSCONV_TXT__}
+
+{#include "sys.txt"}
+
+{#if _OMRON}
+{#  define time_to_lint TimeToNanoSec}
+{#endif}
+
+function time_to_string_sec: string[64]
+	_PROLOGUE_OF_FUNCTION_FOR_SYS_();
+	var_input in: time; end
+	var_temp
+		nsec_raw: lint;
+		sec_rem_raw: lint;
+		sec_int_raw: lint;
+		sec_rem_str: string[16];
+		sign: string[2] := '';
+	end
+	{st}
+	nsec_raw := time_to_lint(in);
+
+	sec_rem_raw := nsec_raw mod lint#1000000000;
+	sec_int_raw := (nsec_raw - sec_rem_raw) / lint#1000000000;
+
+	if nsec_raw < 0 then
+		sign := '-';
+		sec_rem_raw := -sec_rem_raw;
+		sec_int_raw := -sec_int_raw;
+	end_if;
+
+	sec_rem_str := lint_to_string(sec_rem_raw);
+	while len(sec_rem_str) <> 9 do
+		sec_rem_str := concat('0', sec_rem_str);
+	end_while;
+	while (len(sec_rem_str) > 0) and (right(sec_rem_str, 1) = '0') do
+		sec_rem_str := delete(sec_rem_str, 1, len(sec_rem_str));
+	end_while;
+
+	if sec_rem_str <> '' then
+		time_to_string_sec := concat(sign, lint_to_string(sec_int_raw), '.', sec_rem_str, 's');
+	else
+		time_to_string_sec := concat(sign, lint_to_string(sec_int_raw), 's');
+	end_if;
+	{end}
+end
+
+function bool_to_string: string[8]
+	_PROLOGUE_OF_FUNCTION_FOR_SYS_();
+	var_input
+		in: bool;
+	end
+	{st}
+	if in then
+		bool_to_string := 'true';
+	else
+		bool_to_string := 'false';
+	end_if;
+	{end}
+end
+
+function string_to_string: string[STRING_MAX_SIZE]
+	_PROLOGUE_OF_FUNCTION_FOR_SYS_();
+	var_input
+		in: string[STRING_MAX_SIZE];
+	end
+	{st}
+	string_to_string := in;
+	{end}
+end
+
+{#endif}

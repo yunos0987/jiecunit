@@ -1,0 +1,59 @@
+
+(*
+ * Compute the mean value.
+ *
+ * var
+ *   a: array[0..2] of lreal := [2.0, 4.0, 9.0];
+ *   m: lreal;
+ * end
+ * m := mean(a); // 5.0; (2.0 + 4.0 + 9.0) / (2 - 0 + 1);
+ *)
+function mean: lreal
+	var_in_out
+		x: array[*] of lreal;
+	end
+	var_temp
+		i: dint;
+		d0, d1: dint;
+		s: lreal;
+	end
+	{st}
+	d0 := lower_bound(x, 1);
+	d1 := upper_bound(x, 1);
+	s := 0.0;
+	for i := d0 to d1 do
+		s := s + x[i];
+	end_for;
+	mean := s / (d1 - d0 + 1);
+	{end}
+end
+
+(*
+ * Incrementally compute the mean value.
+ *
+ * var
+ *   x: RunningMean;
+ *   n: dint;
+ *   m: lreal;
+ * end
+ * x(v:=2.0, m=>m, sample_size=>n); // m=2.0, n=1
+ * x(v:=4.0, m=>m, sample_size=>n); // m=3.0, n=2
+ * x(v:=9.0, m=>m, sample_size=>n); // m=5.0, n=3
+ *)
+function_block RunningMean
+	var_input
+		v: lreal;
+	end
+	var_output
+		m: lreal;
+		sample_size: dint := 0;
+	end
+	var
+		s: lreal := 0.0;
+	end
+	{st}
+	s := s + v;
+	sample_size := sample_size + 1;
+	m := s / sample_size;
+	{end}
+end

@@ -1,0 +1,53 @@
+{#include <jiecunit.txt>}
+
+{#include <sys_conv.txt>}
+
+configuration MainConfiguration resource MainResource on PLC
+	_DEFINE_SYS_IN_RESOURCE_();
+	// List test program names.
+	_JIEC_TESTNAMES_LIST_(
+		'test_time_to_string_sec',
+		'test_bool_to_string'
+	);
+end end
+
+TEST_S(test_time_to_string_sec)
+	{st}
+	EXPECT_EQ_STRING('-0.123456789s', time_to_string_sec(t#-0.123456789s));
+	EXPECT_EQ_STRING('-3s', time_to_string_sec(t#-3s));
+	EXPECT_EQ_STRING( '0s', time_to_string_sec(t#0s));
+	EXPECT_EQ_STRING( '3s', time_to_string_sec(t#+3s));
+	EXPECT_EQ_STRING( '0.123456789s', time_to_string_sec(t#+0.123456789s));
+
+	EXPECT_EQ_STRING('-1.23456789s', time_to_string_sec(t#-1.234567890s));
+	EXPECT_EQ_STRING( '1.23456789s', time_to_string_sec(t#+1.234567890s));
+
+	EXPECT_EQ_STRING('-1.2s', time_to_string_sec(t#-1.2s));
+	EXPECT_EQ_STRING( '1.2s', time_to_string_sec(t#+1.2s));
+
+	EXPECT_EQ_STRING('-1.02s', time_to_string_sec(t#-1.02s));
+	EXPECT_EQ_STRING( '1.02s', time_to_string_sec(t#+1.02s));
+
+	EXPECT_EQ_STRING('-1.0203s', time_to_string_sec(t#-1.0203s));
+	EXPECT_EQ_STRING( '1.0203s', time_to_string_sec(t#+1.0203s));
+
+	EXPECT_EQ_STRING('-0.999999999s', time_to_string_sec(t#-0.999999999s));
+	EXPECT_EQ_STRING('-1s',         time_to_string_sec(t#-1.000000000s));
+	EXPECT_EQ_STRING('-1.000000001s', time_to_string_sec(t#-1.000000001s));
+
+	EXPECT_EQ_STRING( '0.999999999s', time_to_string_sec(t#+0.999999999s));
+	EXPECT_EQ_STRING( '1s',         time_to_string_sec(t#+1.000000000s));
+	EXPECT_EQ_STRING( '1.000000001s', time_to_string_sec(t#+1.000000001s));
+
+	EXPECT_EQ_STRING('-9223372036.854775808s', time_to_string_sec(t#-9223372036854.775808ms));
+	EXPECT_EQ_STRING( '9223372036.854775807s', time_to_string_sec(t#+9223372036854.775807ms));
+	{end}
+END_TEST_S
+
+TEST_S(test_bool_to_string)
+	{st}
+	EXPECT_EQ_STRING('true', bool_to_string(true));
+	EXPECT_EQ_STRING('false', bool_to_string(false));
+	EXPECT_EQ_BOOL(1=2, 3=4);
+	{end}
+END_TEST_S
