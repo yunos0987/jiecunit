@@ -4,7 +4,7 @@
 
 JiecUnitは、テキスト形式で記述された[IEC 61131-3言語](https://plcopen.org/sites/default/files/downloads/iec_61131-3_preview.pdf)のPOUを単体テストするためのフレームワークです。
 
-特徴は、テスト対象POUのソースコード、その単体テストコード、およびJiecUnit自体のソースコード含め全体がIEC 61131-3 ST言語を拡張したテキスト形式で完結していることです。このため、すべてがダイレクトにGit等で構成管理が可能です。
+特徴は、テスト対象POUのソースコード、その単体テストコード、およびJiecUnit自体のソースコード含め全体がIEC 61131-3 ST言語を拡張したテキスト形式で完結していることです。このため、すべてがダイレクトにGit等で構成管理が可能です。使用するIDEによっては生成AIを使ってIEC 61131-3プログラミングできます。
 
 このテキスト形式のコードをPLCメーカーのツールで取り込み可能な形式に変換するために、[IEC 61131-3 ⇄ 10変換ソフトウェア Jiecc](https://www.graviness.com/iec_61131-3/jiecc.html)を使用します。JiecUnitは現在、[IEC 61131-10 XML](https://plcopen.org/sites/default/files/downloads/iec_61131-10_preview.pdf)をサポートするオムロン社製の[Sysmac Studio](https://www.fa.omron.co.jp/products/family/3077/download/software.html)のみを対象にしています。
 
@@ -12,7 +12,7 @@ JiecUnitは、テキスト形式で記述された[IEC 61131-3言語](https://pl
 
 オムロン社製のSysmac Studioを使用して、JiecUnitフレームワーク上で動作するサンプルの単体テストを実行するための必要な環境は以下の通りです。
 
-* [Jiecc 4.20以降](https://www.graviness.com/iec_61131-3/jiecc.html#Header.Jiecc%E3%81%AE%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89%E3%81%A8%E5%AE%9F%E8%A1%8C%E6%96%B9%E6%B3%95): IEC 61131-3 ⇄ IEC 61131-10変換ソフトウェア
+* [Jiecc 4.20以降](https://www.graviness.com/iec_61131-3/jiecc.html#Header.Jiecc%E3%81%AE%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89%E3%81%A8%E5%AE%9F%E8%A1%8C%E6%96%B9%E6%B3%95)
   * Jieccは、IEC 61131-3テキストをIEC 61131-10 XMLに変換するコマンドラインベースで無料のソフトウェアです。[Jieccのダウンロードと実行方法](https://www.graviness.com/iec_61131-3/jiecc.html#Header.Jiecc%E3%81%AE%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89%E3%81%A8%E5%AE%9F%E8%A1%8C%E6%96%B9%E6%B3%95)から最新のJieccをダウンロードできます。
 * [Sysmac Studio](https://www.fa.omron.co.jp/products/family/3077/download/software.html)
   * 高価なソフトウェアですが、Sysmac Studioに同梱されているシミュレータでテストが可能です。必要に応じて、PLC本体も入手してください。
@@ -29,7 +29,7 @@ JiecUnitは、テキスト形式で記述された[IEC 61131-3言語](https://pl
   * 各呼び出しにおける入力値ごとに状態を記憶し、その都度平均値を出力するFBです。
   * 複数サイクルに渡って実行するテストサンプルです。
 
-`samples/sample.txt`には、上記2つのPOUをテストする2つのテストプログラム`test_mean`と`test_RunningMean`が含まれます。
+`samples/sample.txt`には、上記2つのPOUをテストする2つのテストプログラム`test_mean`と`test_RunningMean`が含まれています。
 
 テストサンプルの実行方法は次の通りです。
 
@@ -91,7 +91,7 @@ $ jiecc .\samples\sample.txt -I. -I./sys -t omron -o .\samples\sample.xml
 TODO
 
 ```
-$ cd <jiecunit project root>
+$ cd <JiecUnit Project Root>
 $ mkdir check
 $ cd check
 $ jiecc -I.. -I../sys ../test/test_sys_conv.txt -o ./test_sys_conv.xml
