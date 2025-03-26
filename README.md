@@ -1,12 +1,14 @@
 # JiecUnit
 
+![JiecUnit](./docs/jiecunit.png)
+
 ## 概要
 
 JiecUnitは、テキスト形式で記述された[IEC 61131-3言語](https://plcopen.org/sites/default/files/downloads/iec_61131-3_preview.pdf)のPOUを単体テストするためのフレームワークです。
 
 特徴は、テスト対象POUのソースコード、その単体テストコード、およびJiecUnit自体のソースコード含め全体がIEC 61131-3 ST言語を拡張したテキスト形式で完結していることです。このため、すべてがダイレクトにGit等で構成管理が可能です。使用するIDEによっては生成AIを使ってIEC 61131-3プログラミングできます。
 
-このテキスト形式のコードをPLCメーカーのツールで取り込み可能な形式に変換するために、[IEC 61131-3 ⇄ 10変換ソフトウェア Jiecc](https://www.graviness.com/iec_61131-3/jiecc.html)を使用します。JiecUnitは現在、[IEC 61131-10 XML](https://plcopen.org/sites/default/files/downloads/iec_61131-10_preview.pdf)をサポートするオムロン社製の[Sysmac Studio](https://www.fa.omron.co.jp/products/family/3077/download/software.html)のみを対象にしています。
+このテキスト形式のコードをPLCメーカーのツールで取り込み可能な形式に変換するために、[IEC 61131-3 ⇄ IEC 61131-10変換ソフトウェア Jiecc](https://www.graviness.com/iec_61131-3/jiecc.html)を使用します。JiecUnitは現在、[IEC 61131-10 XML](https://plcopen.org/sites/default/files/downloads/iec_61131-10_preview.pdf)をサポートするオムロン社製の[Sysmac Studio](https://www.fa.omron.co.jp/products/family/3077/download/software.html)のみを対象にしています。
 
 ## 必要環境
 
@@ -19,9 +21,9 @@ JiecUnitは、テキスト形式で記述された[IEC 61131-3言語](https://pl
 
 ## 単体テストのサンプルの実行方法
 
-本プロジェクトには、JiecUnitを使って単体テストを実行可能なサンプルがあります。サンプルは、`samples`ディレクトリにあります。
+本プロジェクトには、JiecUnitを使って単体テストを実行可能なサンプルがあります。サンプルは、[samplesディレクトリ](./samples/)にあります。
 
-`samples/sample_pous.txt`には、単体テスト対象として以下の2つのPOUが含まれます。
+[samples/sample_pous.txt](./samples/sample_pous.txt)には、単体テスト対象として以下の2つのPOUが含まれます。
 * `mean`ファンクション
   * 複数のデータを含む配列を入力とし、平均値を計算するファンクションです。
   * 1サイクルで実行するテストサンプルです。
@@ -29,7 +31,7 @@ JiecUnitは、テキスト形式で記述された[IEC 61131-3言語](https://pl
   * 各呼び出しにおける入力値ごとに状態を記憶し、その都度平均値を出力するFBです。
   * 複数サイクルに渡って実行するテストサンプルです。
 
-`samples/sample.txt`には、上記2つのPOUをテストする2つのテストプログラム`test_mean`と`test_RunningMean`が含まれています。
+[samples/sample.txt](./samples/sample.txt)には、上記2つのPOUをテストする2つのテストプログラム`test_mean`と`test_RunningMean`が含まれています。
 
 テストサンプルの実行方法は次の通りです。
 
@@ -48,42 +50,42 @@ $ jiecc .\samples\sample.txt -I. -I./sys -t omron -o .\samples\sample.xml
 
 単体テストを実行するためのPOU群と、グローバル変数がインポートされます。インポート完了後に次のダイアログが表示されるので、OKを押下します。
 
-![インポート完了ダイアログ](docs/dialog_complete_to_import.png)
+![インポート完了ダイアログ](./docs/dialog_complete_to_import.png)
 
 3. Sysmac Studioのタスク設定でプライマリ定周期タスクに以下のようにプログラムを割り付けます（マルチビューエクスプローラ|構成・設定|タスク設定|プログラムの割付設定|）。`JiecUnitMain`が先頭になるように設定してください。
   * `JiecUnitMain`
   * `test_mean`
   * `test_RunningMean`
 
-![プログラムの割付設定](docs/display_task_config.png)
+![プログラムの割付設定](./docs/display_task_config.png)
 
 4. ビルドし、シミュレータ（F5キーで実行）や実機で実行します。
 5. テストの実行結果がグローバル変数`g_console`に出力されます。
 
-![テスト実行ログ](docs/display_test_result.png)
+![テスト実行ログ](./docs/display_test_result.png)
 
 2つのテスト`test_mean`と`test_RunningMean`が実行され、テストをパス（成功）したことを意味します。
 
 以下は、テストが失敗したときの例です。テスト`tset_RunningMean`のテストコード57行目の3サイクル目（@2）で失敗したことを意味します。
 
-![テスト実行NGログ](docs/display_test_result_ng.png)
+![テスト実行NGログ](./docs/display_test_result_ng.png)
 ※*57行目*という数字は、XMLにコンバートする前のテキストの行番号です。これをSysmac Studio上のtest_RunningMeanの行数で表示するテクニックは、[Jieccソフトウェア](https://www.graviness.com/iec_61131-3/jiecc.html)の機能を活用します。ここでは、深く述べません。
 
 ## JiecUnit開発者向け
 
 ### リポジトリ構成
 
-* `jiecunit.txt`
+* [jiecunit.txt](./jiecunit.txt)
   * JiecUnitユーザが使用すべき公開APIを含みます。
-* `docs`ディレクトリ
+* [docsディレクトリ](./docs/)
   * 補助的な資料を含みます。
-* `samples`ディレクトリ
+* [samplesディレクトリ](./samples/)
   * JiecUnitを試用するためのサンプルコードを含みます。
-* `src`ディレクトリ
+* [srcディレクトリ](./src/)
   * JiecUnitのソースコードを含みます。
-* `sys`ディレクトリ
+* [sysディレクトリ](./sys/)
   * JiecUnitの実行に必要なsys的なコードを含みます。PLCメーカーにない型変換ファンクションや擬似的なコンソール出力用途のコードを含みます。
-* `test`ディレクトリ
+* [testディレクトリ](./test/)
   * JiecUnit自体の単体テストコードを含みます。
 
 ### JiecUnitのテスト方法
@@ -103,4 +105,4 @@ $ jiecc -I.. -I../sys ../test/test_sys_conv.txt -o ./test_sys_conv.xml
 
 ## その他の情報
 
-[Graviness Blog](http://blog.graviness.com/)を参照ください。
+[Graviness Blog](http://blog.graviness.com/?eid=949303)を参照ください。
