@@ -93,7 +93,7 @@
 {#define EXPECT_GT_UINT32_MSG(lval, rval, message)  _VALIDATE_GT_UINT32_MSG(false, lval, rval, message)}
 {#define EXPECT_GT_UINT64_MSG(lval, rval, message)  _VALIDATE_GT_UINT64_MSG(false, lval, rval, message)}
 
-{#define EXPECT_NEAR_MSG(val1, al2_, abs_error, message)    _VALIDATE_NEAR_MSG(false, val1, val2, abs_error, message)}
+{#define EXPECT_NEAR_MSG(val1, val2, abs_error, message)    _VALIDATE_NEAR_MSG(false, val1, val2, abs_error, message)}
 
 
 
@@ -186,7 +186,7 @@
 {#define EXPECT_GT_UINT32(lval, rval)   _VALIDATE_GT_UINT32(false, lval, rval)}
 {#define EXPECT_GT_UINT64(lval, rval)   _VALIDATE_GT_UINT64(false, lval, rval)}
 
-{#define EXPECT_NEAR(val1, al2_, abs_error)     _VALIDATE_NEAR(false, val1, val2, abs_error)}
+{#define EXPECT_NEAR(val1, val2, abs_error)     _VALIDATE_NEAR(false, val1, val2, abs_error)}
 
 
 
@@ -279,7 +279,7 @@
 {#define ASSERT_GT_UINT32_MSG(lval, rval, message)  _VALIDATE_GT_UINT32_MSG(true, lval, rval, message)}
 {#define ASSERT_GT_UINT64_MSG(lval, rval, message)  _VALIDATE_GT_UINT64_MSG(true, lval, rval, message)}
 
-{#define ASSERT_NEAR_MSG(val1, al2_, abs_error, message)    _VALIDATE_NEAR_MSG(true, val1, val2, abs_error, message)}
+{#define ASSERT_NEAR_MSG(val1, val2, abs_error, message)    _VALIDATE_NEAR_MSG(true, val1, val2, abs_error, message)}
 
 
 
@@ -372,7 +372,7 @@
 {#define ASSERT_GT_UINT32(lval, rval)   _VALIDATE_GT_UINT32(true, lval, rval)}
 {#define ASSERT_GT_UINT64(lval, rval)   _VALIDATE_GT_UINT64(true, lval, rval)}
 
-{#define ASSERT_NEAR(val1, al2_, abs_error)     _VALIDATE_NEAR(true, val1, val2, abs_error)}
+{#define ASSERT_NEAR(val1, val2, abs_error)     _VALIDATE_NEAR(true, val1, val2, abs_error)}
 
 
 

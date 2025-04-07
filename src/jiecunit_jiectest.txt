@@ -327,7 +327,7 @@ end
 {#define _VALIDATE_GE_DOUBLE(die, lval, rval)   _VALIDATE_CMP_DATATYPE(GE, DOUBLE, die, lval, rval, '')}
 {#define _VALIDATE_GT_DOUBLE(die, lval, rval)   _VALIDATE_CMP_DATATYPE(GT, DOUBLE, die, lval, rval, '')}
 
-{#define _VALIDATE_NEAR_DATATYPE(die_, val1_, val2_, abs_error_, message_) $
+{#define _VALIDATE_NEAR_DATATYPE(DATATYPE, die_, val1_, val2_, abs_error_, message_) $
 	if not JiecTest_validateNEAR(self:=_JIECTEST_, val1:=val1_, val2:=val2_, abs_error:=abs_error_, message:=message_, die:=die_, file:=TestName, line:=__LINE__) then $
 		_ON_FAILED_ACTION(die_); $
 	end_if}
