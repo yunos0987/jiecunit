@@ -126,8 +126,9 @@ program {__func__:this_name} JiecUnitMain
 			inc(active_test_index);
 			_activate();
 			active_test_failures0 := _num_of_failures();
-			PrgStart(_active_testname(), true); // true for isFirstRun.
-			puts(concat('[ RUN    ] ', _active_testname()));
+			testname := _active_testname();
+			PrgStart(testname, true); // true for isFirstRun.
+			puts(concat('[ RUN    ] ', testname));
 			active_test_acuumulated_time_in_ns := 0;
 			active_test_time0_in_ns := currentNanosecCount();
 		end_if;
