@@ -16,14 +16,14 @@ function existProgram: bool
 		programname: string[TESTNAME_MAX_SIZE];
 	end
 	var_temp
-		t: bool;
+		temp: bool;
 	end
 	{st}
-	t := p_prger;
+	temp := p_prger;
 	p_prger := false;
 	prgstatus(programname); // note: skip on error, if the program is not found.
 	existProgram := not p_prger;
-	p_prger := t;
+	p_prger := temp;
 	{end}
 end
 

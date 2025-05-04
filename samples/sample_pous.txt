@@ -14,17 +14,17 @@ function mean: lreal
 	end
 	var_temp
 		i: dint;
-		d0, d1: dint;
+		d_0, d_1: dint;
 		s: lreal;
 	end
 	{st}
-	d0 := lower_bound(x, 1);
-	d1 := upper_bound(x, 1);
+	d_0 := lower_bound(x, 1);
+	d_1 := upper_bound(x, 1);
 	s := 0.0;
-	for i := d0 to d1 do
+	for i := d_0 to d_1 do
 		s := s + x[i];
 	end_for;
-	mean := s / (d1 - d0 + 1);
+	mean := s / (d_1 - d_0 + 1);
 	{end}
 end
 
