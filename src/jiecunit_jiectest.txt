@@ -301,10 +301,10 @@ end
 {#define _VALIDATE_LE_UINT32_MSG(die, lval, rval, message)  _VALIDATE_CMP_DATATYPE(LE, UINT32, die, lval, rval, message)}
 {#define _VALIDATE_GE_UINT32_MSG(die, lval, rval, message)  _VALIDATE_CMP_DATATYPE(GE, UINT32, die, lval, rval, message)}
 {#define _VALIDATE_GT_UINT32_MSG(die, lval, rval, message)  _VALIDATE_CMP_DATATYPE(GT, UINT32, die, lval, rval, message)}
-{#define _VALIDATE_LT_INT64_MSG(die, lval, rval, message)   _VALIDATE_CMP_DATATYPE(LT, INT64, die, lval, rval, message)}
-{#define _VALIDATE_LE_INT64_MSG(die, lval, rval, message)   _VALIDATE_CMP_DATATYPE(LE, INT64, die, lval, rval, message)}
-{#define _VALIDATE_GE_INT64_MSG(die, lval, rval, message)   _VALIDATE_CMP_DATATYPE(GE, INT64, die, lval, rval, message)}
-{#define _VALIDATE_GT_INT64_MSG(die, lval, rval, message)   _VALIDATE_CMP_DATATYPE(GT, INT64, die, lval, rval, message)}
+{#define _VALIDATE_LT_UINT64_MSG(die, lval, rval, message)  _VALIDATE_CMP_DATATYPE(LT, UINT64, die, lval, rval, message)}
+{#define _VALIDATE_LE_UINT64_MSG(die, lval, rval, message)  _VALIDATE_CMP_DATATYPE(LE, UINT64, die, lval, rval, message)}
+{#define _VALIDATE_GE_UINT64_MSG(die, lval, rval, message)  _VALIDATE_CMP_DATATYPE(GE, UINT64, die, lval, rval, message)}
+{#define _VALIDATE_GT_UINT64_MSG(die, lval, rval, message)  _VALIDATE_CMP_DATATYPE(GT, UINT64, die, lval, rval, message)}
 {#define _VALIDATE_LT_DOUBLE_MSG(die, lval, rval, message)  _VALIDATE_CMP_DATATYPE(LT, DOUBLE, die, lval, rval, message)}
 {#define _VALIDATE_LE_DOUBLE_MSG(die, lval, rval, message)  _VALIDATE_CMP_DATATYPE(LE, DOUBLE, die, lval, rval, message)}
 {#define _VALIDATE_GE_DOUBLE_MSG(die, lval, rval, message)  _VALIDATE_CMP_DATATYPE(GE, DOUBLE, die, lval, rval, message)}
@@ -318,10 +318,10 @@ end
 {#define _VALIDATE_LE_UINT32(die, lval, rval)   _VALIDATE_CMP_DATATYPE(LE, UINT32, die, lval, rval, '')}
 {#define _VALIDATE_GE_UINT32(die, lval, rval)   _VALIDATE_CMP_DATATYPE(GE, UINT32, die, lval, rval, '')}
 {#define _VALIDATE_GT_UINT32(die, lval, rval)   _VALIDATE_CMP_DATATYPE(GT, UINT32, die, lval, rval, '')}
-{#define _VALIDATE_LT_INT64(die, lval, rval)    _VALIDATE_CMP_DATATYPE(LT, INT64, die, lval, rval, '')}
-{#define _VALIDATE_LE_INT64(die, lval, rval)    _VALIDATE_CMP_DATATYPE(LE, INT64, die, lval, rval, '')}
-{#define _VALIDATE_GE_INT64(die, lval, rval)    _VALIDATE_CMP_DATATYPE(GE, INT64, die, lval, rval, '')}
-{#define _VALIDATE_GT_INT64(die, lval, rval)    _VALIDATE_CMP_DATATYPE(GT, INT64, die, lval, rval, '')}
+{#define _VALIDATE_LT_UINT64(die, lval, rval)   _VALIDATE_CMP_DATATYPE(LT, UINT64, die, lval, rval, '')}
+{#define _VALIDATE_LE_UINT64(die, lval, rval)   _VALIDATE_CMP_DATATYPE(LE, UINT64, die, lval, rval, '')}
+{#define _VALIDATE_GE_UINT64(die, lval, rval)   _VALIDATE_CMP_DATATYPE(GE, UINT64, die, lval, rval, '')}
+{#define _VALIDATE_GT_UINT64(die, lval, rval)   _VALIDATE_CMP_DATATYPE(GT, UINT64, die, lval, rval, '')}
 {#define _VALIDATE_LT_DOUBLE(die, lval, rval)   _VALIDATE_CMP_DATATYPE(LT, DOUBLE, die, lval, rval, '')}
 {#define _VALIDATE_LE_DOUBLE(die, lval, rval)   _VALIDATE_CMP_DATATYPE(LE, DOUBLE, die, lval, rval, '')}
 {#define _VALIDATE_GE_DOUBLE(die, lval, rval)   _VALIDATE_CMP_DATATYPE(GE, DOUBLE, die, lval, rval, '')}
