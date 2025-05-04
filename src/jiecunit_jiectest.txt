@@ -171,11 +171,17 @@ end
 	${end$} $
 	end}
 DEFINE_JiecTest_validateEQ_DATATYPE(INT32, dint, dint_to_string)
+{#if not (_KEYENCE or _MITSUBISHI)}
 DEFINE_JiecTest_validateEQ_DATATYPE(INT64, lint, lint_to_string)
+{#endif}
 DEFINE_JiecTest_validateEQ_DATATYPE(UINT32, udint, udint_to_string)
+{#if not (_KEYENCE or _MITSUBISHI)}
 DEFINE_JiecTest_validateEQ_DATATYPE(UINT64, ulint, ulint_to_string)
+{#endif}
 DEFINE_JiecTest_validateEQ_DATATYPE(BIT32, dword, dword_to_string)
+{#if not (_KEYENCE or _MITSUBISHI)}
 DEFINE_JiecTest_validateEQ_DATATYPE(BIT64, lword, lword_to_string)
+{#endif}
 DEFINE_JiecTest_validateEQ_DATATYPE(DOUBLE, lreal, lreal_to_string)
 DEFINE_JiecTest_validateEQ_DATATYPE(BOOL, bool, bool_to_string)
 DEFINE_JiecTest_validateEQ_DATATYPE(TIME, time, time_to_string_sec)
@@ -210,18 +216,22 @@ DEFINE_JiecTest_validateCMP_DATATYPE(LT, INT32,  <,  dint,  dint_to_string)
 DEFINE_JiecTest_validateCMP_DATATYPE(LE, INT32,  <=, dint,  dint_to_string)
 DEFINE_JiecTest_validateCMP_DATATYPE(GE, INT32,  >=, dint,  dint_to_string)
 DEFINE_JiecTest_validateCMP_DATATYPE(GT, INT32,  >,  dint,  dint_to_string)
+{#if not (_KEYENCE or _MITSUBISHI)}
 DEFINE_JiecTest_validateCMP_DATATYPE(LT, INT64,  <,  lint,  lint_to_string)
 DEFINE_JiecTest_validateCMP_DATATYPE(LE, INT64,  <=, lint,  lint_to_string)
 DEFINE_JiecTest_validateCMP_DATATYPE(GE, INT64,  >=, lint,  lint_to_string)
 DEFINE_JiecTest_validateCMP_DATATYPE(GT, INT64,  >,  lint,  lint_to_string)
+{#endif}
 DEFINE_JiecTest_validateCMP_DATATYPE(LT, UINT32, <,  udint, udint_to_string)
 DEFINE_JiecTest_validateCMP_DATATYPE(LE, UINT32, <=, udint, udint_to_string)
 DEFINE_JiecTest_validateCMP_DATATYPE(GE, UINT32, >=, udint, udint_to_string)
 DEFINE_JiecTest_validateCMP_DATATYPE(GT, UINT32, >,  udint, udint_to_string)
+{#if not (_KEYENCE or _MITSUBISHI)}
 DEFINE_JiecTest_validateCMP_DATATYPE(LT, UINT64, <,  ulint, ulint_to_string)
 DEFINE_JiecTest_validateCMP_DATATYPE(LE, UINT64, <=, ulint, ulint_to_string)
 DEFINE_JiecTest_validateCMP_DATATYPE(GE, UINT64, >=, ulint, ulint_to_string)
 DEFINE_JiecTest_validateCMP_DATATYPE(GT, UINT64, >,  ulint, ulint_to_string)
+{#endif}
 DEFINE_JiecTest_validateCMP_DATATYPE(LT, DOUBLE, <,  lreal, lreal_to_string)
 DEFINE_JiecTest_validateCMP_DATATYPE(LE, DOUBLE, <=, lreal, lreal_to_string)
 DEFINE_JiecTest_validateCMP_DATATYPE(GE, DOUBLE, >=, lreal, lreal_to_string)
@@ -268,22 +278,34 @@ end
 		_ON_FAILED_ACTION(die_); $
 	end_if}
 {#define _VALIDATE_EQ_INT32_MSG(die, expected, actual, message)     _VALIDATE_EQ_DATATYPE(INT32, die, expected, actual, message)}
+{#if not (_KEYENCE or _MITSUBISHI)}
 {#define _VALIDATE_EQ_INT64_MSG(die, expected, actual, message)     _VALIDATE_EQ_DATATYPE(INT64, die, expected, actual, message)}
+{#endif}
 {#define _VALIDATE_EQ_UINT32_MSG(die, expected, actual, message)    _VALIDATE_EQ_DATATYPE(UINT32, die, expected, actual, message)}
+{#if not (_KEYENCE or _MITSUBISHI)}
 {#define _VALIDATE_EQ_UINT64_MSG(die, expected, actual, message)    _VALIDATE_EQ_DATATYPE(UINT64, die, expected, actual, message)}
+{#endif}
 {#define _VALIDATE_EQ_BIT32_MSG(die, expected, actual, message)     _VALIDATE_EQ_DATATYPE(BIT32, die, expected, actual, message)}
+{#if not (_KEYENCE or _MITSUBISHI)}
 {#define _VALIDATE_EQ_BIT64_MSG(die, expected, actual, message)     _VALIDATE_EQ_DATATYPE(BIT64, die, expected, actual, message)}
+{#endif}
 {#define _VALIDATE_EQ_DOUBLE_MSG(die, expected, actual, message)    _VALIDATE_EQ_DATATYPE(DOUBLE, die, expected, actual, message)}
 {#define _VALIDATE_EQ_BOOL_MSG(die, expected, actual, message)      _VALIDATE_EQ_DATATYPE(BOOL, die, expected, actual, message)}
 {#define _VALIDATE_EQ_TIME_MSG(die, expected, actual, message)      _VALIDATE_EQ_DATATYPE(TIME, die, expected, actual, message)}
 {#define _VALIDATE_EQ_STRING_MSG(die, expected, actual, message)    _VALIDATE_EQ_DATATYPE(STRING, die, expected, actual, message)}
 
 {#define _VALIDATE_EQ_INT32(die, expected, actual)      _VALIDATE_EQ_DATATYPE(INT32, die, expected, actual, '')}
+{#if not (_KEYENCE or _MITSUBISHI)}
 {#define _VALIDATE_EQ_INT64(die, expected, actual)      _VALIDATE_EQ_DATATYPE(INT64, die, expected, actual, '')}
+{#endif}
 {#define _VALIDATE_EQ_UINT32(die, expected, actual)     _VALIDATE_EQ_DATATYPE(UINT32, die, expected, actual, '')}
+{#if not (_KEYENCE or _MITSUBISHI)}
 {#define _VALIDATE_EQ_UINT64(die, expected, actual)     _VALIDATE_EQ_DATATYPE(UINT64, die, expected, actual, '')}
+{#endif}
 {#define _VALIDATE_EQ_BIT32(die, expected, actual)      _VALIDATE_EQ_DATATYPE(BIT32, die, expected, actual, '')}
+{#if not (_KEYENCE or _MITSUBISHI)}
 {#define _VALIDATE_EQ_BIT64(die, expected, actual)      _VALIDATE_EQ_DATATYPE(BIT64, die, expected, actual, '')}
+{#endif}
 {#define _VALIDATE_EQ_DOUBLE(die, expected, actual)     _VALIDATE_EQ_DATATYPE(DOUBLE, die, expected, actual, '')}
 {#define _VALIDATE_EQ_BOOL(die, expected, actual)       _VALIDATE_EQ_DATATYPE(BOOL, die, expected, actual, '')}
 {#define _VALIDATE_EQ_TIME(die, expected, actual)       _VALIDATE_EQ_DATATYPE(TIME, die, expected, actual, '')}
@@ -297,14 +319,22 @@ end
 {#define _VALIDATE_LE_INT32_MSG(die, lval, rval, message)   _VALIDATE_CMP_DATATYPE(LE, INT32, die, lval, rval, message)}
 {#define _VALIDATE_GE_INT32_MSG(die, lval, rval, message)   _VALIDATE_CMP_DATATYPE(GE, INT32, die, lval, rval, message)}
 {#define _VALIDATE_GT_INT32_MSG(die, lval, rval, message)   _VALIDATE_CMP_DATATYPE(GT, INT32, die, lval, rval, message)}
+{#if not (_KEYENCE or _MITSUBISHI)}
+{#define _VALIDATE_LT_INT64_MSG(die, lval, rval, message)   _VALIDATE_CMP_DATATYPE(LT, INT64, die, lval, rval, message)}
+{#define _VALIDATE_LE_INT64_MSG(die, lval, rval, message)   _VALIDATE_CMP_DATATYPE(LE, INT64, die, lval, rval, message)}
+{#define _VALIDATE_GE_INT64_MSG(die, lval, rval, message)   _VALIDATE_CMP_DATATYPE(GE, INT64, die, lval, rval, message)}
+{#define _VALIDATE_GT_INT64_MSG(die, lval, rval, message)   _VALIDATE_CMP_DATATYPE(GT, INT64, die, lval, rval, message)}
+{#endif}
 {#define _VALIDATE_LT_UINT32_MSG(die, lval, rval, message)  _VALIDATE_CMP_DATATYPE(LT, UINT32, die, lval, rval, message)}
 {#define _VALIDATE_LE_UINT32_MSG(die, lval, rval, message)  _VALIDATE_CMP_DATATYPE(LE, UINT32, die, lval, rval, message)}
 {#define _VALIDATE_GE_UINT32_MSG(die, lval, rval, message)  _VALIDATE_CMP_DATATYPE(GE, UINT32, die, lval, rval, message)}
 {#define _VALIDATE_GT_UINT32_MSG(die, lval, rval, message)  _VALIDATE_CMP_DATATYPE(GT, UINT32, die, lval, rval, message)}
+{#if not (_KEYENCE or _MITSUBISHI)}
 {#define _VALIDATE_LT_UINT64_MSG(die, lval, rval, message)  _VALIDATE_CMP_DATATYPE(LT, UINT64, die, lval, rval, message)}
 {#define _VALIDATE_LE_UINT64_MSG(die, lval, rval, message)  _VALIDATE_CMP_DATATYPE(LE, UINT64, die, lval, rval, message)}
 {#define _VALIDATE_GE_UINT64_MSG(die, lval, rval, message)  _VALIDATE_CMP_DATATYPE(GE, UINT64, die, lval, rval, message)}
 {#define _VALIDATE_GT_UINT64_MSG(die, lval, rval, message)  _VALIDATE_CMP_DATATYPE(GT, UINT64, die, lval, rval, message)}
+{#endif}
 {#define _VALIDATE_LT_DOUBLE_MSG(die, lval, rval, message)  _VALIDATE_CMP_DATATYPE(LT, DOUBLE, die, lval, rval, message)}
 {#define _VALIDATE_LE_DOUBLE_MSG(die, lval, rval, message)  _VALIDATE_CMP_DATATYPE(LE, DOUBLE, die, lval, rval, message)}
 {#define _VALIDATE_GE_DOUBLE_MSG(die, lval, rval, message)  _VALIDATE_CMP_DATATYPE(GE, DOUBLE, die, lval, rval, message)}
@@ -314,14 +344,22 @@ end
 {#define _VALIDATE_LE_INT32(die, lval, rval)    _VALIDATE_CMP_DATATYPE(LE, INT32, die, lval, rval, '')}
 {#define _VALIDATE_GE_INT32(die, lval, rval)    _VALIDATE_CMP_DATATYPE(GE, INT32, die, lval, rval, '')}
 {#define _VALIDATE_GT_INT32(die, lval, rval)    _VALIDATE_CMP_DATATYPE(GT, INT32, die, lval, rval, '')}
+{#if not (_KEYENCE or _MITSUBISHI)}
+{#define _VALIDATE_LT_INT64(die, lval, rval)    _VALIDATE_CMP_DATATYPE(LT, INT64, die, lval, rval, '')}
+{#define _VALIDATE_LE_INT64(die, lval, rval)    _VALIDATE_CMP_DATATYPE(LE, INT64, die, lval, rval, '')}
+{#define _VALIDATE_GE_INT64(die, lval, rval)    _VALIDATE_CMP_DATATYPE(GE, INT64, die, lval, rval, '')}
+{#define _VALIDATE_GT_INT64(die, lval, rval)    _VALIDATE_CMP_DATATYPE(GT, INT64, die, lval, rval, '')}
+{#endif}
 {#define _VALIDATE_LT_UINT32(die, lval, rval)   _VALIDATE_CMP_DATATYPE(LT, UINT32, die, lval, rval, '')}
 {#define _VALIDATE_LE_UINT32(die, lval, rval)   _VALIDATE_CMP_DATATYPE(LE, UINT32, die, lval, rval, '')}
 {#define _VALIDATE_GE_UINT32(die, lval, rval)   _VALIDATE_CMP_DATATYPE(GE, UINT32, die, lval, rval, '')}
 {#define _VALIDATE_GT_UINT32(die, lval, rval)   _VALIDATE_CMP_DATATYPE(GT, UINT32, die, lval, rval, '')}
+{#if not (_KEYENCE or _MITSUBISHI)}
 {#define _VALIDATE_LT_UINT64(die, lval, rval)   _VALIDATE_CMP_DATATYPE(LT, UINT64, die, lval, rval, '')}
 {#define _VALIDATE_LE_UINT64(die, lval, rval)   _VALIDATE_CMP_DATATYPE(LE, UINT64, die, lval, rval, '')}
 {#define _VALIDATE_GE_UINT64(die, lval, rval)   _VALIDATE_CMP_DATATYPE(GE, UINT64, die, lval, rval, '')}
 {#define _VALIDATE_GT_UINT64(die, lval, rval)   _VALIDATE_CMP_DATATYPE(GT, UINT64, die, lval, rval, '')}
+{#endif}
 {#define _VALIDATE_LT_DOUBLE(die, lval, rval)   _VALIDATE_CMP_DATATYPE(LT, DOUBLE, die, lval, rval, '')}
 {#define _VALIDATE_LE_DOUBLE(die, lval, rval)   _VALIDATE_CMP_DATATYPE(LE, DOUBLE, die, lval, rval, '')}
 {#define _VALIDATE_GE_DOUBLE(die, lval, rval)   _VALIDATE_CMP_DATATYPE(GE, DOUBLE, die, lval, rval, '')}
