@@ -378,6 +378,7 @@
 
 {#define _JIEC_TESTNAMES_LIST_(...) $
 	var_global $
+		_CONSOLE_: Console_t := (row_index:=0, rows:=[CONSOLE_MAX_ROWS('')]); $
 		_JIECTESTNAMES_: array[MAX_TESTS] of string[TESTNAME_MAX_SIZE] := [__VA_ARGS__, (MAX_TESTS - __VA_ARGC__)('')]; $
 		_JIECTEST_: JiecTest_t; $
 	end $
@@ -388,9 +389,9 @@
 // Test for a single-cycle test.
 {#define TEST_S(test_name) $
 	program ${single-body:true$} ${__func__:TestName$} test_name $
-	var_external _JIECTEST_: JiecTest_t; end $
+	_DECLARE_EXTERNAL_JIEC_TEST(); $
 	${st$} $
-	if not JiecTest_isActive(_JIECTEST_) then $
+	if (not JiecTest_isActive(_JIECTEST_)) or (JiecTest_activeTestname(_JIECTEST_) <> @test_name) then $
 		return; $
 	end_if; $
 	${end$} $
@@ -404,9 +405,9 @@ end}
 // Test for the muiltiple-cycles test.
 {#define TEST_M(test_name) $
 	program ${single-body:true$} ${__func__:TestName$} test_name $
-	var_external _JIECTEST_: JiecTest_t; end $
+	_DECLARE_EXTERNAL_JIEC_TEST(); $
 	${st$} $
-	if not JiecTest_isActive(_JIECTEST_) then $
+	if (not JiecTest_isActive(_JIECTEST_)) or (JiecTest_activeTestname(_JIECTEST_) <> @test_name) then $
 		return; $
 	end_if; $
 	${end$} $

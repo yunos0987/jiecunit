@@ -1,30 +1,34 @@
+{#define BUFFER_SIZE 100}
 
 (*
  * Compute the mean value.
  *
  * var
- *   a: array[0..2] of lreal := [2.0, 4.0, 9.0];
- *   m: lreal;
+ *   dats: array[BUFFER_SIZE] of lreal;
+ *   mean_value: lreal;
  * end
- * m := mean(a); // 5.0; (2.0 + 4.0 + 9.0) / (2 - 0 + 1);
+ * dats[0] := 2.0;
+ * dats[1] := 4.0;
+ * dats[2] := 9.0;
+ * mean_value := mean(dats, 3); // 5.0; (2.0 + 4.0 + 9.0) / 3;
  *)
 function mean: lreal
 	var_in_out
-		x: array[*] of lreal;
+		sample_buffer: array[BUFFER_SIZE] of lreal;
+	end
+	var_input
+		sample_size: dint;
 	end
 	var_temp
-		i: dint;
-		d0, d1: dint;
-		s: lreal;
+		sample_index: dint;
+		sum_value: lreal;
 	end
 	{st}
-	d0 := lower_bound(x, 1);
-	d1 := upper_bound(x, 1);
-	s := 0.0;
-	for i := d0 to d1 do
-		s := s + x[i];
+	sum_value := 0.0;
+	for sample_index := 0 to sample_size - 1 do
+		sum_value := sum_value + sample_buffer[sample_index];
 	end_for;
-	mean := s / (d1 - d0 + 1);
+	mean := sum_value / sample_size;
 	{end}
 end
 
@@ -32,28 +36,28 @@ end
  * Incrementally compute the mean value.
  *
  * var
- *   x: RunningMean;
- *   n: dint;
- *   m: lreal;
+ *   rm_instance: RunningMean;
+ *   ss: dint;
+ *   mv: lreal;
  * end
- * x(v:=2.0, m=>m, sample_size=>n); // m=2.0, n=1
- * x(v:=4.0, m=>m, sample_size=>n); // m=3.0, n=2
- * x(v:=9.0, m=>m, sample_size=>n); // m=5.0, n=3
+ * rm_instance(value:=2.0, mean_value=>mv, sample_size=>ss); // mv=2.0, ss=1
+ * rm_instance(value:=4.0, mean_value=>mv, sample_size=>ss); // mv=3.0, ss=2
+ * rm_instance(value:=9.0, mean_value=>mv, sample_size=>ss); // mv=5.0, ss=3
  *)
 function_block RunningMean
 	var_input
-		v: lreal;
+		value: lreal;
 	end
 	var_output
-		m: lreal;
+		mean_value: lreal;
 		sample_size: dint := 0;
 	end
 	var
-		s: lreal := 0.0;
+		sum_value: lreal := 0.0;
 	end
 	{st}
-	s := s + v;
+	sum_value := sum_value + value;
 	sample_size := sample_size + 1;
-	m := s / sample_size;
+	mean_value := sum_value / sample_size;
 	{end}
 end

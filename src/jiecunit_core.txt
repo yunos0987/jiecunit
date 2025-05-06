@@ -8,104 +8,104 @@
 {#define _JIECTEST_ g_jiectest}
 {#define _JIECTESTNAMES_ g_jiectestnames}
 
-{#define currentNanosecCount() (Get100nsCnt() / 100)}
+{#if not (_KEYENCE or _MITSUBISHI)}
+	{#define _DECLARE_EXTERNAL_JIEC_TESTNAMES() var_external _JIECTESTNAMES_: array[MAX_TESTS] of string[TESTNAME_MAX_SIZE]; end}
+	{#define _DECLARE_EXTERNAL_JIEC_TEST() var_external _JIECTEST_: JiecTest_t; end}
+{#else}
+	{#define _DECLARE_EXTERNAL_JIEC_TESTNAMES() }
+	{#define _DECLARE_EXTERNAL_JIEC_TEST() }
+{#endif}
 
-function existProgram: bool
-	_PROLOGUE_OF_FUNCTION_()
-	var_input
-		programname: string[TESTNAME_MAX_SIZE];
-	end
-	var_temp
-		t: bool;
-	end
-	{st}
-	t := p_prger;
-	p_prger := false;
-	prgstatus(programname); // note: skip on error, if the program is not found.
-	existProgram := not p_prger;
-	p_prger := t;
-	{end}
-end
+{#if _OMRON}
+	{#define currentMicrosecCount() ulint_to_udint(Get100nsCnt() / 100 / 1000)}
+{#elif _KEYENCE}
+	{#define currentMicrosecCount() (_FreeRunCounter100ns / 100 / 1000)}
+{#else}
+	// Dummy
+	{#define currentMicrosecCount() 1}
+{#endif}
 
 program {__func__:this_name} JiecUnitMain
 	{#define _initialize()          JiecTest_initialize(_JIECTEST_)}
 	{#define _register(testname)    JiecTest_register(_JIECTEST_, testname)}
-	{#define _active_testname()     JiecTest_testname(_JIECTEST_, active_test_index)}
+	{#define _active_test_index()   JiecTest_activeTestIndex(_JIECTEST_)}
+	{#define _active_testname()     JiecTest_activeTestname(_JIECTEST_)}
 	{#define _num_of_tests()        _JIECTEST_.num_of_tests}
 	{#define _num_of_failures()     _JIECTEST_.num_of_failures}
 	{#define _is_active()           JiecTest_isActive(_JIECTEST_)}
 	{#define _activate()            JiecTest_activate(_JIECTEST_)}
 	{#define _next_cycle()          JiecTest_nextCycle(_JIECTEST_)}
 	{#define _no_tests()            JiecTest_empty(_JIECTEST_)}
-	{#define _bye()                 PrgStop(this_name); return}
+	{#define _bye()                 done := true; return}
 	_DEFINE_SYS_IN_POU_();
-	var_external
-		_JIECTESTNAMES_: array[MAX_TESTS] of string[TESTNAME_MAX_SIZE];
-		_JIECTEST_: JiecTest_t;
-	end
+	_DECLARE_EXTERNAL_JIEC_TESTNAMES();
+	_DECLARE_EXTERNAL_JIEC_TEST();
 	var
+		//
+		done: bool := false;
+		//
 		testname_index: dint;
 		testname: string[TESTNAME_MAX_SIZE];
 		//
+		is_first_scan: bool := true;
+		//
 		test_index: dint;
-		time_in_ns: ulint;
+		time_in_us: udint;
 		tmp_string: string[STRING_MAX_SIZE];
 		//
-		active_test_index: dint := -1;
 		active_test_failures0, active_test_failures1: dint;
-		active_test_time0_in_ns, active_test_time1_in_ns, active_test_acuumulated_time_in_ns: ulint;
-		tests_time_in_ns: ulint;
+		active_test_time0_in_us, active_test_time1_in_us, active_test_acuumulated_time_in_us: udint;
+		tests_time_in_us: udint;
 		//
 		num_of_failed_tests: dint := 0;
 		failed_testnames: array[MAX_TESTS] of string[TESTNAME_MAX_SIZE];
 	end
 	{st}
-	if P_First_Run then
+	if done then
+		return;
+	end_if;
+	if is_first_scan then
 		reset_console(); // kludge: initialize console
 		//
-		active_test_index := -1;
-		tests_time_in_ns := 0;
+		tests_time_in_us := 0;
 		_initialize();
 		// register tests
 		for testname_index := 0 to MAX_TESTS - 1 do
 			testname := _JIECTESTNAMES_[testname_index];
 			if (testname <> '') and (testname <> this_name) then
-				if existProgram(testname) then
-					_register(testname);
-					PrgStop(testname);
-				else
-					puts(concat('Fatal error: program $'', testname, '$' is not found.'));
+				if _register(testname) = -1 then
+					puts(concat('Fatal error: program $'', testname, '$' is already registered.'));
 					_bye();
 				end_if;
 			end_if;
 		end_for;
+		is_first_scan := false;
 	else
 		// epilogue
 		repeat if _no_tests() then exit; end_if;
-			active_test_time1_in_ns := currentNanosecCount();
-			time_in_ns := active_test_time1_in_ns - active_test_time0_in_ns;
-			active_test_acuumulated_time_in_ns := active_test_acuumulated_time_in_ns + time_in_ns;
+			active_test_time1_in_us := currentMicrosecCount();
+			time_in_us := active_test_time1_in_us - active_test_time0_in_us;
+			active_test_acuumulated_time_in_us := active_test_acuumulated_time_in_us + time_in_us;
 			_next_cycle();
 
 			if _is_active() then
 				exit;
 			end_if;
 
-			tests_time_in_ns := tests_time_in_ns + active_test_acuumulated_time_in_ns;
+			tests_time_in_us := tests_time_in_us + active_test_acuumulated_time_in_us;
 
 			active_test_failures1 := _num_of_failures();
 			if active_test_failures0 = active_test_failures1 then
-				puts(concat('[     OK ] ', _active_testname(), ' (', ulint_to_string(active_test_acuumulated_time_in_ns / 1000), 'us)'));
+				puts(concat('[     OK ] ', _active_testname(), ' (', udint_to_string(active_test_acuumulated_time_in_us), 'us)'));
 			else
 				failed_testnames[num_of_failed_tests] := _active_testname();
 				inc(num_of_failed_tests);
-				puts(concat('[ FAILED ] ', _active_testname(), ' (', ulint_to_string(active_test_acuumulated_time_in_ns / 1000), 'us)'));
+				puts(concat('[ FAILED ] ', _active_testname(), ' (', udint_to_string(active_test_acuumulated_time_in_us), 'us)'));
 			end_if;
-			PrgStop(_active_testname());
 
-			if active_test_index = _num_of_tests() - 1 then
+			if _active_test_index() = _num_of_tests() - 1 then
 				// finish
-				tmp_string := concat(' (', lint_to_string(tests_time_in_ns / 1000), 'us)');
+				tmp_string := concat(' (', udint_to_string(tests_time_in_us), 'us)');
 				puts(concat('[========] ', dint_to_string(_num_of_tests()), ' tests ran.', tmp_string));
 				puts(concat('[ PASSED ] ', dint_to_string(_num_of_tests() - num_of_failed_tests), ' tests.'));
 				if _num_of_failures() > 0 then
@@ -121,21 +121,21 @@ program {__func__:this_name} JiecUnitMain
 
 	// prologue
 	repeat if _no_tests() then exit; end_if;
-		if (active_test_index = -1) or ((active_test_index < _num_of_tests() - 1) and not _is_active()) then
+		if (_active_test_index() = -1) or ((_active_test_index() < _num_of_tests() - 1) and not _is_active()) then
 			// run the next test case.
-			inc(active_test_index);
+			inc(_JIECTEST_.tmp_active_test_index);
 			_activate();
 			active_test_failures0 := _num_of_failures();
 			testname := _active_testname();
-			PrgStart(testname, true); // true for isFirstRun.
 			puts(concat('[ RUN    ] ', testname));
-			active_test_acuumulated_time_in_ns := 0;
-			active_test_time0_in_ns := currentNanosecCount();
+			active_test_acuumulated_time_in_us := 0;
+			active_test_time0_in_us := currentMicrosecCount();
 		end_if;
 	until true end_repeat;
 	{end}
 	{#undef _initialize}
 	{#undef _register}
+	{#undef _active_test_index}
 	{#undef _active_testname}
 	{#undef _num_of_tests}
 	{#undef _num_of_failures}
