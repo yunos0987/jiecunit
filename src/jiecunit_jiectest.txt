@@ -12,6 +12,7 @@ type
 		testnames: array[MAX_TESTS] of string[TESTNAME_MAX_SIZE];
 		//
 		tmp_cycle: dint; // There is a active test, if tmp_cycle >= 0.
+		tmp_active_test_index: dint;
 		num_of_failures: dint;
 	end
 end
@@ -29,6 +30,7 @@ function JiecTest_initialize: bool
 	end_for;
 
 	self.tmp_cycle := dint#__DINT_MIN__;
+	self.tmp_active_test_index := -1;
 	self.num_of_failures := 0;
 	{end}
 end
@@ -96,6 +98,22 @@ function JiecTest_isActive: bool
 	var_in_out self: JiecTest_t; end
 	{st}
 	JiecTest_isActive := self.tmp_cycle >= 0;
+	{end}
+end
+
+function JiecTest_activeTestIndex: dint
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	{st}
+	JiecTest_activeTestIndex := self.tmp_active_test_index;
+	{end}
+end
+
+function JiecTest_activeTestname: string[TESTNAME_MAX_SIZE]
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	{st}
+	JiecTest_activeTestname := self.testnames[self.tmp_active_test_index];
 	{end}
 end
 

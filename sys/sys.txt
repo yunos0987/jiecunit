@@ -3,23 +3,58 @@
 
 {#include "sys_config.txt"}
 
+{#if _OMRON}
+	{#define DEFINE_CONFIGURATION(var_global_decls) $
+		configuration MainConfiguration $
+			resource MainResource on MainPLC $
+				var_global_decls $
+			end $
+		end $
+	}
+{#elif _KEYENCE}
+	{#define DEFINE_CONFIGURATION(var_global_decls) $
+		configuration MainConfiguration $
+			var_global_decls $
+		end $
+	}
+{#elif _MITSUBISHI}
+	{#define DEFINE_CONFIGURATION(var_global_decls) $
+		configuration MainConfiguration $
+			var_global_decls $
+		end $
+	}
+{#else}
+	{#define DEFINE_CONFIGURATION(var_global_decls) $
+		configuration MainConfiguration $
+			var_global_decls $
+		end $
+	}
+{#endif}
+
 {#define _CONSOLE_ g_console}
 
-{#define _DEFINE_SYS_IN_RESOURCE_() $
-    var_global _CONSOLE_: Console_t := (row_index:=0, rows:=[CONSOLE_MAX_ROWS('')]); end $
-}
-{#define _DEFINE_SYS_IN_POU_() $
-    var_external _CONSOLE_: Console_t; end $
-}
+{#if not (_KEYENCE or _MITSUBISHI)}
+	{#define _DEFINE_SYS_IN_POU_() $
+		var_external _CONSOLE_: Console_t; end $
+	}
+{#else}
+	{#define _DEFINE_SYS_IN_POU_() $
+	}
+{#endif}
 
-{#define _PROLOGUE_OF_FUNCTION_FOR_SYS_() $
-	var_input  en:  bool; end $
-	var_output eno: bool; end $
-}
+{#if not (_KEYENCE)}
+	{#define _PROLOGUE_OF_FUNCTION_FOR_SYS_() $
+		var_input  en:  bool; end $
+		var_output eno: bool; end $
+	}
+{#else}
+	{#define _PROLOGUE_OF_FUNCTION_FOR_SYS_() $
+	}
+{#endif}
 
 {#define _PROLOGUE_OF_FUNCTION_() $
-	_PROLOGUE_OF_FUNCTION_FOR_SYS_() $
-    _DEFINE_SYS_IN_POU_() $
+	_PROLOGUE_OF_FUNCTION_FOR_SYS_(); $
+    _DEFINE_SYS_IN_POU_(); $
 }
 
 {#define inc(v) v := v + 1}

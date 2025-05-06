@@ -2,59 +2,58 @@
 
 {#include "sample_pous.txt"}
 
-configuration MainConfiguration resource MainResource on PLC
-	_DEFINE_SYS_IN_RESOURCE_();
-	// List test program names.
+// List test program names.
+DEFINE_CONFIGURATION(
 	_JIEC_TESTNAMES_LIST_(
 		'test_mean',
 		'test_RunningMean'
-	);
-end end
+	)
+)
 
 // A single-cycle test sample of the mean function
 TEST_S(test_mean)
 	var
-		a_3: array[0..2] of lreal;
+		dats: array[BUFFER_SIZE] of lreal;
 	end
 	{st}
-	a_3[0] := 1.0;
-	a_3[1] := 2.0;
-	a_3[2] := 3.0;
-	EXPECT_EQ_DOUBLE(2.0, mean(a_3));
+	dats[0] := 1.0;
+	dats[1] := 2.0;
+	dats[2] := 3.0;
+	EXPECT_EQ_DOUBLE(2.0, mean(dats, 3));
 
-	a_3[0] := 0.0;
-	a_3[1] := 0.0;
-	a_3[2] := 0.0;
-	EXPECT_EQ_DOUBLE(0.0, mean(a_3));
+	dats[0] := 0.0;
+	dats[1] := 0.0;
+	EXPECT_EQ_DOUBLE(0.0, mean(dats, 2));
 
-	a_3[0] := -1.0;
-	a_3[1] := -2.0;
-	a_3[2] := -3.0;
-	EXPECT_EQ_DOUBLE(-2.0, mean(a_3));
+	dats[0] := -1.0;
+	dats[1] := -2.0;
+	dats[2] := -3.0;
+	dats[3] := -6.0;
+	EXPECT_EQ_DOUBLE(-3.0, mean(dats, 4));
 	{end}
 END_TEST_S
 
 // A multiple-cycle test sample of the RunningMean function block
 TEST_M(test_RunningMean)
 	var
-		x: RunningMean;
-		m: lreal;
-		n: dint;
+		rm_instance: RunningMean;
+		mv: lreal;
+		ss: dint;
 	end
 	{st}
 	case CURRENT_CYCLE() of
-	0:
-		x(v:=2.0, m=>m, sample_size=>n);
-		ASSERT_EQ_DOUBLE(2.0, m);
-		ASSERT_EQ_DINT(1, n);
-	1:
-		x(v:=4.0, m=>m, sample_size=>n);
-		ASSERT_EQ_DOUBLE(3.0, m);
-		ASSERT_EQ_DINT(2, n);
-	2:
-		x(v:=9.0, m=>m, sample_size=>n);
-		ASSERT_EQ_DOUBLE(5.0, m);
-		ASSERT_EQ_DINT(3, n);
+	0: // 1st cycle.
+		rm_instance(value:=2.0, mean_value=>mv, sample_size=>ss);
+		ASSERT_EQ_DOUBLE(2.0, mv);
+		ASSERT_EQ_DINT(1, ss);
+	1: // 2nd cycle.
+		rm_instance(value:=4.0, mean_value=>mv, sample_size=>ss);
+		ASSERT_EQ_DOUBLE(3.0, mv);
+		ASSERT_EQ_DINT(2, ss);
+	2: // 3rd cycle.; end of the test cycle.
+		rm_instance(value:=9.0, mean_value=>mv, sample_size=>ss);
+		ASSERT_EQ_DOUBLE(5.0, mv);
+		ASSERT_EQ_DINT(3, ss);
 		// End Of the Test.
 		EOT();
 	end_case;

@@ -1,5 +1,5 @@
-{#ifndef __SYSCONFIG_TXT__}
-{#define __SYSCONFIG_TXT__}
+{#ifndef __SYS_CONFIG_TXT__}
+{#define __SYS_CONFIG_TXT__}
 
 {#if _OMRON}
     {#define STRING_MAX_SIZE 1986}
