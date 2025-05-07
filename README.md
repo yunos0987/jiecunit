@@ -8,7 +8,9 @@ JiecUnitは、テキスト形式で記述された[IEC 61131-3言語](https://pl
 
 特徴は、テスト対象POUのソースコード、その単体テストコード、およびJiecUnit自体のソースコード含め全体がIEC 61131-3 ST言語を拡張したテキスト形式で完結していることです。このため、すべてがダイレクトにGit等で構成管理が可能です。使用するIDEによっては生成AIを使ってIEC 61131-3プログラミングできます。
 
-このテキスト形式のコードをPLCメーカーのツールで取り込み可能な形式に変換するために、[IEC 61131-3 ⇄ IEC 61131-10変換ソフトウェア Jiecc](https://www.graviness.com/iec_61131-3/jiecc.html)を使用します。JiecUnitは現在、[IEC 61131-10 XML](https://plcopen.org/sites/default/files/downloads/iec_61131-10_preview.pdf)をサポートするオムロン社製の[Sysmac Studio](https://www.fa.omron.co.jp/products/family/3077/download/software.html)とキーエンス社製の[KV Studio](https://www.keyence.co.jp/support/user/controls/installer/)のみを対象にしています。
+このテキスト形式のコードをPLCメーカーのツールで取り込み可能な形式に変換するために、[IEC 61131-3 ⇄ IEC 61131-10変換ソフトウェア Jiecc](https://www.graviness.com/iec_61131-3/jiecc.html)を使用します。
+
+JiecUnitは現在、[IEC 61131-10 XML](https://plcopen.org/sites/default/files/downloads/iec_61131-10_preview.pdf)をサポートするオムロン社製の[Sysmac Studio](https://www.fa.omron.co.jp/products/family/3077/download/software.html)とキーエンス社製の[KV Studio](https://www.keyence.co.jp/support/user/controls/installer/)のみをサポートしています。
 
 ## 必要環境
 
@@ -33,7 +35,7 @@ JiecUnitプロジェクトには、JiecUnitを使って単体テストを実行�
 
 テストサンプルの実行方法は次の通りです。環境別に説明します。
 
-### オムロン社製Sysmac Studioの場合のテストサンプルの実行方法
+### オムロン社製Sysmac Studioの場合の単体テストサンプルの実行方法
 
 1. コマンドプロンプトを起動し、次のコマンドを実行します。
 
@@ -72,7 +74,7 @@ $ jiecc .\samples\sample.txt -I. -I.\sys -t omron -o .\samples\sample.xml
 
 ![テスト実行NGログ](./docs/display_test_result_ng.png)
 
-### キーエンス社製KV Studioの場合のテストサンプルの実行方法
+### キーエンス社製KV Studioの場合の単体テストサンプルの実行方法
 
 1. コマンドプロンプトを起動し、次のコマンドを実行します。
 
