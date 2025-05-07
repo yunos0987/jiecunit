@@ -117,4 +117,18 @@ function string_to_string: string[STRING_MAX_SIZE]
 	{end}
 end
 
+{#define IDENTITY_TYPECONV_FUNCTION(dtype) $
+	function dtype@@_to_@@dtype: dtype $
+		_PROLOGUE_OF_FUNCTION_FOR_SYS_(); $
+		var_input $
+			in: dtype; $
+		end $
+		${st$} $
+		dtype@@_to_@@dtype := in; $
+		${end$} $
+	end $
+}
+IDENTITY_TYPECONV_FUNCTION(uint)
+IDENTITY_TYPECONV_FUNCTION(udint)
+
 {#endif}
