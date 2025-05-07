@@ -5,7 +5,14 @@
 
 {#if _KEYENCE}
 	{#define word uint}
+	{#define uint_to_word(...) uint_to_uint(__VA_ARGS__)}
+	{#define word_to_uint(...) uint_to_uint(__VA_ARGS__)}
+	{#define word_to_int(...) uint_to_int(__VA_ARGS__)}
+
 	{#define dword udint}
+	{#define udint_to_dword(...) udint_to_udint(__VA_ARGS__)}
+	{#define dword_to_udint(...) udint_to_udint(__VA_ARGS__)}
+	{#define dword_to_dint(...) udint_to_dint(__VA_ARGS__)}
 {#endif}
 
 {#if _OMRON}
