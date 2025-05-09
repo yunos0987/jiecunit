@@ -138,7 +138,9 @@ TODO
 $ cd <JiecUnit Project Root>
 $ mkdir check
 $ cd check
-$ jiecc -I.. -I..\sys ..\test\test_sys_conv.txt -o .\test_sys_conv.xml
+$ jiecc -I.. -I..\sys ..\test\test_sys_conv.txt -o .\test_sys_conv.xml -t omron
+or
+$ jiecc -I.. -I..\sys ..\test\test_sys_conv.txt -o .\test_sys_conv.xml -t keyence
 ```
 
 ## ライセンス

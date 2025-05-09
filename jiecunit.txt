@@ -391,6 +391,9 @@
 	program ${single-body:true$} ${__func__:TestName$} test_name $
 	_DECLARE_EXTERNAL_JIEC_TEST(); $
 	${st$} $
+	if not _JIECTEST_.tmp_is_test_available then $
+		_JIECTEST_.tmp_is_test_available := JiecTest_activeTestname(_JIECTEST_) = @test_name; $
+	end_if; $
 	if (not JiecTest_isActive(_JIECTEST_)) or (JiecTest_activeTestname(_JIECTEST_) <> @test_name) then $
 		return; $
 	end_if; $
@@ -407,6 +410,9 @@ end}
 	program ${single-body:true$} ${__func__:TestName$} test_name $
 	_DECLARE_EXTERNAL_JIEC_TEST(); $
 	${st$} $
+	if not _JIECTEST_.tmp_is_test_available then $
+		_JIECTEST_.tmp_is_test_available := JiecTest_activeTestname(_JIECTEST_) = @test_name; $
+	end_if; $
 	if (not JiecTest_isActive(_JIECTEST_)) or (JiecTest_activeTestname(_JIECTEST_) <> @test_name) then $
 		return; $
 	end_if; $

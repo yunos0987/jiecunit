@@ -83,6 +83,13 @@ program {__func__:this_name} JiecUnitMain
 	else
 		// epilogue
 		repeat if _no_tests() then exit; end_if;
+			if not _JIECTEST_.tmp_is_test_available then
+				// no specified test found.
+				puts(concat('[  ERROR ] $'', _active_testname(), '$' is not found.'));
+				inc(_JIECTEST_.num_of_failures);
+				JiecTest_deactivate(_JIECTEST_);
+			end_if;
+
 			active_test_time1_in_us := currentMicrosecCount();
 			time_in_us := active_test_time1_in_us - active_test_time0_in_us;
 			active_test_acuumulated_time_in_us := active_test_acuumulated_time_in_us + time_in_us;
@@ -124,6 +131,7 @@ program {__func__:this_name} JiecUnitMain
 		if (_active_test_index() = -1) or ((_active_test_index() < _num_of_tests() - 1) and not _is_active()) then
 			// run the next test case.
 			inc(_JIECTEST_.tmp_active_test_index);
+			_JIECTEST_.tmp_is_test_available := false;
 			_activate();
 			active_test_failures0 := _num_of_failures();
 			testname := _active_testname();

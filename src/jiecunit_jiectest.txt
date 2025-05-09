@@ -13,6 +13,7 @@ type
 		//
 		tmp_cycle: dint; // There is a active test, if tmp_cycle >= 0.
 		tmp_active_test_index: dint;
+		tmp_is_test_available: bool; // error, if the test specified test is not found.
 		num_of_failures: dint;
 	end
 end
@@ -31,6 +32,7 @@ function JiecTest_initialize: bool
 
 	self.tmp_cycle := dint#__DINT_MIN__;
 	self.tmp_active_test_index := -1;
+	self.tmp_is_test_available := false;
 	self.num_of_failures := 0;
 	{end}
 end
