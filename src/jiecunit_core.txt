@@ -85,7 +85,7 @@ program {__func__:this_name} JiecUnitMain
 		repeat if _no_tests() then exit; end_if;
 			if not _JIECTEST_.tmp_is_test_available then
 				// no specified test found.
-				puts(concat('[  ERROR ] $'', _active_testname(), '$' is not found.'));
+				puts(concat('[  ERROR ] The program $'', _active_testname(), '$' was not found in active tasks.'));
 				inc(_JIECTEST_.num_of_failures);
 				JiecTest_deactivate(_JIECTEST_);
 			end_if;
