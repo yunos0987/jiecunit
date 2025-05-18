@@ -1,0 +1,26 @@
+(*
+ * $ cd <JiecUnit Project Root>
+ * $ mkdir check
+ * $ cd check
+ * $ jiecc -I.. -I..\sys ..\test\test.txt -o .\test.xml -t omron
+ * or
+ * $ jiecc -I.. -I..\sys ..\test\test.txt -o .\test.xml -t keyence
+ * or
+ * $ jiecc -I.. -I..\sys ..\test\test.txt -o .\test.xml -t codesys
+ *)
+{#include <jiecunit.txt>}
+
+{#include "test_sys.txt"}
+{#include "test_sys_conv.txt"}
+
+// List test program names.
+DEFINE_CONFIGURATION(
+	_JIEC_TESTNAMES_LIST_(
+		'test_jiec_concat',
+		'test_udint_to_string',
+		'test_dint_to_string',
+		'test_lreal_to_string',
+		'test_bool_to_string',
+		'test_time_to_string_sec'
+	)
+)

@@ -1,3 +1,6 @@
+(*
+ * $ jiecc .\samples\sample.txt -I. -I.\sys -t omron -o .\samples\sample.xml
+ *)
 {#include <jiecunit.txt>}
 
 {#include "sample_pous.txt"}
