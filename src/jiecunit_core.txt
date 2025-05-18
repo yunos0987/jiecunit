@@ -2,6 +2,7 @@
 {#define __JIECUNIT_CORE_TXT__}
 
 {#include <sys.txt>}
+{#include <sys_conv.txt>}
 
 {#include "jiecunit_jiectest.txt"}
 
@@ -74,7 +75,7 @@ program {__func__:this_name} JiecUnitMain
 			testname := _JIECTESTNAMES_[testname_index];
 			if (testname <> '') and (testname <> this_name) then
 				if _register(testname) = -1 then
-					puts(concat('Fatal error: program $'', testname, '$' is already registered.'));
+					puts(jiec_concat('Fatal error: program $'', testname, '$' is already registered.'));
 					_bye();
 				end_if;
 			end_if;
@@ -85,7 +86,7 @@ program {__func__:this_name} JiecUnitMain
 		repeat if _no_tests() then exit; end_if;
 			if not _JIECTEST_.tmp_is_test_available then
 				// no specified test found.
-				puts(concat('[  ERROR ] The program $'', _active_testname(), '$' was not found in active tasks.'));
+				puts(jiec_concat('[  ERROR ] The program $'', _active_testname(), '$' was not found in active tasks.'));
 				inc(_JIECTEST_.num_of_failures);
 				JiecTest_deactivate(_JIECTEST_);
 			end_if;
@@ -103,22 +104,22 @@ program {__func__:this_name} JiecUnitMain
 
 			active_test_failures1 := _num_of_failures();
 			if active_test_failures0 = active_test_failures1 then
-				puts(concat('[     OK ] ', _active_testname(), ' (', udint_to_string(active_test_acuumulated_time_in_us), 'us)'));
+				puts(jiec_concat('[     OK ] ', _active_testname(), ' (', udint_to_string(active_test_acuumulated_time_in_us), 'us)'));
 			else
 				failed_testnames[num_of_failed_tests] := _active_testname();
 				inc(num_of_failed_tests);
-				puts(concat('[ FAILED ] ', _active_testname(), ' (', udint_to_string(active_test_acuumulated_time_in_us), 'us)'));
+				puts(jiec_concat('[ FAILED ] ', _active_testname(), ' (', udint_to_string(active_test_acuumulated_time_in_us), 'us)'));
 			end_if;
 
 			if _active_test_index() = _num_of_tests() - 1 then
 				// finish
-				tmp_string := concat(' (', udint_to_string(tests_time_in_us), 'us)');
-				puts(concat('[========] ', dint_to_string(_num_of_tests()), ' tests ran.', tmp_string));
-				puts(concat('[ PASSED ] ', dint_to_string(_num_of_tests() - num_of_failed_tests), ' tests.'));
+				tmp_string := jiec_concat(' (', udint_to_string(tests_time_in_us), 'us)');
+				puts(jiec_concat('[========] ', dint_to_string(_num_of_tests()), ' tests ran.', tmp_string));
+				puts(jiec_concat('[ PASSED ] ', dint_to_string(_num_of_tests() - num_of_failed_tests), ' tests.'));
 				if _num_of_failures() > 0 then
-					puts(concat('[ FAILED ] ', dint_to_string(num_of_failed_tests), ' tests, listed below.'));
+					puts(jiec_concat('[ FAILED ] ', dint_to_string(num_of_failed_tests), ' tests, listed below.'));
 					for test_index := 0 to num_of_failed_tests - 1 do
-						puts(concat('[ FAILED ] ', failed_testnames[test_index]));
+						puts(jiec_concat('[ FAILED ] ', failed_testnames[test_index]));
 					end_for;
 				end_if;
 				_bye();
@@ -135,7 +136,7 @@ program {__func__:this_name} JiecUnitMain
 			_activate();
 			active_test_failures0 := _num_of_failures();
 			testname := _active_testname();
-			puts(concat('[ RUN    ] ', testname));
+			puts(jiec_concat('[ RUN    ] ', testname));
 			active_test_acuumulated_time_in_us := 0;
 			active_test_time0_in_us := currentMicrosecCount();
 		end_if;

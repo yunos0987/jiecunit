@@ -1,9 +1,11 @@
 {#ifndef __SYS_TXT__}
 {#define __SYS_TXT__}
 
+// note: This program does not fully support Mitsubishi, especially the handling of VAR_IN_OUT parameters in functions.
+
 {#include "sys_config.txt"}
 
-{#if _OMRON}
+{#if not (_KEYENCE or _MITSUBISHI)}
 	{#define DEFINE_CONFIGURATION(var_global_decls) $
 		configuration MainConfiguration $
 			resource MainResource on MainPLC $
@@ -23,12 +25,6 @@
 			var_global_decls $
 		end $
 	}
-{#else}
-	{#define DEFINE_CONFIGURATION(var_global_decls) $
-		configuration MainConfiguration $
-			var_global_decls $
-		end $
-	}
 {#endif}
 
 {#define _CONSOLE_ g_console}
@@ -42,7 +38,7 @@
 	}
 {#endif}
 
-{#if not (_KEYENCE)}
+{#if not (_KEYENCE or _CODESYS)}
 	{#define _PROLOGUE_OF_FUNCTION_FOR_SYS_() $
 		var_input  en:  bool; end $
 		var_output eno: bool; end $
@@ -57,12 +53,86 @@
     _DEFINE_SYS_IN_POU_(); $
 }
 
-{#define inc(v) v := v + 1}
-{#define dec(v) v := v - 1}
+{#define inc(v) v := (v) + 1}
+{#define dec(v) v := (v) - 1}
 
 {#define reset_console() Console_initialize(_CONSOLE_)}
 {#define puts(line) Console_puts(_CONSOLE_, line)}
 {#define print(text) Console_print(_CONSOLE_, text)}
+
+{#define jiec_concat(...) _jiec_concat_n(__VA_ARGC__, __VA_ARGS__)}
+	{#define jiec_concat_0() ''}
+	{#define jiec_concat_1(s1) s1}
+{#if not (_OMRON or _KEYENCE or _CODESYS)}
+	// memo: 1~28 in _MITSUBISHI.
+	{#define jiec_concat_2(s1, s2) concat(s1, s2)}
+	{#define jiec_concat_3(s1, s2, s3) concat(s1, s2, s3)}
+	{#define jiec_concat_4(s1, s2, s3, s4) concat(s1, s2, s3, s4)}
+	{#define jiec_concat_5(s1, s2, s3, s4, s5) concat(s1, s2, s3, s4, s5)}
+	{#define jiec_concat_6(s1, s2, s3, s4, s5, s6) concat(s1, s2, s3, s4, s5, s6)}
+	{#define jiec_concat_7(s1, s2, s3, s4, s5, s6, s7) concat(s1, s2, s3, s4, s5, s6, s7)}
+	{#define jiec_concat_8(s1, s2, s3, s4, s5, s6, s7, s8) concat(s1, s2, s3, s4, s5, s6, s7, s8)}
+	{#define jiec_concat_9(s1, s2, s3, s4, s5, s6, s7, s8, s9) concat(s1, s2, s3, s4, s5, s6, s7, s8, s9)}
+	{#define jiec_concat_10(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10) concat(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10)}
+	{#define jiec_concat_11(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11) concat(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11)}
+	{#define jiec_concat_12(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12) concat(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12)}
+	{#define jiec_concat_13(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13) concat(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13)}
+	{#define jiec_concat_14(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14) concat(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14)}
+	{#define jiec_concat_15(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15) concat(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15)}
+	{#define jiec_concat_16(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15, s16) concat(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15, s16)}
+{#elif _OMRON}
+	// 2~5
+	{#define jiec_concat_2(s1, s2) concat(s1, s2)}
+	{#define jiec_concat_3(s1, s2, s3) concat(s1, s2, s3)}
+	{#define jiec_concat_4(s1, s2, s3, s4) concat(s1, s2, s3, s4)}
+	{#define jiec_concat_5(s1, s2, s3, s4, s5) concat(s1, s2, s3, s4, s5)}
+	{#define jiec_concat_6(s1, s2, s3, s4, s5, s6) concat(jiec_concat_5(s1, s2, s3, s4, s5), s6)}
+	{#define jiec_concat_7(s1, s2, s3, s4, s5, s6, s7) concat(jiec_concat_5(s1, s2, s3, s4, s5), s6, s7)}
+	{#define jiec_concat_8(s1, s2, s3, s4, s5, s6, s7, s8) concat(jiec_concat_5(s1, s2, s3, s4, s5), s6, s7, s8)}
+	{#define jiec_concat_9(s1, s2, s3, s4, s5, s6, s7, s8, s9) concat(jiec_concat_5(s1, s2, s3, s4, s5), s6, s7, s8, s9)}
+	{#define jiec_concat_10(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10) concat(jiec_concat_9(s1, s2, s3, s4, s5, s6, s7, s8, s9), s10)}
+	{#define jiec_concat_11(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11) concat(jiec_concat_9(s1, s2, s3, s4, s5, s6, s7, s8, s9), s10, s11)}
+	{#define jiec_concat_12(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12) concat(jiec_concat_9(s1, s2, s3, s4, s5, s6, s7, s8, s9), s10, s11, s12)}
+	{#define jiec_concat_13(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13) concat(jiec_concat_9(s1, s2, s3, s4, s5, s6, s7, s8, s9), s10, s11, s12, s13)}
+	{#define jiec_concat_14(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14) concat(jiec_concat_13(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13), s14)}
+	{#define jiec_concat_15(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15) concat(jiec_concat_13(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13), s14, s15)}
+	{#define jiec_concat_16(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15, s16) concat(jiec_concat_13(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13), s14, s15, s16)}
+{#elif _KEYENCE}
+	// 2~10
+	{#define jiec_concat_2(s1, s2) concat(s1, s2)}
+	{#define jiec_concat_3(s1, s2, s3) concat(s1, s2, s3)}
+	{#define jiec_concat_4(s1, s2, s3, s4) concat(s1, s2, s3, s4)}
+	{#define jiec_concat_5(s1, s2, s3, s4, s5) concat(s1, s2, s3, s4, s5)}
+	{#define jiec_concat_6(s1, s2, s3, s4, s5, s6) concat(s1, s2, s3, s4, s5, s6)}
+	{#define jiec_concat_7(s1, s2, s3, s4, s5, s6, s7) concat(s1, s2, s3, s4, s5, s6, s7)}
+	{#define jiec_concat_8(s1, s2, s3, s4, s5, s6, s7, s8) concat(s1, s2, s3, s4, s5, s6, s7, s8)}
+	{#define jiec_concat_9(s1, s2, s3, s4, s5, s6, s7, s8, s9) concat(s1, s2, s3, s4, s5, s6, s7, s8, s9)}
+	{#define jiec_concat_10(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10) concat(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10)}
+	{#define jiec_concat_11(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11) concat(jiec_concat_10(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10), s11)}
+	{#define jiec_concat_12(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12) concat(jiec_concat_10(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10), s11, s12)}
+	{#define jiec_concat_13(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13) concat(jiec_concat_10(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10), s11, s12, s13)}
+	{#define jiec_concat_14(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14) concat(jiec_concat_10(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10), s11, s12, s13, s14)}
+	{#define jiec_concat_15(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15) concat(jiec_concat_10(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10), s11, s12, s13, s14, s15)}
+	{#define jiec_concat_16(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15, s16) concat(jiec_concat_10(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10), s11, s12, s13, s14, s15, s16)}
+{#elif _CODESYS}
+	// 2
+	{#define jiec_concat_2(s1, s2) concat(s1, s2)}
+	{#define jiec_concat_3(s1, s2, s3) concat(jiec_concat_2(s1, s2), s3)}
+	{#define jiec_concat_4(s1, s2, s3, s4) concat(jiec_concat_3(s1, s2, s3), s4)}
+	{#define jiec_concat_5(s1, s2, s3, s4, s5) concat(jiec_concat_4(s1, s2, s3, s4), s5)}
+	{#define jiec_concat_6(s1, s2, s3, s4, s5, s6) concat(jiec_concat_5(s1, s2, s3, s4, s5), s6)}
+	{#define jiec_concat_7(s1, s2, s3, s4, s5, s6, s7) concat(jiec_concat_6(s1, s2, s3, s4, s5, s6), s7)}
+	{#define jiec_concat_8(s1, s2, s3, s4, s5, s6, s7, s8) concat(jiec_concat_7(s1, s2, s3, s4, s5, s6, s7), s8)}
+	{#define jiec_concat_9(s1, s2, s3, s4, s5, s6, s7, s8, s9) concat(jiec_concat_8(s1, s2, s3, s4, s5, s6, s7, s8), s9)}
+	{#define jiec_concat_10(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10) concat(jiec_concat_9(s1, s2, s3, s4, s5, s6, s7, s8, s9), s10)}
+	{#define jiec_concat_11(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11) concat(jiec_concat_10(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10), s11)}
+	{#define jiec_concat_12(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12) concat(jiec_concat_11(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11), s12)}
+	{#define jiec_concat_13(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13) concat(jiec_concat_12(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12), s13)}
+	{#define jiec_concat_14(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14) concat(jiec_concat_13(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13), s14)}
+	{#define jiec_concat_15(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15) concat(jiec_concat_14(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14), s15)}
+	{#define jiec_concat_16(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15, s16) concat(jiec_concat_15(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15), s16)}
+{#endif}
+	{#define _jiec_concat_n(n, ...) jiec_concat_@@n(__VA_ARGS__)}
 
 type
 	{doc: Pseudo console.}
@@ -93,7 +163,7 @@ function Console_print: bool
 		txt: string[STRING_MAX_SIZE];
 	end
 	{st}
-	self.rows[self.row_index] := concat(self.rows[self.row_index], txt);
+	self.rows[self.row_index] := jiec_concat(self.rows[self.row_index], txt);
 	{end}
 end
 

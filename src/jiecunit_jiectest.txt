@@ -82,16 +82,13 @@ function JiecTest_failure: bool
 		msg: string[STRING_MAX_SIZE];
 	end
 	{st}
-	msg := concat(file, ':', dint_to_string(line));
-	msg := concat(msg, '@', dint_to_string(JiecTest_currentCycle(self)));
+	msg := jiec_concat(file, ':', dint_to_string(line), '@', dint_to_string(JiecTest_currentCycle(self)));
 	if message <> '' then
-		msg := concat(msg, ' ', message);
+		msg := jiec_concat(msg, ' ', message);
 	end_if;
 	puts(msg);
 
 	inc(self.num_of_failures);
-
-	eno := not die;
 	{end}
 end
 
@@ -184,10 +181,10 @@ end
 		return; $
 	end_if; $
 	 $
-	puts(concat('Expected: ', to_string(expected))); $
-	puts(concat('Actual: ', to_string(actual))); $
+	puts(jiec_concat('Expected: ', to_string(expected))); $
+	puts(jiec_concat('Actual: ', to_string(actual))); $
 	 $
-	JiecTest_failure(self:=self, message:=message, die:=die, file:=file, line:=line, eno=>eno); $
+	JiecTest_failure(self:=self, message:=message, die:=die, file:=file, line:=line); $
 	${end$} $
 	end}
 DEFINE_JiecTest_validateEQ_DATATYPE(INT32, dint, dint_to_string)
@@ -226,10 +223,10 @@ DEFINE_JiecTest_validateEQ_DATATYPE(STRING, string[STRING_MAX_SIZE], )
 		return; $
 	end_if; $
 	 $
-	puts(concat('Expected: ', to_string(lval), @operator_, to_string(rval))); $
-	puts(concat('Actual: ', to_string(lval), ' vs ', to_string(rval))); $
+	puts(jiec_concat('Expected: ', to_string(lval), @operator_, to_string(rval))); $
+	puts(jiec_concat('Actual: ', to_string(lval), ' vs ', to_string(rval))); $
 	 $
-	JiecTest_failure(self:=self, message:=message, die:=die, file:=file, line:=line, eno=>eno); $
+	JiecTest_failure(self:=self, message:=message, die:=die, file:=file, line:=line); $
 	${end$} $
 	end}
 DEFINE_JiecTest_validateCMP_DATATYPE(LT, INT32,  <,  dint,  dint_to_string)
@@ -276,11 +273,11 @@ if JiecTest_validateNEAR then
 	return;
 end_if;
 
-puts(concat('Value1: ', lreal_to_string(val1)));
-puts(concat('Value2: ', lreal_to_string(val2)));
-puts(concat('Value1 - Value2: ', lreal_to_string(val1 - val2)));
+puts(jiec_concat('Value1: ', lreal_to_string(val1)));
+puts(jiec_concat('Value2: ', lreal_to_string(val2)));
+puts(jiec_concat('Value1 - Value2: ', lreal_to_string(val1 - val2)));
 
-JiecTest_failure(self:=self, message:=message, die:=die, file:=file, line:=line, eno=>eno);
+JiecTest_failure(self:=self, message:=message, die:=die, file:=file, line:=line);
 {end}
 end
 
