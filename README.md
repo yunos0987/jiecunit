@@ -10,7 +10,10 @@ JiecUnitは、テキスト形式で記述された[IEC 61131-3言語](https://pl
 
 このテキスト形式のコードをPLCメーカーのツールで取り込み可能な形式に変換するために、[IEC 61131-3 ⇄ IEC 61131-10変換ソフトウェア Jiecc](https://www.graviness.com/iec_61131-3/jiecc.html)を使用します。
 
-JiecUnitは現在、[IEC 61131-10 XML](https://plcopen.org/sites/default/files/downloads/iec_61131-10_preview.pdf)をサポートするオムロン社製の[Sysmac Studio](https://www.fa.omron.co.jp/products/family/3077/download/software.html)とキーエンス社製の[KV Studio](https://www.keyence.co.jp/support/user/controls/installer/)のみをサポートしています。
+JiecUnitは現在、[IEC 61131-10 XML](https://plcopen.org/sites/default/files/downloads/iec_61131-10_preview.pdf)をサポートする以下の環境をサポートしています。
+* オムロン社製の[Sysmac Studio](https://www.fa.omron.co.jp/products/family/3077/download/software.html)
+* キーエンス社製の[KV Studio](https://www.keyence.co.jp/support/user/controls/installer/)
+* CODESYS社製の[CODESYS](https://content.helpme-codesys.com/en/CODESYS%20Installer/_inst_start_page.html)
 
 ## 必要環境
 
