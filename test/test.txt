@@ -12,6 +12,7 @@
 
 {#include "test_sys.txt"}
 {#include "test_sys_conv.txt"}
+{#include "test_jiecunit.txt"}
 
 // List test program names.
 DEFINE_CONFIGURATION(
@@ -21,6 +22,7 @@ DEFINE_CONFIGURATION(
 		'test_dint_to_string',
 		'test_lreal_to_string',
 		'test_bool_to_string',
-		'test_time_to_string_sec'
+		'test_time_to_string_sec',
+		'test_expect_cmp_double'
 	)
 )
