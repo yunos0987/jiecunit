@@ -51,6 +51,11 @@
 {#define EXPECT_LT_UINT32_MSG(lval, rval, message)  _VALIDATE_LT_UINT32_MSG(false, lval, rval, message)}
 {#define EXPECT_LT_UINT64_MSG(lval, rval, message)  _VALIDATE_LT_UINT64_MSG(false, lval, rval, message)}
 
+{#define EXPECT_LT_REAL_MSG(lval, rval, message)    _VALIDATE_LT_DOUBLE_MSG(false, lval, rval, message)}
+{#define EXPECT_LT_LREAL_MSG(lval, rval, message)   _VALIDATE_LT_DOUBLE_MSG(false, lval, rval, message)}
+{#define EXPECT_LT_FLOAT_MSG(lval, rval, message)   _VALIDATE_LT_DOUBLE_MSG(false, lval, rval, message)}
+{#define EXPECT_LT_DOUBLE_MSG(lval, rval, message)  _VALIDATE_LT_DOUBLE_MSG(false, lval, rval, message)}
+
 {#define EXPECT_LE_SINT_MSG(lval, rval, message)    _VALIDATE_LE_INT32_MSG(false, lval, rval, message)}
 {#define EXPECT_LE_INT_MSG(lval, rval, message)     _VALIDATE_LE_INT32_MSG(false, lval, rval, message)}
 {#define EXPECT_LE_DINT_MSG(lval, rval, message)    _VALIDATE_LE_INT32_MSG(false, lval, rval, message)}
@@ -64,6 +69,11 @@
 {#define EXPECT_LE_ULINT_MSG(lval, rval, message)   _VALIDATE_LE_UINT64_MSG(false, lval, rval, message)}
 {#define EXPECT_LE_UINT32_MSG(lval, rval, message)  _VALIDATE_LE_UINT32_MSG(false, lval, rval, message)}
 {#define EXPECT_LE_UINT64_MSG(lval, rval, message)  _VALIDATE_LE_UINT64_MSG(false, lval, rval, message)}
+
+{#define EXPECT_LE_REAL_MSG(lval, rval, message)    _VALIDATE_LE_DOUBLE_MSG(false, lval, rval, message)}
+{#define EXPECT_LE_LREAL_MSG(lval, rval, message)   _VALIDATE_LE_DOUBLE_MSG(false, lval, rval, message)}
+{#define EXPECT_LE_FLOAT_MSG(lval, rval, message)   _VALIDATE_LE_DOUBLE_MSG(false, lval, rval, message)}
+{#define EXPECT_LE_DOUBLE_MSG(lval, rval, message)  _VALIDATE_LE_DOUBLE_MSG(false, lval, rval, message)}
 
 {#define EXPECT_GE_SINT_MSG(lval, rval, message)    _VALIDATE_GE_INT32_MSG(false, lval, rval, message)}
 {#define EXPECT_GE_INT_MSG(lval, rval, message)     _VALIDATE_GE_INT32_MSG(false, lval, rval, message)}
@@ -79,6 +89,11 @@
 {#define EXPECT_GE_UINT32_MSG(lval, rval, message)  _VALIDATE_GE_UINT32_MSG(false, lval, rval, message)}
 {#define EXPECT_GE_UINT64_MSG(lval, rval, message)  _VALIDATE_GE_UINT64_MSG(false, lval, rval, message)}
 
+{#define EXPECT_GE_REAL_MSG(lval, rval, message)    _VALIDATE_GE_DOUBLE_MSG(false, lval, rval, message)}
+{#define EXPECT_GE_LREAL_MSG(lval, rval, message)   _VALIDATE_GE_DOUBLE_MSG(false, lval, rval, message)}
+{#define EXPECT_GE_FLOAT_MSG(lval, rval, message)   _VALIDATE_GE_DOUBLE_MSG(false, lval, rval, message)}
+{#define EXPECT_GE_DOUBLE_MSG(lval, rval, message)  _VALIDATE_GE_DOUBLE_MSG(false, lval, rval, message)}
+
 {#define EXPECT_GT_SINT_MSG(lval, rval, message)    _VALIDATE_GT_INT32_MSG(false, lval, rval, message)}
 {#define EXPECT_GT_INT_MSG(lval, rval, message)     _VALIDATE_GT_INT32_MSG(false, lval, rval, message)}
 {#define EXPECT_GT_DINT_MSG(lval, rval, message)    _VALIDATE_GT_INT32_MSG(false, lval, rval, message)}
@@ -92,6 +107,11 @@
 {#define EXPECT_GT_ULINT_MSG(lval, rval, message)   _VALIDATE_GT_UINT64_MSG(false, lval, rval, message)}
 {#define EXPECT_GT_UINT32_MSG(lval, rval, message)  _VALIDATE_GT_UINT32_MSG(false, lval, rval, message)}
 {#define EXPECT_GT_UINT64_MSG(lval, rval, message)  _VALIDATE_GT_UINT64_MSG(false, lval, rval, message)}
+
+{#define EXPECT_GT_REAL_MSG(lval, rval, message)    _VALIDATE_GT_DOUBLE_MSG(false, lval, rval, message)}
+{#define EXPECT_GT_LREAL_MSG(lval, rval, message)   _VALIDATE_GT_DOUBLE_MSG(false, lval, rval, message)}
+{#define EXPECT_GT_FLOAT_MSG(lval, rval, message)   _VALIDATE_GT_DOUBLE_MSG(false, lval, rval, message)}
+{#define EXPECT_GT_DOUBLE_MSG(lval, rval, message)  _VALIDATE_GT_DOUBLE_MSG(false, lval, rval, message)}
 
 {#define EXPECT_NEAR_MSG(val1, val2, abs_error, message)    _VALIDATE_NEAR_MSG(false, val1, val2, abs_error, message)}
 
@@ -144,6 +164,11 @@
 {#define EXPECT_LT_UINT32(lval, rval)   _VALIDATE_LT_UINT32(false, lval, rval)}
 {#define EXPECT_LT_UINT64(lval, rval)   _VALIDATE_LT_UINT64(false, lval, rval)}
 
+{#define EXPECT_LT_REAL(lval, rval)     _VALIDATE_LT_DOUBLE(false, lval, rval)}
+{#define EXPECT_LT_LREAL(lval, rval)    _VALIDATE_LT_DOUBLE(false, lval, rval)}
+{#define EXPECT_LT_FLOAT(lval, rval)    _VALIDATE_LT_DOUBLE(false, lval, rval)}
+{#define EXPECT_LT_DOUBLE(lval, rval)   _VALIDATE_LT_DOUBLE(false, lval, rval)}
+
 {#define EXPECT_LE_SINT(lval, rval)     _VALIDATE_LE_INT32(false, lval, rval)}
 {#define EXPECT_LE_INT(lval, rval)      _VALIDATE_LE_INT32(false, lval, rval)}
 {#define EXPECT_LE_DINT(lval, rval)     _VALIDATE_LE_INT32(false, lval, rval)}
@@ -157,6 +182,11 @@
 {#define EXPECT_LE_ULINT(lval, rval)    _VALIDATE_LE_UINT64(false, lval, rval)}
 {#define EXPECT_LE_UINT32(lval, rval)   _VALIDATE_LE_UINT32(false, lval, rval)}
 {#define EXPECT_LE_UINT64(lval, rval)   _VALIDATE_LE_UINT64(false, lval, rval)}
+
+{#define EXPECT_LE_REAL(lval, rval)     _VALIDATE_LE_DOUBLE(false, lval, rval)}
+{#define EXPECT_LE_LREAL(lval, rval)    _VALIDATE_LE_DOUBLE(false, lval, rval)}
+{#define EXPECT_LE_FLOAT(lval, rval)    _VALIDATE_LE_DOUBLE(false, lval, rval)}
+{#define EXPECT_LE_DOUBLE(lval, rval)   _VALIDATE_LE_DOUBLE(false, lval, rval)}
 
 {#define EXPECT_GE_SINT(lval, rval)     _VALIDATE_GE_INT32(false, lval, rval)}
 {#define EXPECT_GE_INT(lval, rval)      _VALIDATE_GE_INT32(false, lval, rval)}
@@ -172,6 +202,11 @@
 {#define EXPECT_GE_UINT32(lval, rval)   _VALIDATE_GE_UINT32(false, lval, rval)}
 {#define EXPECT_GE_UINT64(lval, rval)   _VALIDATE_GE_UINT64(false, lval, rval)}
 
+{#define EXPECT_GE_REAL(lval, rval)     _VALIDATE_GE_DOUBLE(false, lval, rval)}
+{#define EXPECT_GE_LREAL(lval, rval)    _VALIDATE_GE_DOUBLE(false, lval, rval)}
+{#define EXPECT_GE_FLOAT(lval, rval)    _VALIDATE_GE_DOUBLE(false, lval, rval)}
+{#define EXPECT_GE_DOUBLE(lval, rval)   _VALIDATE_GE_DOUBLE(false, lval, rval)}
+
 {#define EXPECT_GT_SINT(lval, rval)     _VALIDATE_GT_INT32(false, lval, rval)}
 {#define EXPECT_GT_INT(lval, rval)      _VALIDATE_GT_INT32(false, lval, rval)}
 {#define EXPECT_GT_DINT(lval, rval)     _VALIDATE_GT_INT32(false, lval, rval)}
@@ -185,6 +220,11 @@
 {#define EXPECT_GT_ULINT(lval, rval)    _VALIDATE_GT_UINT64(false, lval, rval)}
 {#define EXPECT_GT_UINT32(lval, rval)   _VALIDATE_GT_UINT32(false, lval, rval)}
 {#define EXPECT_GT_UINT64(lval, rval)   _VALIDATE_GT_UINT64(false, lval, rval)}
+
+{#define EXPECT_GT_REAL(lval, rval)     _VALIDATE_GT_DOUBLE(false, lval, rval)}
+{#define EXPECT_GT_LREAL(lval, rval)    _VALIDATE_GT_DOUBLE(false, lval, rval)}
+{#define EXPECT_GT_FLOAT(lval, rval)    _VALIDATE_GT_DOUBLE(false, lval, rval)}
+{#define EXPECT_GT_DOUBLE(lval, rval)   _VALIDATE_GT_DOUBLE(false, lval, rval)}
 
 {#define EXPECT_NEAR(val1, val2, abs_error)     _VALIDATE_NEAR(false, val1, val2, abs_error)}
 
@@ -237,6 +277,11 @@
 {#define ASSERT_LT_UINT32_MSG(lval, rval, message)  _VALIDATE_LT_UINT32_MSG(true, lval, rval, message)}
 {#define ASSERT_LT_UINT64_MSG(lval, rval, message)  _VALIDATE_LT_UINT64_MSG(true, lval, rval, message)}
 
+{#define ASSERT_LT_REAL_MSG(lval, rval, message)    _VALIDATE_LT_DOUBLE_MSG(true, lval, rval, message)}
+{#define ASSERT_LT_LREAL_MSG(lval, rval, message)   _VALIDATE_LT_DOUBLE_MSG(true, lval, rval, message)}
+{#define ASSERT_LT_FLOAT_MSG(lval, rval, message)   _VALIDATE_LT_DOUBLE_MSG(true, lval, rval, message)}
+{#define ASSERT_LT_DOUBLE_MSG(lval, rval, message)  _VALIDATE_LT_DOUBLE_MSG(true, lval, rval, message)}
+
 {#define ASSERT_LE_SINT_MSG(lval, rval, message)    _VALIDATE_LE_INT32_MSG(true, lval, rval, message)}
 {#define ASSERT_LE_INT_MSG(lval, rval, message)     _VALIDATE_LE_INT32_MSG(true, lval, rval, message)}
 {#define ASSERT_LE_DINT_MSG(lval, rval, message)    _VALIDATE_LE_INT32_MSG(true, lval, rval, message)}
@@ -250,6 +295,11 @@
 {#define ASSERT_LE_ULINT_MSG(lval, rval, message)   _VALIDATE_LE_UINT64_MSG(true, lval, rval, message)}
 {#define ASSERT_LE_UINT32_MSG(lval, rval, message)  _VALIDATE_LE_UINT32_MSG(true, lval, rval, message)}
 {#define ASSERT_LE_UINT64_MSG(lval, rval, message)  _VALIDATE_LE_UINT64_MSG(true, lval, rval, message)}
+
+{#define ASSERT_LE_REAL_MSG(lval, rval, message)    _VALIDATE_LE_DOUBLE_MSG(true, lval, rval, message)}
+{#define ASSERT_LE_LREAL_MSG(lval, rval, message)   _VALIDATE_LE_DOUBLE_MSG(true, lval, rval, message)}
+{#define ASSERT_LE_FLOAT_MSG(lval, rval, message)   _VALIDATE_LE_DOUBLE_MSG(true, lval, rval, message)}
+{#define ASSERT_LE_DOUBLE_MSG(lval, rval, message)  _VALIDATE_LE_DOUBLE_MSG(true, lval, rval, message)}
 
 {#define ASSERT_GE_SINT_MSG(lval, rval, message)    _VALIDATE_GE_INT32_MSG(true, lval, rval, message)}
 {#define ASSERT_GE_INT_MSG(lval, rval, message)     _VALIDATE_GE_INT32_MSG(true, lval, rval, message)}
@@ -265,6 +315,11 @@
 {#define ASSERT_GE_UINT32_MSG(lval, rval, message)  _VALIDATE_GE_UINT32_MSG(true, lval, rval, message)}
 {#define ASSERT_GE_UINT64_MSG(lval, rval, message)  _VALIDATE_GE_UINT64_MSG(true, lval, rval, message)}
 
+{#define ASSERT_GE_REAL_MSG(lval, rval, message)    _VALIDATE_GE_DOUBLE_MSG(true, lval, rval, message)}
+{#define ASSERT_GE_LREAL_MSG(lval, rval, message)   _VALIDATE_GE_DOUBLE_MSG(true, lval, rval, message)}
+{#define ASSERT_GE_FLOAT_MSG(lval, rval, message)   _VALIDATE_GE_DOUBLE_MSG(true, lval, rval, message)}
+{#define ASSERT_GE_DOUBLE_MSG(lval, rval, message)  _VALIDATE_GE_DOUBLE_MSG(true, lval, rval, message)}
+
 {#define ASSERT_GT_SINT_MSG(lval, rval, message)    _VALIDATE_GT_INT32_MSG(true, lval, rval, message)}
 {#define ASSERT_GT_INT_MSG(lval, rval, message)     _VALIDATE_GT_INT32_MSG(true, lval, rval, message)}
 {#define ASSERT_GT_DINT_MSG(lval, rval, message)    _VALIDATE_GT_INT32_MSG(true, lval, rval, message)}
@@ -278,6 +333,11 @@
 {#define ASSERT_GT_ULINT_MSG(lval, rval, message)   _VALIDATE_GT_UINT64_MSG(true, lval, rval, message)}
 {#define ASSERT_GT_UINT32_MSG(lval, rval, message)  _VALIDATE_GT_UINT32_MSG(true, lval, rval, message)}
 {#define ASSERT_GT_UINT64_MSG(lval, rval, message)  _VALIDATE_GT_UINT64_MSG(true, lval, rval, message)}
+
+{#define ASSERT_GT_REAL_MSG(lval, rval, message)    _VALIDATE_GT_DOUBLE_MSG(true, lval, rval, message)}
+{#define ASSERT_GT_LREAL_MSG(lval, rval, message)   _VALIDATE_GT_DOUBLE_MSG(true, lval, rval, message)}
+{#define ASSERT_GT_FLOAT_MSG(lval, rval, message)   _VALIDATE_GT_DOUBLE_MSG(true, lval, rval, message)}
+{#define ASSERT_GT_DOUBLE_MSG(lval, rval, message)  _VALIDATE_GT_DOUBLE_MSG(true, lval, rval, message)}
 
 {#define ASSERT_NEAR_MSG(val1, val2, abs_error, message)    _VALIDATE_NEAR_MSG(true, val1, val2, abs_error, message)}
 
@@ -330,6 +390,11 @@
 {#define ASSERT_LT_UINT32(lval, rval)   _VALIDATE_LT_UINT32(true, lval, rval)}
 {#define ASSERT_LT_UINT64(lval, rval)   _VALIDATE_LT_UINT64(true, lval, rval)}
 
+{#define ASSERT_LT_REAL(lval, rval)     _VALIDATE_LT_DOUBLE(true, lval, rval)}
+{#define ASSERT_LT_LREAL(lval, rval)    _VALIDATE_LT_DOUBLE(true, lval, rval)}
+{#define ASSERT_LT_FLOAT(lval, rval)    _VALIDATE_LT_DOUBLE(true, lval, rval)}
+{#define ASSERT_LT_DOUBLE(lval, rval)   _VALIDATE_LT_DOUBLE(true, lval, rval)}
+
 {#define ASSERT_LE_SINT(lval, rval)     _VALIDATE_LE_INT32(true, lval, rval)}
 {#define ASSERT_LE_INT(lval, rval)      _VALIDATE_LE_INT32(true, lval, rval)}
 {#define ASSERT_LE_DINT(lval, rval)     _VALIDATE_LE_INT32(true, lval, rval)}
@@ -343,6 +408,11 @@
 {#define ASSERT_LE_ULINT(lval, rval)    _VALIDATE_LE_UINT64(true, lval, rval)}
 {#define ASSERT_LE_UINT32(lval, rval)   _VALIDATE_LE_UINT32(true, lval, rval)}
 {#define ASSERT_LE_UINT64(lval, rval)   _VALIDATE_LE_UINT64(true, lval, rval)}
+
+{#define ASSERT_LE_REAL(lval, rval)     _VALIDATE_LE_DOUBLE(true, lval, rval)}
+{#define ASSERT_LE_LREAL(lval, rval)    _VALIDATE_LE_DOUBLE(true, lval, rval)}
+{#define ASSERT_LE_FLOAT(lval, rval)    _VALIDATE_LE_DOUBLE(true, lval, rval)}
+{#define ASSERT_LE_DOUBLE(lval, rval)   _VALIDATE_LE_DOUBLE(true, lval, rval)}
 
 {#define ASSERT_GE_SINT(lval, rval)     _VALIDATE_GE_INT32(true, lval, rval)}
 {#define ASSERT_GE_INT(lval, rval)      _VALIDATE_GE_INT32(true, lval, rval)}
@@ -358,6 +428,11 @@
 {#define ASSERT_GE_UINT32(lval, rval)   _VALIDATE_GE_UINT32(true, lval, rval)}
 {#define ASSERT_GE_UINT64(lval, rval)   _VALIDATE_GE_UINT64(true, lval, rval)}
 
+{#define ASSERT_GE_REAL(lval, rval)     _VALIDATE_GE_DOUBLE(true, lval, rval)}
+{#define ASSERT_GE_LREAL(lval, rval)    _VALIDATE_GE_DOUBLE(true, lval, rval)}
+{#define ASSERT_GE_FLOAT(lval, rval)    _VALIDATE_GE_DOUBLE(true, lval, rval)}
+{#define ASSERT_GE_DOUBLE(lval, rval)   _VALIDATE_GE_DOUBLE(true, lval, rval)}
+
 {#define ASSERT_GT_SINT(lval, rval)     _VALIDATE_GT_INT32(true, lval, rval)}
 {#define ASSERT_GT_INT(lval, rval)      _VALIDATE_GT_INT32(true, lval, rval)}
 {#define ASSERT_GT_DINT(lval, rval)     _VALIDATE_GT_INT32(true, lval, rval)}
@@ -371,6 +446,11 @@
 {#define ASSERT_GT_ULINT(lval, rval)    _VALIDATE_GT_UINT64(true, lval, rval)}
 {#define ASSERT_GT_UINT32(lval, rval)   _VALIDATE_GT_UINT32(true, lval, rval)}
 {#define ASSERT_GT_UINT64(lval, rval)   _VALIDATE_GT_UINT64(true, lval, rval)}
+
+{#define ASSERT_GT_REAL(lval, rval)     _VALIDATE_GT_DOUBLE(true, lval, rval)}
+{#define ASSERT_GT_LREAL(lval, rval)    _VALIDATE_GT_DOUBLE(true, lval, rval)}
+{#define ASSERT_GT_FLOAT(lval, rval)    _VALIDATE_GT_DOUBLE(true, lval, rval)}
+{#define ASSERT_GT_DOUBLE(lval, rval)   _VALIDATE_GT_DOUBLE(true, lval, rval)}
 
 {#define ASSERT_NEAR(val1, val2, abs_error)     _VALIDATE_NEAR(true, val1, val2, abs_error)}
 

@@ -1,0 +1,15 @@
+{#include <jiecunit.txt>}
+
+TEST_S(test_expect_cmp_double)
+	{st}
+	EXPECT_LT_DOUBLE(1.0, 2.0);
+
+	EXPECT_LE_DOUBLE(1.0, 1.0);
+	EXPECT_LE_DOUBLE(1.0, 2.0);
+
+	EXPECT_GE_DOUBLE(2.0, 2.0);
+	EXPECT_GE_DOUBLE(3.0, 2.0);
+
+    EXPECT_GT_DOUBLE(3.0, 2.0);
+	{end}
+END_TEST_S
