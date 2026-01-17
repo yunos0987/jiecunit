@@ -13,3 +13,50 @@ TEST_S(test_expect_cmp_double)
     EXPECT_GT_DOUBLE(3.0, 2.0);
 	{end}
 END_TEST_S
+
+TEST_S(test_JiecTest_validateNEAR)
+	var
+		dead_or_alive: bool;
+		my1, my2, my3, my4, my5, my6, my7, my8, my9: JiecTest_t;
+		empty_message: string[1] := '' constant;
+		empty_filename: string[1] := '' constant;
+		zero_line: dint := 0 constant;
+	end
+	{st}
+	// Test: identical values should be within tolerance
+	dead_or_alive := JiecTest_validateNEAR(my1, 1.0, 1.0, 0.0001, empty_message, false, empty_filename, zero_line);
+	EXPECT_TRUE(dead_or_alive);
+
+	// Test: values within absolute error tolerance should pass
+	dead_or_alive := JiecTest_validateNEAR(my2, 1.0, 1.00001, 0.0001, empty_message, false, empty_filename, zero_line);
+	EXPECT_TRUE(dead_or_alive);
+
+	// Test: values at the boundary of tolerance should pass
+	dead_or_alive := JiecTest_validateNEAR(my3, 1.0, 1.0001, 0.0001, empty_message, false, empty_filename, zero_line);
+	EXPECT_TRUE(dead_or_alive);
+
+	// Test: values exceeding absolute error tolerance should fail
+	dead_or_alive := JiecTest_validateNEAR(my4, 1.0, 1.001, 0.0001, empty_message, false, empty_filename, zero_line);
+	EXPECT_FALSE(dead_or_alive);
+
+	// Test: negative values within tolerance
+	dead_or_alive := JiecTest_validateNEAR(my5, -1.0, -1.00001, 0.0001, empty_message, false, empty_filename, zero_line);
+	EXPECT_TRUE(dead_or_alive);
+
+	// Test: positive and negative values within tolerance
+	dead_or_alive := JiecTest_validateNEAR(my6, 1.0, -1.0, 2.1, empty_message, false, empty_filename, zero_line);
+	EXPECT_TRUE(dead_or_alive);
+
+	// Test: positive and negative values exceeding tolerance
+	dead_or_alive := JiecTest_validateNEAR(my7, 1.0, -1.0, 1.9, empty_message, false, empty_filename, zero_line);
+	EXPECT_FALSE(dead_or_alive);
+
+	// Test: zero tolerance with identical values
+	dead_or_alive := JiecTest_validateNEAR(my8, 5.0, 5.0, 0.0, empty_message, false, empty_filename, zero_line);
+	EXPECT_TRUE(dead_or_alive);
+
+	// Test: zero tolerance with different values should fail
+	dead_or_alive := JiecTest_validateNEAR(my9, 5.0, 5.00001, 0.0, empty_message, false, empty_filename, zero_line);
+	EXPECT_FALSE(dead_or_alive);
+	{end}
+END_TEST_S
