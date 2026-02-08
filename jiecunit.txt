@@ -458,7 +458,6 @@
 
 {#define _JIEC_TESTNAMES_LIST_(...) $
 	var_global $
-		_CONSOLE_: Console_t := (row_index:=0, rows:=[CONSOLE_MAX_ROWS('')]); $
 		_JIECTESTNAMES_: array[MAX_TESTS] of string[TESTNAME_MAX_SIZE] := [__VA_ARGS__, (MAX_TESTS - __VA_ARGC__)('')]; $
 		_JIECTEST_: JiecTest_t; $
 	end $
