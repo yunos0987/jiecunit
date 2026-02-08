@@ -9,6 +9,7 @@
 	{#define DEFINE_CONFIGURATION(var_global_decls) $
 		configuration MainConfiguration $
 			resource MainResource on MainPLC $
+				_DEFINE_SYS_IN_CONFIGURATION_();
 				var_global_decls $
 			end $
 		end $
@@ -16,12 +17,14 @@
 {#elif _KEYENCE}
 	{#define DEFINE_CONFIGURATION(var_global_decls) $
 		configuration MainConfiguration $
+			_DEFINE_SYS_IN_CONFIGURATION_();
 			var_global_decls $
 		end $
 	}
 {#elif _MITSUBISHI}
 	{#define DEFINE_CONFIGURATION(var_global_decls) $
 		configuration MainConfiguration $
+			_DEFINE_SYS_IN_CONFIGURATION_();
 			var_global_decls $
 		end $
 	}
@@ -29,6 +32,9 @@
 
 {#define _CONSOLE_ g_console}
 
+{#define _DEFINE_SYS_IN_CONFIGURATION_()
+	var_global _CONSOLE_: Console_t := (row_index:=0, rows:=[CONSOLE_MAX_ROWS('')]); end
+}
 {#if not (_KEYENCE or _MITSUBISHI)}
 	{#define _DEFINE_SYS_IN_POU_() $
 		var_external _CONSOLE_: Console_t; end $

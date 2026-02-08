@@ -1,7 +1,7 @@
 {#ifndef __CONFIG_TXT__}
 {#define __CONFIG_TXT__}
 
-{#define MAX_TESTS 128}
+{#define MAX_TESTS 512}
 
 {#define TESTNAME_MAX_SIZE 128}
 {#define FILENAME_MAX_SIZE 128}
