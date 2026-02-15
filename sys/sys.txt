@@ -10,6 +10,7 @@
 		configuration MainConfiguration $
 			resource MainResource on MainPLC $
 				_DEFINE_SYS_IN_CONFIGURATION_();
+				_DEFINE_CONSOLE_IN_CONFIGURATION_();
 				var_global_decls $
 			end $
 		end $
@@ -18,6 +19,7 @@
 	{#define DEFINE_CONFIGURATION(var_global_decls) $
 		configuration MainConfiguration $
 			_DEFINE_SYS_IN_CONFIGURATION_();
+			_DEFINE_CONSOLE_IN_CONFIGURATION_();
 			var_global_decls $
 		end $
 	}
@@ -25,6 +27,7 @@
 	{#define DEFINE_CONFIGURATION(var_global_decls) $
 		configuration MainConfiguration $
 			_DEFINE_SYS_IN_CONFIGURATION_();
+			_DEFINE_CONSOLE_IN_CONFIGURATION_();
 			var_global_decls $
 		end $
 	}
@@ -33,14 +36,20 @@
 {#define _CONSOLE_ g_console}
 
 {#define _DEFINE_SYS_IN_CONFIGURATION_()
+}
+{#define _DEFINE_CONSOLE_IN_CONFIGURATION_()
 	var_global _CONSOLE_: Console_t := (row_index:=0, rows:=[CONSOLE_MAX_ROWS('')]); end
 }
 {#if not (_KEYENCE or _MITSUBISHI)}
 	{#define _DEFINE_SYS_IN_POU_() $
+	}
+	{#define _DECLARE_CONSOLE_IN_POU_()
 		var_external _CONSOLE_: Console_t; end $
 	}
 {#else}
 	{#define _DEFINE_SYS_IN_POU_() $
+	}
+	{#define _DECLARE_CONSOLE_IN_POU_()
 	}
 {#endif}
 

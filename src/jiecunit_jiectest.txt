@@ -71,6 +71,7 @@ end
 
 function JiecTest_failure: bool
 	_PROLOGUE_OF_FUNCTION_()
+	_DECLARE_CONSOLE_IN_POU_()
 	var_in_out self: JiecTest_t; end
 	var_input
 		message: string[STRING_MAX_SIZE] := '';
@@ -167,6 +168,7 @@ end
 {#define DEFINE_JiecTest_validateEQ_DATATYPE(DATATYPE, datatype_, to_string) $
 	function JiecTest_validateEQ_ @@ DATATYPE: bool $
 	_PROLOGUE_OF_FUNCTION_() $
+	_DECLARE_CONSOLE_IN_POU_() $
 	var_in_out self: JiecTest_t; end $
 	var_input $
 		expected, actual: datatype_; $
@@ -209,6 +211,7 @@ DEFINE_JiecTest_validateEQ_DATATYPE(STRING, string[STRING_MAX_SIZE], )
 {#define DEFINE_JiecTest_validateCMP_DATATYPE(CMP, DATATYPE, operator_, datatype_, to_string) $
 	function JiecTest_validate @@ CMP @@ _ @@ DATATYPE: bool $
 	_PROLOGUE_OF_FUNCTION_() $
+	_DECLARE_CONSOLE_IN_POU_() $
 	var_in_out self: JiecTest_t; end $
 	var_input $
 		lval, rval: datatype_; $
@@ -258,6 +261,7 @@ DEFINE_JiecTest_validateCMP_DATATYPE(GT, DOUBLE, >,  lreal, lreal_to_string)
 
 function JiecTest_validateNEAR: bool
 _PROLOGUE_OF_FUNCTION_()
+_DECLARE_CONSOLE_IN_POU_()
 var_in_out self: JiecTest_t; end
 var_input
 	val1, val2: lreal;

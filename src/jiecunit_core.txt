@@ -39,6 +39,7 @@ program {__func__:this_name} JiecUnitMain
 	{#define _no_tests()            JiecTest_empty(_JIECTEST_)}
 	{#define _bye()                 done := true; return}
 	_DEFINE_SYS_IN_POU_();
+	_DECLARE_CONSOLE_IN_POU_();
 	_DECLARE_EXTERNAL_JIEC_TESTNAMES();
 	_DECLARE_EXTERNAL_JIEC_TEST();
 	var
