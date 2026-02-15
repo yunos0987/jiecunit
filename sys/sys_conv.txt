@@ -140,20 +140,20 @@ function jiec_bool_to_string: string[8]
 end
 {#define bool_to_string(...) jiec_bool_to_string(__VA_ARGS__)}
 
-{#define IDENTITY_TYPECONV_FUNCTION(dtype, dtype_option) $
-	(*${doc Identity type conversion function that returns the input value unchanged. $
-	@input in The input value. $
-	@return The same value as the input.$}*) $
-	function dtype@@_to_@@dtype: dtype dtype_option $
-		_PROLOGUE_OF_FUNCTION_FOR_SYS_(); $
-		var_input $
-			(*${doc The input value.$}*) $
-			in: dtype dtype_option; $
-		end $
-		${st$} $
-		dtype@@_to_@@dtype := in; $
-		${end$} $
-	end $
+{#define IDENTITY_TYPECONV_FUNCTION(dtype, dtype_option)
+	(*${doc Identity type conversion function that returns the input value unchanged.
+	@input in The input value.
+	@return The same value as the input.$}*)
+	function dtype@@_to_@@dtype: dtype dtype_option
+		_PROLOGUE_OF_FUNCTION_FOR_SYS_();
+		var_input
+			(*${doc The input value.$}*)
+			in: dtype dtype_option;
+		end
+		${st$}
+		dtype@@_to_@@dtype := in;
+		${end$}
+	end
 }
 IDENTITY_TYPECONV_FUNCTION(string, [STRING_MAX_SIZE])
 IDENTITY_TYPECONV_FUNCTION(uint, )

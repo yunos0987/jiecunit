@@ -215,38 +215,38 @@ end
 
 // ------------------------ Define validator functions ------------------------ //
 
-{#define DEFINE_JiecTest_validateEQ_DATATYPE(DATATYPE, datatype_, to_string) $
-	(*${doc Validate that the expected value equals the actual value. $
-	@inout self The JiecTest_t structure. $
-	@input expected The expected value. $
-	@input actual The actual value. $
-	@input message The failure message. $
-	@input die Whether to abort the test on failure. $
-	@input file The source file name. $
-	@input line The line number. $
-	@return True if the values are equal, false otherwise.$}*) $
-	function JiecTest_validateEQ_ @@ DATATYPE: bool $
-	_PROLOGUE_OF_FUNCTION_() $
-	_DECLARE_CONSOLE_IN_POU_() $
-	var_in_out self: JiecTest_t; end $
-	var_input $
-		expected, actual: datatype_; $
-		message: string[128]; $
-		die: bool := true; $
-		file: string[FILENAME_MAX_SIZE]; $
-		line: dint; $
-	end $
-	${st$} $
-	JiecTest_validateEQ_ @@ DATATYPE := expected = actual; $
-	if JiecTest_validateEQ_ @@ DATATYPE then $
-		return; $
-	end_if; $
-	 $
-	puts(jiec_concat('Expected: ', to_string(expected))); $
-	puts(jiec_concat('Actual: ', to_string(actual))); $
-	 $
-	JiecTest_failure(self:=self, message:=message, die:=die, file:=file, line:=line); $
-	${end$} $
+{#define DEFINE_JiecTest_validateEQ_DATATYPE(DATATYPE, datatype_, to_string)
+	(*${doc Validate that the expected value equals the actual value.
+	@inout self The JiecTest_t structure.
+	@input expected The expected value.
+	@input actual The actual value.
+	@input message The failure message.
+	@input die Whether to abort the test on failure.
+	@input file The source file name.
+	@input line The line number.
+	@return True if the values are equal, false otherwise.$}*)
+	function JiecTest_validateEQ_ @@ DATATYPE: bool
+	_PROLOGUE_OF_FUNCTION_()
+	_DECLARE_CONSOLE_IN_POU_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		expected, actual: datatype_;
+		message: string[128];
+		die: bool := true;
+		file: string[FILENAME_MAX_SIZE];
+		line: dint;
+	end
+	${st$}
+	JiecTest_validateEQ_ @@ DATATYPE := expected = actual;
+	if JiecTest_validateEQ_ @@ DATATYPE then
+		return;
+	end_if;
+
+	puts(jiec_concat('Expected: ', to_string(expected)));
+	puts(jiec_concat('Actual: ', to_string(actual)));
+
+	JiecTest_failure(self:=self, message:=message, die:=die, file:=file, line:=line);
+	${end$}
 	end}
 
 DEFINE_JiecTest_validateEQ_DATATYPE(INT32, dint, dint_to_string)
@@ -268,38 +268,38 @@ DEFINE_JiecTest_validateEQ_DATATYPE(STRING, string[STRING_MAX_SIZE], )
 
 
 
-{#define DEFINE_JiecTest_validateCMP_DATATYPE(CMP, DATATYPE, operator_, datatype_, to_string) $
-	(*${doc Validate a comparison between two values using the specified operator. $
-	@inout self The JiecTest_t structure. $
-	@input lval The left-hand side value. $
-	@input rval The right-hand side value. $
-	@input message The failure message. $
-	@input die Whether to abort the test on failure. $
-	@input file The source file name. $
-	@input line The line number. $
-	@return True if the comparison holds, false otherwise.$}*) $
-	function JiecTest_validate @@ CMP @@ _ @@ DATATYPE: bool $
-	_PROLOGUE_OF_FUNCTION_() $
-	_DECLARE_CONSOLE_IN_POU_() $
-	var_in_out self: JiecTest_t; end $
-	var_input $
-		lval, rval: datatype_; $
-		message: string[128]; $
-		die: bool := true; $
-		file: string[FILENAME_MAX_SIZE]; $
-		line: dint; $
-	end $
-	${st$} $
-	JiecTest_validate @@ CMP @@ _ @@ DATATYPE := lval operator_ rval; $
-	if JiecTest_validate @@ CMP @@ _ @@ DATATYPE then $
-		return; $
-	end_if; $
-	 $
-	puts(jiec_concat('Expected: ', to_string(lval), @operator_, to_string(rval))); $
-	puts(jiec_concat('Actual: ', to_string(lval), ' vs ', to_string(rval))); $
-	 $
-	JiecTest_failure(self:=self, message:=message, die:=die, file:=file, line:=line); $
-	${end$} $
+{#define DEFINE_JiecTest_validateCMP_DATATYPE(CMP, DATATYPE, operator_, datatype_, to_string)
+	(*${doc Validate a comparison between two values using the specified operator.
+	@inout self The JiecTest_t structure.
+	@input lval The left-hand side value.
+	@input rval The right-hand side value.
+	@input message The failure message.
+	@input die Whether to abort the test on failure.
+	@input file The source file name.
+	@input line The line number.
+	@return True if the comparison holds, false otherwise.$}*)
+	function JiecTest_validate @@ CMP @@ _ @@ DATATYPE: bool
+	_PROLOGUE_OF_FUNCTION_()
+	_DECLARE_CONSOLE_IN_POU_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		lval, rval: datatype_;
+		message: string[128];
+		die: bool := true;
+		file: string[FILENAME_MAX_SIZE];
+		line: dint;
+	end
+	${st$}
+	JiecTest_validate @@ CMP @@ _ @@ DATATYPE := lval operator_ rval;
+	if JiecTest_validate @@ CMP @@ _ @@ DATATYPE then
+		return;
+	end_if;
+
+	puts(jiec_concat('Expected: ', to_string(lval), @operator_, to_string(rval)));
+	puts(jiec_concat('Actual: ', to_string(lval), ' vs ', to_string(rval)));
+
+	JiecTest_failure(self:=self, message:=message, die:=die, file:=file, line:=line);
+	${end$}
 	end}
 DEFINE_JiecTest_validateCMP_DATATYPE(LT, INT32,  <,  dint,  dint_to_string)
 DEFINE_JiecTest_validateCMP_DATATYPE(LE, INT32,  <=, dint,  dint_to_string)
@@ -366,16 +366,16 @@ end
 
 // ------------------------ Define low level macros ------------------------ //
 
-{#define _ON_FAILED_ACTION(die) $
-	if die then $
-		JiecTest_deactivate(_JIECTEST_); $
-		return; $
-	end_if $
+{#define _ON_FAILED_ACTION(die)
+	if die then
+		JiecTest_deactivate(_JIECTEST_);
+		return;
+	end_if
 }
 
-{#define _VALIDATE_EQ_DATATYPE(DATATYPE, die_, expected_, actual_, message_) $
-	if not JiecTest_validateEQ_ @@ DATATYPE(self:=_JIECTEST_, expected:=expected_, actual:=actual_, message:=message_, die:=die_, file:=TestName, line:=__LINE__) then $
-		_ON_FAILED_ACTION(die_); $
+{#define _VALIDATE_EQ_DATATYPE(DATATYPE, die_, expected_, actual_, message_)
+	if not JiecTest_validateEQ_ @@ DATATYPE(self:=_JIECTEST_, expected:=expected_, actual:=actual_, message:=message_, die:=die_, file:=TestName, line:=__LINE__) then
+		_ON_FAILED_ACTION(die_);
 	end_if}
 {#define _VALIDATE_EQ_INT32_MSG(die, expected, actual, message)     _VALIDATE_EQ_DATATYPE(INT32, die, expected, actual, message)}
 {#if not (_KEYENCE or _MITSUBISHI)}
@@ -411,9 +411,9 @@ end
 {#define _VALIDATE_EQ_TIME(die, expected, actual)       _VALIDATE_EQ_DATATYPE(TIME, die, expected, actual, '')}
 {#define _VALIDATE_EQ_STRING(die, expected, actual)     _VALIDATE_EQ_DATATYPE(STRING, die, expected, actual, '')}
 
-{#define _VALIDATE_CMP_DATATYPE(CMP, DATATYPE, die_, lval_, rval_, message_) $
-	if not JiecTest_validate @@ CMP @@ _ @@ DATATYPE(self:=_JIECTEST_, lval:=lval_, rval:=rval_, message:=message_, die:=die_, file:=TestName, line:=__LINE__) then $
-		_ON_FAILED_ACTION(die_); $
+{#define _VALIDATE_CMP_DATATYPE(CMP, DATATYPE, die_, lval_, rval_, message_)
+	if not JiecTest_validate @@ CMP @@ _ @@ DATATYPE(self:=_JIECTEST_, lval:=lval_, rval:=rval_, message:=message_, die:=die_, file:=TestName, line:=__LINE__) then
+		_ON_FAILED_ACTION(die_);
 	end_if}
 {#define _VALIDATE_LT_INT32_MSG(die, lval, rval, message)   _VALIDATE_CMP_DATATYPE(LT, INT32, die, lval, rval, message)}
 {#define _VALIDATE_LE_INT32_MSG(die, lval, rval, message)   _VALIDATE_CMP_DATATYPE(LE, INT32, die, lval, rval, message)}
@@ -465,9 +465,9 @@ end
 {#define _VALIDATE_GE_DOUBLE(die, lval, rval)   _VALIDATE_CMP_DATATYPE(GE, DOUBLE, die, lval, rval, '')}
 {#define _VALIDATE_GT_DOUBLE(die, lval, rval)   _VALIDATE_CMP_DATATYPE(GT, DOUBLE, die, lval, rval, '')}
 
-{#define _VALIDATE_NEAR_DATATYPE(DATATYPE, die_, val1_, val2_, abs_error_, message_) $
-	if not JiecTest_validateNEAR(self:=_JIECTEST_, val1:=val1_, val2:=val2_, abs_error:=abs_error_, message:=message_, die:=die_, file:=TestName, line:=__LINE__) then $
-		_ON_FAILED_ACTION(die_); $
+{#define _VALIDATE_NEAR_DATATYPE(DATATYPE, die_, val1_, val2_, abs_error_, message_)
+	if not JiecTest_validateNEAR(self:=_JIECTEST_, val1:=val1_, val2:=val2_, abs_error:=abs_error_, message:=message_, die:=die_, file:=TestName, line:=__LINE__) then
+		_ON_FAILED_ACTION(die_);
 	end_if}
 {#define _VALIDATE_NEAR_MSG(die, val1, val2, abs_error, message)    _VALIDATE_NEAR_DATATYPE(DOUBLE, die, val1, val2, abs_error, message)}
 

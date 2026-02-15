@@ -6,30 +6,30 @@
 {#include "sys_config.txt"}
 
 {#if not (_KEYENCE or _MITSUBISHI)}
-	{#define DEFINE_CONFIGURATION(var_global_decls) $
-		configuration MainConfiguration $
-			resource MainResource on MainPLC $
+	{#define DEFINE_CONFIGURATION(var_global_decls)
+		configuration MainConfiguration
+			resource MainResource on MainPLC
 				_DEFINE_SYS_IN_CONFIGURATION_();
 				_DEFINE_CONSOLE_IN_CONFIGURATION_();
-				var_global_decls $
-			end $
-		end $
+				var_global_decls
+			end
+		end
 	}
 {#elif _KEYENCE}
-	{#define DEFINE_CONFIGURATION(var_global_decls) $
-		configuration MainConfiguration $
+	{#define DEFINE_CONFIGURATION(var_global_decls)
+		configuration MainConfiguration
 			_DEFINE_SYS_IN_CONFIGURATION_();
 			_DEFINE_CONSOLE_IN_CONFIGURATION_();
-			var_global_decls $
-		end $
+			var_global_decls
+		end
 	}
 {#elif _MITSUBISHI}
-	{#define DEFINE_CONFIGURATION(var_global_decls) $
-		configuration MainConfiguration $
+	{#define DEFINE_CONFIGURATION(var_global_decls)
+		configuration MainConfiguration
 			_DEFINE_SYS_IN_CONFIGURATION_();
 			_DEFINE_CONSOLE_IN_CONFIGURATION_();
-			var_global_decls $
-		end $
+			var_global_decls
+		end
 	}
 {#endif}
 
@@ -41,31 +41,31 @@
 	var_global _CONSOLE_: Console_t := (row_index:=0, rows:=[CONSOLE_MAX_ROWS('')]); end
 }
 {#if not (_KEYENCE or _MITSUBISHI)}
-	{#define _DEFINE_SYS_IN_POU_() $
+	{#define _DEFINE_SYS_IN_POU_()
 	}
 	{#define _DECLARE_CONSOLE_IN_POU_()
-		var_external _CONSOLE_: Console_t; end $
+		var_external _CONSOLE_: Console_t; end
 	}
 {#else}
-	{#define _DEFINE_SYS_IN_POU_() $
+	{#define _DEFINE_SYS_IN_POU_()
 	}
 	{#define _DECLARE_CONSOLE_IN_POU_()
 	}
 {#endif}
 
 {#if not (_KEYENCE or _CODESYS)}
-	{#define _PROLOGUE_OF_FUNCTION_FOR_SYS_() $
-		var_input  en:  bool; end $
-		var_output eno: bool; end $
+	{#define _PROLOGUE_OF_FUNCTION_FOR_SYS_()
+		var_input  en:  bool; end
+		var_output eno: bool; end
 	}
 {#else}
-	{#define _PROLOGUE_OF_FUNCTION_FOR_SYS_() $
+	{#define _PROLOGUE_OF_FUNCTION_FOR_SYS_()
 	}
 {#endif}
 
-{#define _PROLOGUE_OF_FUNCTION_() $
-	_PROLOGUE_OF_FUNCTION_FOR_SYS_(); $
-    _DEFINE_SYS_IN_POU_(); $
+{#define _PROLOGUE_OF_FUNCTION_()
+	_PROLOGUE_OF_FUNCTION_FOR_SYS_();
+    _DEFINE_SYS_IN_POU_();
 }
 
 {#define inc(v) v := (v) + 1}
