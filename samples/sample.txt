@@ -13,7 +13,7 @@ DEFINE_CONFIGURATION(
 	)
 )
 
-// A single-cycle test sample of the mean function
+(*{doc A single-cycle test sample of the mean function.}*)
 TEST_S(test_mean)
 	var
 		dats: array[BUFFER_SIZE] of lreal;
@@ -36,7 +36,7 @@ TEST_S(test_mean)
 	{end}
 END_TEST_S
 
-// A multiple-cycle test sample of the RunningMean function block
+(*{doc A multiple-cycle test sample of the RunningMean function block.}*)
 TEST_M(test_RunningMean)
 	var
 		rm_instance: RunningMean;
