@@ -456,50 +456,50 @@
 
 
 
-{#define _JIEC_TESTNAMES_LIST_(...) $
-	var_global $
-		_JIECTESTNAMES_: array[MAX_TESTS] of string[TESTNAME_MAX_SIZE] := [__VA_ARGS__, (MAX_TESTS - __VA_ARGC__)('')]; $
-		_JIECTEST_: JiecTest_t; $
-	end $
+{#define _JIEC_TESTNAMES_LIST_(...)
+	var_global
+		_JIECTESTNAMES_: array[MAX_TESTS] of string[TESTNAME_MAX_SIZE] := [__VA_ARGS__, (MAX_TESTS - __VA_ARGC__)('')];
+		_JIECTEST_: JiecTest_t;
+	end
 }
 
 
 
 // Test for a single-cycle test.
-{#define TEST_S(test_name) $
-	program ${single-body:true$} ${__func__:TestName$} test_name $
-	_DECLARE_EXTERNAL_JIEC_TEST(); $
-	${st$} $
-	if not _JIECTEST_.tmp_is_test_available then $
-		_JIECTEST_.tmp_is_test_available := JiecTest_activeTestname(_JIECTEST_) = @test_name; $
-	end_if; $
-	if (not JiecTest_isActive(_JIECTEST_)) or (JiecTest_activeTestname(_JIECTEST_) <> @test_name) then $
-		return; $
-	end_if; $
-	${end$} $
+{#define TEST_S(test_name)
+	program ${single-body:true$} ${__func__:TestName$} test_name
+	_DECLARE_EXTERNAL_JIEC_TEST();
+	${st$}
+	if not _JIECTEST_.tmp_is_test_available then
+		_JIECTEST_.tmp_is_test_available := JiecTest_activeTestname(_JIECTEST_) = @test_name;
+	end_if;
+	if (not JiecTest_isActive(_JIECTEST_)) or (JiecTest_activeTestname(_JIECTEST_) <> @test_name) then
+		return;
+	end_if;
+	${end$}
 }
-{#define END_TEST_S $
-	${st$} $
-	EOT(); $
-	${end$} $
+{#define END_TEST_S
+	${st$}
+	EOT();
+	${end$}
 end}
 
 // Test for the muiltiple-cycles test.
-{#define TEST_M(test_name) $
-	program ${single-body:true$} ${__func__:TestName$} test_name $
-	_DECLARE_EXTERNAL_JIEC_TEST(); $
-	${st$} $
-	if not _JIECTEST_.tmp_is_test_available then $
-		_JIECTEST_.tmp_is_test_available := JiecTest_activeTestname(_JIECTEST_) = @test_name; $
-	end_if; $
-	if (not JiecTest_isActive(_JIECTEST_)) or (JiecTest_activeTestname(_JIECTEST_) <> @test_name) then $
-		return; $
-	end_if; $
-	${end$} $
+{#define TEST_M(test_name)
+	program ${single-body:true$} ${__func__:TestName$} test_name
+	_DECLARE_EXTERNAL_JIEC_TEST();
+	${st$}
+	if not _JIECTEST_.tmp_is_test_available then
+		_JIECTEST_.tmp_is_test_available := JiecTest_activeTestname(_JIECTEST_) = @test_name;
+	end_if;
+	if (not JiecTest_isActive(_JIECTEST_)) or (JiecTest_activeTestname(_JIECTEST_) <> @test_name) then
+		return;
+	end_if;
+	${end$}
 }
-{#define END_TEST_M $
-	${st$} $
-	${end$} $
+{#define END_TEST_M
+	${st$}
+	${end$}
 end}
 
 // End of Test. Terminate the current test.

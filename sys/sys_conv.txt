@@ -14,9 +14,13 @@
 	{#define dword_to_udint(...) udint_to_udint(__VA_ARGS__)}
 	{#define dword_to_dint(...) udint_to_dint(__VA_ARGS__)}
 
+	(*{doc Convert a 32-bit signed integer to a decimal string representation.
+	@input in The 32-bit signed integer to convert.
+	@return The string representation of the input value.}*)
 	function dint_to_string: string[16]
 		_PROLOGUE_OF_FUNCTION_FOR_SYS_();
 		var_input
+			(*{doc The 32-bit signed integer to convert.}*)
 			in: dint;
 		end
 		{st}
@@ -24,9 +28,13 @@
 		{end}
 	end
 
+	(*{doc Convert a 32-bit unsigned integer to a decimal string representation.
+	@input in The 32-bit unsigned integer to convert.
+	@return The string representation of the input value.}*)
 	function udint_to_string: string[16]
 		_PROLOGUE_OF_FUNCTION_FOR_SYS_();
 		var_input
+			(*{doc The 32-bit unsigned integer to convert.}*)
 			in: udint;
 		end
 		{st}
@@ -34,9 +42,13 @@
 		{end}
 	end
 
+	(*{doc Convert a 64-bit floating-point value to a string representation.
+	@input in The 64-bit floating-point value to convert.
+	@return The string representation of the input value.}*)
 	function lreal_to_string: string[32]
 		_PROLOGUE_OF_FUNCTION_FOR_SYS_();
 		var_input
+			(*{doc The 64-bit floating-point value to convert.}*)
 			in: lreal;
 		end
 		{st}
@@ -58,9 +70,16 @@
 
 {#if not (_MITSUBISHI)}
 // note: int64 based
+(*{doc Convert a time value to a string representation in seconds.
+The output format is "<sign><seconds>.<microseconds>s" or "<sign><seconds>s" if there are no fractional seconds.
+@input in The time value to convert.
+@return The string representation of the time value in seconds.}*)
 function time_to_string_sec: string[64]
 	_PROLOGUE_OF_FUNCTION_FOR_SYS_();
-	var_input in: time; end
+	var_input
+		(*{doc The time value to convert.}*)
+		in: time;
+	end
 	var_temp
 		usec_raw: dint;
 		sec_rem_raw: dint;
@@ -102,9 +121,13 @@ end
 	// TODO:
 {#endif}
 
+(*{doc Convert a boolean value to a string representation.
+@input in The boolean value to convert.
+@return 'true' if the input is true, 'false' otherwise.}*)
 function jiec_bool_to_string: string[8]
 	_PROLOGUE_OF_FUNCTION_FOR_SYS_();
 	var_input
+		(*{doc The boolean value to convert.}*)
 		in: bool;
 	end
 	{st}
@@ -117,16 +140,20 @@ function jiec_bool_to_string: string[8]
 end
 {#define bool_to_string(...) jiec_bool_to_string(__VA_ARGS__)}
 
-{#define IDENTITY_TYPECONV_FUNCTION(dtype, dtype_option) $
-	function dtype@@_to_@@dtype: dtype dtype_option $
-		_PROLOGUE_OF_FUNCTION_FOR_SYS_(); $
-		var_input $
-			in: dtype dtype_option; $
-		end $
-		${st$} $
-		dtype@@_to_@@dtype := in; $
-		${end$} $
-	end $
+{#define IDENTITY_TYPECONV_FUNCTION(dtype, dtype_option)
+	(*${doc Identity type conversion function that returns the input value unchanged.$n
+	@input in The input value.$n
+	@return The same value as the input.$}*)
+	function dtype@@_to_@@dtype: dtype dtype_option
+		_PROLOGUE_OF_FUNCTION_FOR_SYS_();
+		var_input
+			(*${doc The input value.$}*)
+			in: dtype dtype_option;
+		end
+		${st$}
+		dtype@@_to_@@dtype := in;
+		${end$}
+	end
 }
 IDENTITY_TYPECONV_FUNCTION(string, [STRING_MAX_SIZE])
 IDENTITY_TYPECONV_FUNCTION(uint, )

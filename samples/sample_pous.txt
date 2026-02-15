@@ -1,17 +1,21 @@
 {#define BUFFER_SIZE 100}
 
-(*
- * Compute the mean value.
- *
- * var
- *   dats: array[BUFFER_SIZE] of lreal;
- *   mean_value: lreal;
- * end
- * dats[0] := 2.0;
- * dats[1] := 4.0;
- * dats[2] := 9.0;
- * mean_value := mean(dats, 3); // 5.0; (2.0 + 4.0 + 9.0) / 3;
- *)
+(*{doc Compute the mean value.
+Calculates the average value of the specified number of elements from the sample buffer.
+
+Example usage:
+var
+	dats: array[BUFFER_SIZE] of lreal;
+	mean_value: lreal;
+end
+dats[0] := 2.0;
+dats[1] := 4.0;
+dats[2] := 9.0;
+mean_value := mean(dats, 3); // 5.0; (2.0 + 4.0 + 9.0) / 3.
+
+@inout sample_buffer The array containing sample data.
+@input sample_size The number of elements to use in the mean calculation.
+@return The mean value of the samples.}*)
 function mean: lreal
 	var_in_out
 		sample_buffer: array[BUFFER_SIZE] of lreal;
@@ -32,18 +36,22 @@ function mean: lreal
 	{end}
 end
 
-(*
- * Incrementally compute the mean value.
- *
- * var
- *   rm_instance: RunningMean;
- *   ss: dint;
- *   mv: lreal;
- * end
- * rm_instance(value:=2.0, mean_value=>mv, sample_size=>ss); // mv=2.0, ss=1
- * rm_instance(value:=4.0, mean_value=>mv, sample_size=>ss); // mv=3.0, ss=2
- * rm_instance(value:=9.0, mean_value=>mv, sample_size=>ss); // mv=5.0, ss=3
- *)
+(*{doc Incrementally compute the mean value.
+A function block that updates the cumulative mean value and sample count each time a value is input.
+
+Example usage:
+var
+	rm_instance: RunningMean;
+	ss: dint;
+	mv: lreal;
+end
+rm_instance(value:=2.0, mean_value=>mv, sample_size=>ss); // mv=2.0, ss=1
+rm_instance(value:=4.0, mean_value=>mv, sample_size=>ss); // mv=3.0, ss=2
+rm_instance(value:=9.0, mean_value=>mv, sample_size=>ss); // mv=5.0, ss=3
+
+@input value The new sample value.
+@output mean_value The mean value up to now.
+@output sample_size The sample count up to now.}*)
 function_block RunningMean
 	var_input
 		value: lreal;

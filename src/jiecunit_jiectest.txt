@@ -7,17 +7,26 @@
 {#include "jiecunit_config.txt"}
 
 type
+	(*{doc The structure to manage the test cases and test results.}*)
 	JiecTest_t: struct
+		(*{doc The number of registered test cases.}*)
 		num_of_tests: dint;
+		(*{doc The names of registered test cases.}*)
 		testnames: array[MAX_TESTS] of string[TESTNAME_MAX_SIZE];
 		//
 		tmp_cycle: dint; // There is a active test, if tmp_cycle >= 0.
 		tmp_active_test_index: dint;
 		tmp_is_test_available: bool; // error, if the test specified test is not found.
+		(*{doc The number of failed assertions in the active test.}*)
 		num_of_failures: dint;
 	end
 end
 
+(*{doc Initialize the JiecTest_t structure.
+Sets all fields including test case count, test names, cycle counter,
+and failure count to their initial states.
+@inout self The JiecTest_t structure to initialize.
+@return Always returns true.}*)
 function JiecTest_initialize: bool
 	_PROLOGUE_OF_FUNCTION_()
 	var_in_out self: JiecTest_t; end
@@ -37,17 +46,23 @@ function JiecTest_initialize: bool
 	{end}
 end
 
+(*{doc Register a test case.
+Returns -1 if the test name is already registered.
+@inout self The JiecTest_t structure.
+@input test_name The name of the test case to register.
+@return The total number of registered test cases, or -1 if already registered.}*)
 function JiecTest_register: dint
 	_PROLOGUE_OF_FUNCTION_()
 	var_in_out self: JiecTest_t; end
 	var_input
+		(*{doc The name of the test case to register.}*)
 		test_name: string[TESTNAME_MAX_SIZE];
 	end
 	var_temp
 		test_index: dint;
 	end
 	{st}
-	// ignore, if it is already registerd.
+	// ignore, if it is already registered.
 	for test_index := 0 to self.num_of_tests - 1 do
 		if test_name = self.testnames[test_index] then
 			JiecTest_register := -1;
@@ -61,6 +76,9 @@ function JiecTest_register: dint
 	{end}
 end
 
+(*{doc Return bool value indicating whether there is no registered test case.
+@inout self The JiecTest_t structure.
+@return True if there are no registered test cases, false otherwise.}*)
 function JiecTest_empty: bool
 	_PROLOGUE_OF_FUNCTION_()
 	var_in_out self: JiecTest_t; end
@@ -69,14 +87,26 @@ function JiecTest_empty: bool
 	{end}
 end
 
+(*{doc Report a test failure.
+Outputs failure information to the console and increments the failure counter.
+@inout self The JiecTest_t structure.
+@input message The failure message (optional).
+@input die Whether to abort the test on failure. Default: true
+@input file The file name where the failure occurred.
+@input line The line number where the failure occurred.
+@return Always returns true.}*)
 function JiecTest_failure: bool
 	_PROLOGUE_OF_FUNCTION_()
 	_DECLARE_CONSOLE_IN_POU_()
 	var_in_out self: JiecTest_t; end
 	var_input
+		(*{doc The failure message (optional).}*)
 		message: string[STRING_MAX_SIZE] := '';
+		(*{doc Whether to abort the test on failure. Default: true}*)
 		die: bool := true;
+		(*{doc The file name where the failure occurred.}*)
 		file: string[FILENAME_MAX_SIZE];
+		(*{doc The line number where the failure occurred.}*)
 		line: dint;
 	end
 	var_temp
@@ -93,6 +123,9 @@ function JiecTest_failure: bool
 	{end}
 end
 
+(*{doc Get a bool value indicating whether there is an active test case.
+@inout self The JiecTest_t structure.
+@return True if there is an active test case, false otherwise.}*)
 function JiecTest_isActive: bool
 	_PROLOGUE_OF_FUNCTION_()
 	var_in_out self: JiecTest_t; end
@@ -101,6 +134,9 @@ function JiecTest_isActive: bool
 	{end}
 end
 
+(*{doc Get the index of the active test case.
+@inout self The JiecTest_t structure.
+@return The index of the active test case.}*)
 function JiecTest_activeTestIndex: dint
 	_PROLOGUE_OF_FUNCTION_()
 	var_in_out self: JiecTest_t; end
@@ -109,6 +145,9 @@ function JiecTest_activeTestIndex: dint
 	{end}
 end
 
+(*{doc Get the name of the active test case.
+@inout self The JiecTest_t structure.
+@return The name of the active test case.}*)
 function JiecTest_activeTestname: string[TESTNAME_MAX_SIZE]
 	_PROLOGUE_OF_FUNCTION_()
 	var_in_out self: JiecTest_t; end
@@ -117,6 +156,9 @@ function JiecTest_activeTestname: string[TESTNAME_MAX_SIZE]
 	{end}
 end
 
+(*{doc Activate a test case and set the cycle counter to 0.
+@inout self The JiecTest_t structure.
+@return Always returns true.}*)
 function JiecTest_activate: bool
 	_PROLOGUE_OF_FUNCTION_()
 	var_in_out self: JiecTest_t; end
@@ -125,6 +167,9 @@ function JiecTest_activate: bool
 	{end}
 end
 
+(*{doc Deactivate the current test case.
+@inout self The JiecTest_t structure.
+@return Always returns true.}*)
 function JiecTest_deactivate: bool
 	_PROLOGUE_OF_FUNCTION_()
 	var_in_out self: JiecTest_t; end
@@ -133,6 +178,9 @@ function JiecTest_deactivate: bool
 	{end}
 end
 
+(*{doc Get the current cycle number of the active test case.
+@inout self The JiecTest_t structure.
+@return The current cycle number.}*)
 function JiecTest_currentCycle: dint
 	_PROLOGUE_OF_FUNCTION_()
 	var_in_out self: JiecTest_t; end
@@ -141,6 +189,9 @@ function JiecTest_currentCycle: dint
 	{end}
 end
 
+(*{doc Increment the cycle counter for the active test case.
+@inout self The JiecTest_t structure.
+@return False if overflow occurred, true otherwise.}*)
 function JiecTest_nextCycle: bool
 	_PROLOGUE_OF_FUNCTION_()
 	var_in_out self: JiecTest_t; end
@@ -150,10 +201,17 @@ function JiecTest_nextCycle: bool
 	{end}
 end
 
+(*{doc Get the test name at the specified index.
+@inout self The JiecTest_t structure.
+@input test_index The index of the test case.
+@return The test name, or an error message if the index is out of range.}*)
 function JiecTest_testname: string[TESTNAME_MAX_SIZE]
 	_PROLOGUE_OF_FUNCTION_()
 	var_in_out self: JiecTest_t; end
-	var_input test_index: dint; end
+	var_input
+		(*{doc The index of the test case.}*)
+		test_index: dint;
+	end
 	{st}
 	if (0 <= test_index) and (test_index < self.num_of_tests) then
 		JiecTest_testname := self.testnames[test_index];
@@ -165,30 +223,47 @@ end
 
 // ------------------------ Define validator functions ------------------------ //
 
-{#define DEFINE_JiecTest_validateEQ_DATATYPE(DATATYPE, datatype_, to_string) $
-	function JiecTest_validateEQ_ @@ DATATYPE: bool $
-	_PROLOGUE_OF_FUNCTION_() $
-	_DECLARE_CONSOLE_IN_POU_() $
-	var_in_out self: JiecTest_t; end $
-	var_input $
-		expected, actual: datatype_; $
-		message: string[128]; $
-		die: bool := true; $
-		file: string[FILENAME_MAX_SIZE]; $
-		line: dint; $
-	end $
-	${st$} $
-	JiecTest_validateEQ_ @@ DATATYPE := expected = actual; $
-	if JiecTest_validateEQ_ @@ DATATYPE then $
-		return; $
-	end_if; $
-	 $
-	puts(jiec_concat('Expected: ', to_string(expected))); $
-	puts(jiec_concat('Actual: ', to_string(actual))); $
-	 $
-	JiecTest_failure(self:=self, message:=message, die:=die, file:=file, line:=line); $
-	${end$} $
+{#define DEFINE_JiecTest_validateEQ_DATATYPE(DATATYPE, datatype_, to_string)
+	(*${doc Validate that the expected value equals the actual value.$n
+	@inout self The JiecTest_t structure.$n
+	@input expected The expected value.$n
+	@input actual The actual value.$n
+	@input message The failure message.$n
+	@input die Whether to abort the test on failure.$n
+	@input file The source file name.$n
+	@input line The line number.$n
+	@return True if the values are equal, false otherwise.$}*)
+	function JiecTest_validateEQ_ @@ DATATYPE: bool
+	_PROLOGUE_OF_FUNCTION_()
+	_DECLARE_CONSOLE_IN_POU_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*${doc The expected value.$}*)
+		expected: datatype_;
+		(*${doc The actual value.$}*)
+		actual: datatype_;
+		(*${doc The failure message.$}*)
+		message: string[128];
+		(*${doc Whether to abort the test on failure.$}*)
+		die: bool := true;
+		(*${doc The source file name.$}*)
+		file: string[FILENAME_MAX_SIZE];
+		(*${doc The line number.$}*)
+		line: dint;
+	end
+	${st$}
+	JiecTest_validateEQ_ @@ DATATYPE := expected = actual;
+	if JiecTest_validateEQ_ @@ DATATYPE then
+		return;
+	end_if;
+
+	puts(jiec_concat('Expected: ', to_string(expected)));
+	puts(jiec_concat('Actual: ', to_string(actual)));
+
+	JiecTest_failure(self:=self, message:=message, die:=die, file:=file, line:=line);
+	${end$}
 	end}
+
 DEFINE_JiecTest_validateEQ_DATATYPE(INT32, dint, dint_to_string)
 {#if not (_KEYENCE or _MITSUBISHI)}
 DEFINE_JiecTest_validateEQ_DATATYPE(INT64, lint, lint_to_string)
@@ -208,29 +283,45 @@ DEFINE_JiecTest_validateEQ_DATATYPE(STRING, string[STRING_MAX_SIZE], )
 
 
 
-{#define DEFINE_JiecTest_validateCMP_DATATYPE(CMP, DATATYPE, operator_, datatype_, to_string) $
-	function JiecTest_validate @@ CMP @@ _ @@ DATATYPE: bool $
-	_PROLOGUE_OF_FUNCTION_() $
-	_DECLARE_CONSOLE_IN_POU_() $
-	var_in_out self: JiecTest_t; end $
-	var_input $
-		lval, rval: datatype_; $
-		message: string[128]; $
-		die: bool := true; $
-		file: string[FILENAME_MAX_SIZE]; $
-		line: dint; $
-	end $
-	${st$} $
-	JiecTest_validate @@ CMP @@ _ @@ DATATYPE := lval operator_ rval; $
-	if JiecTest_validate @@ CMP @@ _ @@ DATATYPE then $
-		return; $
-	end_if; $
-	 $
-	puts(jiec_concat('Expected: ', to_string(lval), @operator_, to_string(rval))); $
-	puts(jiec_concat('Actual: ', to_string(lval), ' vs ', to_string(rval))); $
-	 $
-	JiecTest_failure(self:=self, message:=message, die:=die, file:=file, line:=line); $
-	${end$} $
+{#define DEFINE_JiecTest_validateCMP_DATATYPE(CMP, DATATYPE, operator_, datatype_, to_string)
+	(*${doc Validate a comparison between two values using the specified operator.$n
+@inout self The JiecTest_t structure.$n
+@input lval The left-hand side value.$n
+@input rval The right-hand side value.$n
+@input message The failure message.$n
+@input die Whether to abort the test on failure.$n
+@input file The source file name.$n
+@input line The line number.$n
+@return True if the comparison holds, false otherwise.$}*)
+	function JiecTest_validate @@ CMP @@ _ @@ DATATYPE: bool
+	_PROLOGUE_OF_FUNCTION_()
+	_DECLARE_CONSOLE_IN_POU_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*${doc The left-hand side value.$}*)
+		lval: datatype_;
+		(*${doc The right-hand side value.$}*)
+		rval: datatype_;
+		(*${doc The failure message.$}*)
+		message: string[128];
+		(*${doc Whether to abort the test on failure.$}*)
+		die: bool := true;
+		(*${doc The source file name.$}*)
+		file: string[FILENAME_MAX_SIZE];
+		(*${doc The line number.$}*)
+		line: dint;
+	end
+	${st$}
+	JiecTest_validate @@ CMP @@ _ @@ DATATYPE := lval operator_ rval;
+	if JiecTest_validate @@ CMP @@ _ @@ DATATYPE then
+		return;
+	end_if;
+
+	puts(jiec_concat('Expected: ', to_string(lval), @operator_, to_string(rval)));
+	puts(jiec_concat('Actual: ', to_string(lval), ' vs ', to_string(rval)));
+
+	JiecTest_failure(self:=self, message:=message, die:=die, file:=file, line:=line);
+	${end$}
 	end}
 DEFINE_JiecTest_validateCMP_DATATYPE(LT, INT32,  <,  dint,  dint_to_string)
 DEFINE_JiecTest_validateCMP_DATATYPE(LE, INT32,  <=, dint,  dint_to_string)
@@ -259,16 +350,34 @@ DEFINE_JiecTest_validateCMP_DATATYPE(GT, DOUBLE, >,  lreal, lreal_to_string)
 
 
 
+(*{doc Validate that two floating-point values are nearly equal within the specified absolute error tolerance.
+@inout self The JiecTest_t structure.
+@input val1 The first value.
+@input val2 The second value.
+@input abs_error The allowed absolute error.
+@input message The failure message.
+@input die Whether to abort the test on failure. Default: true
+@input file The source file name.
+@input line The line number.
+@return True if the values are equal within the tolerance, false otherwise.}*)
 function JiecTest_validateNEAR: bool
 _PROLOGUE_OF_FUNCTION_()
 _DECLARE_CONSOLE_IN_POU_()
 var_in_out self: JiecTest_t; end
 var_input
-	val1, val2: lreal;
+	(*{doc The first value.}*)
+	val1: lreal;
+	(*{doc The second value.}*)
+	val2: lreal;
+	(*{doc The allowed absolute error.}*)
 	abs_error: lreal;
+	(*{doc The failure message.}*)
 	message: string[128];
+	(*{doc Whether to abort the test on failure.}*)
 	die: bool := true;
+	(*{doc The source file name.}*)
 	file: string[FILENAME_MAX_SIZE];
+	(*{doc The line number.}*)
 	line: dint;
 end
 {st}
@@ -287,16 +396,16 @@ end
 
 // ------------------------ Define low level macros ------------------------ //
 
-{#define _ON_FAILED_ACTION(die) $
-	if die then $
-		JiecTest_deactivate(_JIECTEST_); $
-		return; $
-	end_if $
+{#define _ON_FAILED_ACTION(die)
+	if die then
+		JiecTest_deactivate(_JIECTEST_);
+		return;
+	end_if
 }
 
-{#define _VALIDATE_EQ_DATATYPE(DATATYPE, die_, expected_, actual_, message_) $
-	if not JiecTest_validateEQ_ @@ DATATYPE(self:=_JIECTEST_, expected:=expected_, actual:=actual_, message:=message_, die:=die_, file:=TestName, line:=__LINE__) then $
-		_ON_FAILED_ACTION(die_); $
+{#define _VALIDATE_EQ_DATATYPE(DATATYPE, die_, expected_, actual_, message_)
+	if not JiecTest_validateEQ_ @@ DATATYPE(self:=_JIECTEST_, expected:=expected_, actual:=actual_, message:=message_, die:=die_, file:=TestName, line:=__LINE__) then
+		_ON_FAILED_ACTION(die_);
 	end_if}
 {#define _VALIDATE_EQ_INT32_MSG(die, expected, actual, message)     _VALIDATE_EQ_DATATYPE(INT32, die, expected, actual, message)}
 {#if not (_KEYENCE or _MITSUBISHI)}
@@ -332,9 +441,9 @@ end
 {#define _VALIDATE_EQ_TIME(die, expected, actual)       _VALIDATE_EQ_DATATYPE(TIME, die, expected, actual, '')}
 {#define _VALIDATE_EQ_STRING(die, expected, actual)     _VALIDATE_EQ_DATATYPE(STRING, die, expected, actual, '')}
 
-{#define _VALIDATE_CMP_DATATYPE(CMP, DATATYPE, die_, lval_, rval_, message_) $
-	if not JiecTest_validate @@ CMP @@ _ @@ DATATYPE(self:=_JIECTEST_, lval:=lval_, rval:=rval_, message:=message_, die:=die_, file:=TestName, line:=__LINE__) then $
-		_ON_FAILED_ACTION(die_); $
+{#define _VALIDATE_CMP_DATATYPE(CMP, DATATYPE, die_, lval_, rval_, message_)
+	if not JiecTest_validate @@ CMP @@ _ @@ DATATYPE(self:=_JIECTEST_, lval:=lval_, rval:=rval_, message:=message_, die:=die_, file:=TestName, line:=__LINE__) then
+		_ON_FAILED_ACTION(die_);
 	end_if}
 {#define _VALIDATE_LT_INT32_MSG(die, lval, rval, message)   _VALIDATE_CMP_DATATYPE(LT, INT32, die, lval, rval, message)}
 {#define _VALIDATE_LE_INT32_MSG(die, lval, rval, message)   _VALIDATE_CMP_DATATYPE(LE, INT32, die, lval, rval, message)}
@@ -386,9 +495,9 @@ end
 {#define _VALIDATE_GE_DOUBLE(die, lval, rval)   _VALIDATE_CMP_DATATYPE(GE, DOUBLE, die, lval, rval, '')}
 {#define _VALIDATE_GT_DOUBLE(die, lval, rval)   _VALIDATE_CMP_DATATYPE(GT, DOUBLE, die, lval, rval, '')}
 
-{#define _VALIDATE_NEAR_DATATYPE(DATATYPE, die_, val1_, val2_, abs_error_, message_) $
-	if not JiecTest_validateNEAR(self:=_JIECTEST_, val1:=val1_, val2:=val2_, abs_error:=abs_error_, message:=message_, die:=die_, file:=TestName, line:=__LINE__) then $
-		_ON_FAILED_ACTION(die_); $
+{#define _VALIDATE_NEAR_DATATYPE(DATATYPE, die_, val1_, val2_, abs_error_, message_)
+	if not JiecTest_validateNEAR(self:=_JIECTEST_, val1:=val1_, val2:=val2_, abs_error:=abs_error_, message:=message_, die:=die_, file:=TestName, line:=__LINE__) then
+		_ON_FAILED_ACTION(die_);
 	end_if}
 {#define _VALIDATE_NEAR_MSG(die, val1, val2, abs_error, message)    _VALIDATE_NEAR_DATATYPE(DOUBLE, die, val1, val2, abs_error, message)}
 

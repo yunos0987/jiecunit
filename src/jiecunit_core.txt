@@ -26,6 +26,7 @@
 	{#define currentMicrosecCount() 1}
 {#endif}
 
+(*{doc The main program for running the tests.}*)
 program {__func__:this_name} JiecUnitMain
 	{#define _initialize()          JiecTest_initialize(_JIECTEST_)}
 	{#define _register(testname)    JiecTest_register(_JIECTEST_, testname)}
