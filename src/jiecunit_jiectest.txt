@@ -55,6 +55,7 @@ function JiecTest_register: dint
 	_PROLOGUE_OF_FUNCTION_()
 	var_in_out self: JiecTest_t; end
 	var_input
+		(*{doc The name of the test case to register.}*)
 		test_name: string[TESTNAME_MAX_SIZE];
 	end
 	var_temp
@@ -99,9 +100,13 @@ function JiecTest_failure: bool
 	_DECLARE_CONSOLE_IN_POU_()
 	var_in_out self: JiecTest_t; end
 	var_input
+		(*{doc The failure message (optional).}*)
 		message: string[STRING_MAX_SIZE] := '';
+		(*{doc Whether to abort the test on failure. Default: true}*)
 		die: bool := true;
+		(*{doc The file name where the failure occurred.}*)
 		file: string[FILENAME_MAX_SIZE];
+		(*{doc The line number where the failure occurred.}*)
 		line: dint;
 	end
 	var_temp
@@ -203,7 +208,10 @@ end
 function JiecTest_testname: string[TESTNAME_MAX_SIZE]
 	_PROLOGUE_OF_FUNCTION_()
 	var_in_out self: JiecTest_t; end
-	var_input test_index: dint; end
+	var_input
+		(*{doc The index of the test case.}*)
+		test_index: dint;
+	end
 	{st}
 	if (0 <= test_index) and (test_index < self.num_of_tests) then
 		JiecTest_testname := self.testnames[test_index];
@@ -216,24 +224,31 @@ end
 // ------------------------ Define validator functions ------------------------ //
 
 {#define DEFINE_JiecTest_validateEQ_DATATYPE(DATATYPE, datatype_, to_string)
-	(*${doc Validate that the expected value equals the actual value.
-	@inout self The JiecTest_t structure.
-	@input expected The expected value.
-	@input actual The actual value.
-	@input message The failure message.
-	@input die Whether to abort the test on failure.
-	@input file The source file name.
-	@input line The line number.
+	(*${doc Validate that the expected value equals the actual value.$n
+	@inout self The JiecTest_t structure.$n
+	@input expected The expected value.$n
+	@input actual The actual value.$n
+	@input message The failure message.$n
+	@input die Whether to abort the test on failure.$n
+	@input file The source file name.$n
+	@input line The line number.$n
 	@return True if the values are equal, false otherwise.$}*)
 	function JiecTest_validateEQ_ @@ DATATYPE: bool
 	_PROLOGUE_OF_FUNCTION_()
 	_DECLARE_CONSOLE_IN_POU_()
 	var_in_out self: JiecTest_t; end
 	var_input
-		expected, actual: datatype_;
+		(*${doc The expected value.$}*)
+		expected: datatype_;
+		(*${doc The actual value.$}*)
+		actual: datatype_;
+		(*${doc The failure message.$}*)
 		message: string[128];
+		(*${doc Whether to abort the test on failure.$}*)
 		die: bool := true;
+		(*${doc The source file name.$}*)
 		file: string[FILENAME_MAX_SIZE];
+		(*${doc The line number.$}*)
 		line: dint;
 	end
 	${st$}
@@ -269,24 +284,31 @@ DEFINE_JiecTest_validateEQ_DATATYPE(STRING, string[STRING_MAX_SIZE], )
 
 
 {#define DEFINE_JiecTest_validateCMP_DATATYPE(CMP, DATATYPE, operator_, datatype_, to_string)
-	(*${doc Validate a comparison between two values using the specified operator.
-	@inout self The JiecTest_t structure.
-	@input lval The left-hand side value.
-	@input rval The right-hand side value.
-	@input message The failure message.
-	@input die Whether to abort the test on failure.
-	@input file The source file name.
-	@input line The line number.
-	@return True if the comparison holds, false otherwise.$}*)
+	(*${doc Validate a comparison between two values using the specified operator.$n
+@inout self The JiecTest_t structure.$n
+@input lval The left-hand side value.$n
+@input rval The right-hand side value.$n
+@input message The failure message.$n
+@input die Whether to abort the test on failure.$n
+@input file The source file name.$n
+@input line The line number.$n
+@return True if the comparison holds, false otherwise.$}*)
 	function JiecTest_validate @@ CMP @@ _ @@ DATATYPE: bool
 	_PROLOGUE_OF_FUNCTION_()
 	_DECLARE_CONSOLE_IN_POU_()
 	var_in_out self: JiecTest_t; end
 	var_input
-		lval, rval: datatype_;
+		(*${doc The left-hand side value.$}*)
+		lval: datatype_;
+		(*${doc The right-hand side value.$}*)
+		rval: datatype_;
+		(*${doc The failure message.$}*)
 		message: string[128];
+		(*${doc Whether to abort the test on failure.$}*)
 		die: bool := true;
+		(*${doc The source file name.$}*)
 		file: string[FILENAME_MAX_SIZE];
+		(*${doc The line number.$}*)
 		line: dint;
 	end
 	${st$}
@@ -343,11 +365,19 @@ _PROLOGUE_OF_FUNCTION_()
 _DECLARE_CONSOLE_IN_POU_()
 var_in_out self: JiecTest_t; end
 var_input
-	val1, val2: lreal;
+	(*{doc The first value.}*)
+	val1: lreal;
+	(*{doc The second value.}*)
+	val2: lreal;
+	(*{doc The allowed absolute error.}*)
 	abs_error: lreal;
+	(*{doc The failure message.}*)
 	message: string[128];
+	(*{doc Whether to abort the test on failure.}*)
 	die: bool := true;
+	(*{doc The source file name.}*)
 	file: string[FILENAME_MAX_SIZE];
+	(*{doc The line number.}*)
 	line: dint;
 end
 {st}
