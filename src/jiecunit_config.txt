@@ -1,5 +1,10 @@
-{#ifndef __CONFIG_TXT__}
-{#define __CONFIG_TXT__}
+{#ifndef __JIECUNIT_CONFIG_TXT__}
+{#define __JIECUNIT_CONFIG_TXT__}
+
+{#define _JIECUNIT          true}
+{#define _JIECUNIT_FULL_VER 20801}
+{#define _JIECUNIT_VER      208}
+{#define _JIECUNIT_VERSION  "2.8.1"}
 
 {#define MAX_TESTS 512}
 
