@@ -44,8 +44,13 @@ END_TEST_S
 
 TEST_S(test_bool_to_string)
 	{st}
+{#if not (_CODESYS)}
 	EXPECT_EQ_STRING('true', bool_to_string(true));
 	EXPECT_EQ_STRING('false', bool_to_string(false));
+{#else}
+	EXPECT_EQ_STRING('TRUE', bool_to_string(true));
+	EXPECT_EQ_STRING('FALSE', bool_to_string(false));
+{#endif}
 	EXPECT_EQ_BOOL(1=2, 3=4);
 	{end}
 END_TEST_S

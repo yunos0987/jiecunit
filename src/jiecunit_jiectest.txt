@@ -27,7 +27,7 @@ Sets all fields including test case count, test names, cycle counter,
 and failure count to their initial states.
 @inout self The JiecTest_t structure to initialize.
 @return Always returns true.}*)
-function JiecTest_initialize: bool
+function JiecTest_initialize
 	_PROLOGUE_OF_FUNCTION_()
 	var_in_out self: JiecTest_t; end
 	var_temp
@@ -95,7 +95,7 @@ Outputs failure information to the console and increments the failure counter.
 @input file The file name where the failure occurred.
 @input line The line number where the failure occurred.
 @return Always returns true.}*)
-function JiecTest_failure: bool
+function JiecTest_failure
 	_PROLOGUE_OF_FUNCTION_()
 	_DECLARE_CONSOLE_IN_POU_()
 	var_in_out self: JiecTest_t; end
@@ -262,8 +262,8 @@ end
 
 	JiecTest_failure(self:=self, message:=message, die:=die, file:=file, line:=line);
 	${end$}
-	end}
-
+	end
+}
 DEFINE_JiecTest_validateEQ_DATATYPE(INT32, dint, dint_to_string)
 {#if not (_KEYENCE or _MITSUBISHI)}
 DEFINE_JiecTest_validateEQ_DATATYPE(INT64, lint, lint_to_string)

@@ -59,12 +59,33 @@
 	{#define dword_to_string(...) udint_to_string(__VA_ARGS__)}
 {#endif}
 
+{#if not (_CODESYS)}
+(*{doc Convert a boolean value to a string representation.
+@input in The boolean value to convert.
+@return 'true' if the input is true, 'false' otherwise.}*)
+function bool_to_string: string[8]
+	_PROLOGUE_OF_FUNCTION_FOR_SYS_();
+	var_input
+		(*{doc The boolean value to convert.}*)
+		in: bool;
+	end
+	{st}
+	if in then
+		bool_to_string := 'true';
+	else
+		bool_to_string := 'false';
+	end_if;
+	{end}
+end
+{#endif}
+
 {#if _OMRON}
 	{#define time_to_usec_dint(...) lint_to_dint(TimeToNanoSec(__VA_ARGS__) / lint#1000)}
 {#elif _KEYENCE}
 	{#define time_to_usec_dint(...) TimeToMicroSec(__VA_ARGS__)}
 {#elif _CODESYS}
 	{#define time ltime}
+	{#define TIME ltime}
 	{#define time_to_usec_dint(...) lint_to_dint(ltime_to_lint(__VA_ARGS__) / lint#1000)}
 {#endif}
 
