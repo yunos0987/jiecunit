@@ -2,9 +2,9 @@
 {#define __JIECUNIT_CONFIG_TXT__}
 
 {#define _JIECUNIT          true}
-{#define _JIECUNIT_FULL_VER 21001}
-{#define _JIECUNIT_VER      210}
-{#define _JIECUNIT_VERSION  "2.10.1"}
+{#define _JIECUNIT_FULL_VER 30000}
+{#define _JIECUNIT_VER      300}
+{#define _JIECUNIT_VERSION  "3.0.0"}
 
 {#define MAX_TESTS 512}
 
