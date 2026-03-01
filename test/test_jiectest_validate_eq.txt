@@ -1,0 +1,236 @@
+{#include <jiecunit.txt>}
+
+// Test internal validation functions directly
+TEST_S(test_jiectest_validate_eq)
+	var
+		jt_int32: JiecTest_t;
+		jt_uint32: JiecTest_t;
+		jt_double: JiecTest_t;
+		jt_bool: JiecTest_t;
+		jt_bit32: JiecTest_t;
+		jt_string: JiecTest_t;
+		jt_time: JiecTest_t;
+		jt_int64: JiecTest_t;
+		jt_uint64: JiecTest_t;
+		jt_bit64: JiecTest_t;
+		dead_or_alive: bool;
+	end
+	{st}
+	JiecTest_initialize(jt_int32);
+	dead_or_alive := JiecTest_validateEQ_INT32(jt_int32, 42, 42, 'JiecTest_validateEQ_INT32 should return true for equal values', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+
+	JiecTest_initialize(jt_uint32);
+	dead_or_alive := JiecTest_validateEQ_UINT32(jt_uint32, 100, 100, 'JiecTest_validateEQ_UINT32 should return true for equal values', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+
+	JiecTest_initialize(jt_double);
+	dead_or_alive := JiecTest_validateEQ_DOUBLE(jt_double, 3.14159, 3.14159, 'JiecTest_validateEQ_DOUBLE should return true for equal values', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+
+	JiecTest_initialize(jt_bool);
+	dead_or_alive := JiecTest_validateEQ_BOOL(jt_bool, true, true, 'JiecTest_validateEQ_BOOL should return true for equal values', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+
+	JiecTest_initialize(jt_bit32);
+	dead_or_alive := JiecTest_validateEQ_BIT32(jt_bit32, dword#16#DEADBEEF, dword#16#DEADBEEF, 'JiecTest_validateEQ_BIT32 should return true for equal values', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+
+	JiecTest_initialize(jt_string);
+	dead_or_alive := JiecTest_validateEQ_STRING(jt_string, 'Testing', 'Testing', 'JiecTest_validateEQ_STRING should return true for equal values', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+
+{#if not (_KEYENCE or _MITSUBISHI)}
+	JiecTest_initialize(jt_time);
+	dead_or_alive := JiecTest_validateEQ_TIME(jt_time, time#5s, time#5s, 'JiecTest_validateEQ_TIME should return true for equal values', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+
+	JiecTest_initialize(jt_int64);
+	dead_or_alive := JiecTest_validateEQ_INT64(jt_int64, 9876543210, 9876543210, 'JiecTest_validateEQ_INT64 should return true for equal values', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+
+	JiecTest_initialize(jt_uint64);
+	dead_or_alive := JiecTest_validateEQ_UINT64(jt_uint64, 1111222233334444, 1111222233334444, 'JiecTest_validateEQ_UINT64 should return true for equal values', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+
+	JiecTest_initialize(jt_bit64);
+	dead_or_alive := JiecTest_validateEQ_BIT64(jt_bit64, lword#16#DEADBEEFCAFEBABE, lword#16#DEADBEEFCAFEBABE, 'JiecTest_validateEQ_BIT64 should return true for equal values', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+{#endif}
+
+	JiecTest_initialize(jt_int32);
+	dead_or_alive := JiecTest_validateEQ_INT32(jt_int32, 0, 1, '0 should not be equal to 1', false, TestName, __LINE__);
+	EXPECT_FALSE(dead_or_alive);
+
+	JiecTest_initialize(jt_double);
+	dead_or_alive := JiecTest_validateEQ_DOUBLE(jt_double, 1e-11, 1e-12, '1e-11 should not be equal to 1e-12', false, TestName, __LINE__);
+	EXPECT_FALSE(dead_or_alive);
+
+	JiecTest_initialize(jt_bool);
+	dead_or_alive := JiecTest_validateEQ_BOOL(jt_bool, true, false, 'True values should not be equal', false, TestName, __LINE__);
+	EXPECT_FALSE(dead_or_alive);
+
+	JiecTest_initialize(jt_bool);
+	dead_or_alive := JiecTest_validateEQ_BOOL(jt_bool, false, true, 'False values should not be equal', false, TestName, __LINE__);
+	EXPECT_FALSE(dead_or_alive);
+
+	JiecTest_initialize(jt_string);
+	dead_or_alive := JiecTest_validateEQ_STRING(jt_string, '', '', 'Empty strings should be equal', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+
+	JiecTest_initialize(jt_string);
+	dead_or_alive := JiecTest_validateEQ_STRING(jt_string, ' ', '  ', 'Strings with different lengths of spaces should not be equal', false, TestName, __LINE__);
+	EXPECT_FALSE(dead_or_alive);
+	{end}
+END_TEST_S
+
+// Test EXPECT_EQ and ASSERT_EQ macros with all data types
+TEST_S(test_eq_macro)
+	{st}
+	// Test EXPECT_EQ with signed integers
+	EXPECT_EQ_SINT(5, 5);
+	EXPECT_EQ_INT(100, 100);
+	EXPECT_EQ_DINT(1000, 1000);
+	EXPECT_EQ_INT32(12345, 12345);
+{#if not (_KEYENCE or _MITSUBISHI)}
+	EXPECT_EQ_LINT_MSG(123456789, 123456789, 'LINT values should be equal');
+	EXPECT_EQ_INT64(1234567890123, 1234567890123);
+{#endif}
+
+	// Test EXPECT_EQ with unsigned integers
+	EXPECT_EQ_USINT(5, 5);
+	EXPECT_EQ_UINT(100, 100);
+	EXPECT_EQ_UDINT(1000, 1000);
+	EXPECT_EQ_UINT32(12345, 12345);
+{#if not (_KEYENCE or _MITSUBISHI)}
+	EXPECT_EQ_ULINT(123456789, 123456789);
+	EXPECT_EQ_UINT64(1234567890123, 1234567890123);
+{#endif}
+
+	// Test EXPECT_EQ with floating-point types (deprecated - shown for compatibility)
+	// Note: These are deprecated, use EXPECT_NEAR instead for floating-point comparisons
+	EXPECT_EQ_REAL(1.0, 1.0);
+	EXPECT_EQ_LREAL(3.14, 3.14);
+	EXPECT_EQ_FLOAT(1.5, 1.5);
+	EXPECT_EQ_DOUBLE(100.001, 100.001);
+
+	// Test EXPECT_EQ with boolean type
+	EXPECT_EQ_BOOL(true, true);
+	EXPECT_EQ_BOOL(false, false);
+
+	// Test EXPECT_EQ with bit types
+{#if not (_KEYENCE or _MITSUBISHI)}
+	EXPECT_EQ_BYTE(byte#16#FF, byte#16#FF);
+{#endif}
+	EXPECT_EQ_WORD(word#16#FFFF, word#16#FFFF);
+	EXPECT_EQ_DWORD(dword#16#FFFFFFFF, dword#16#FFFFFFFF);
+	EXPECT_EQ_BIT32(dword#16#12345678, dword#16#12345678);
+{#if not (_KEYENCE or _MITSUBISHI)}
+	EXPECT_EQ_LWORD(lword#16#FFFFFFFFFFFFFFFF, lword#16#FFFFFFFFFFFFFFFF);
+	EXPECT_EQ_BIT64(lword#16#123456789ABCDEF0, lword#16#123456789ABCDEF0);
+{#endif}
+
+	// Test EXPECT_EQ with string type
+	EXPECT_EQ_STRING('Hello', 'Hello');
+	EXPECT_EQ_STRING('Test', 'Test');
+	EXPECT_EQ_STRING('', '');
+	EXPECT_EQ_STRING('ABC', 'ABC');
+{#if not (_KEYENCE or _MITSUBISHI)}
+	// Test EXPECT_EQ with TIME type
+	EXPECT_EQ_TIME(time#1s, time#1s);
+	EXPECT_EQ_TIME(time#100ms, time#100ms);
+	EXPECT_EQ_TIME(time#0s, time#0s);
+{#endif}
+	// Test EXPECT_EQ with message versions
+	EXPECT_EQ_INT_MSG(5, 5, 'Five should equal five');
+	EXPECT_EQ_BOOL_MSG(true, true, 'True should equal true');
+	EXPECT_EQ_STRING_MSG('Hello', 'Hello', 'Identical strings');
+	EXPECT_EQ_DOUBLE_MSG(1.0, 1.0, 'Identical real numbers');
+
+	// Test EXPECT_EQ edge cases and boundary conditions
+	// Test with zero values
+	EXPECT_EQ_INT(0, 0);
+	EXPECT_EQ_UINT(0, 0);
+	EXPECT_EQ_DOUBLE(0.0, 0.0);
+	
+	// Test with negative values
+	EXPECT_EQ_INT(-1, -1);
+	EXPECT_EQ_DOUBLE(-1.0, -1.0);
+	
+	// Test with maximum values
+	EXPECT_EQ_USINT(255, 255);
+	EXPECT_EQ_UINT(65535, 65535);
+	
+	// Test empty and special strings
+	EXPECT_EQ_STRING('', '');  // empty strings
+	EXPECT_EQ_STRING(' ', ' '); // space strings
+	EXPECT_EQ_STRING('a', 'a'); // single character
+
+	// Test EXPECT_TRUE and EXPECT_FALSE
+	EXPECT_TRUE(true);
+	EXPECT_FALSE(false);
+
+	// Test ASSERT_EQ with signed integers
+	ASSERT_EQ_SINT(5, 5);
+	ASSERT_EQ_INT(100, 100);
+	ASSERT_EQ_DINT(1000, 1000);
+	ASSERT_EQ_INT32(12345, 12345);
+{#if not (_KEYENCE or _MITSUBISHI)}
+	ASSERT_EQ_LINT(123456789, 123456789);
+	ASSERT_EQ_INT64(1234567890123, 1234567890123);
+{#endif}
+
+	// Test ASSERT_EQ with unsigned integers
+	ASSERT_EQ_USINT(5, 5);
+	ASSERT_EQ_UINT(100, 100);
+	ASSERT_EQ_UDINT(1000, 1000);
+	ASSERT_EQ_UINT32(12345, 12345);
+{#if not (_KEYENCE or _MITSUBISHI)}
+	ASSERT_EQ_ULINT(123456789, 123456789);
+	ASSERT_EQ_UINT64(1234567890123, 1234567890123);
+{#endif}
+
+	// Test ASSERT_EQ with floating-point types (deprecated)
+	ASSERT_EQ_REAL(1.0, 1.0);
+	ASSERT_EQ_LREAL(3.14, 3.14);
+	ASSERT_EQ_FLOAT(1.5, 1.5);
+	ASSERT_EQ_DOUBLE(100.001, 100.001);
+
+	// Test ASSERT_EQ with boolean type
+	ASSERT_EQ_BOOL(true, true);
+	ASSERT_EQ_BOOL(false, false);
+
+	// Test ASSERT_EQ with bit types
+{#if not (_KEYENCE or _MITSUBISHI)}
+	ASSERT_EQ_BYTE(16#FF, 16#FF);
+{#endif}
+	ASSERT_EQ_WORD(16#FFFF, 16#FFFF);
+	ASSERT_EQ_DWORD(16#FFFFFFFF, 16#FFFFFFFF);
+	ASSERT_EQ_BIT32(16#12345678, 16#12345678);
+{#if not (_KEYENCE or _MITSUBISHI)}
+	ASSERT_EQ_LWORD(16#FFFFFFFFFFFFFFFF, 16#FFFFFFFFFFFFFFFF);
+	ASSERT_EQ_BIT64(16#123456789ABCDEF0, 16#123456789ABCDEF0);
+{#endif}
+
+	// Test ASSERT_EQ with string type
+	ASSERT_EQ_STRING('Hello', 'Hello');
+	ASSERT_EQ_STRING('Test', 'Test');
+	ASSERT_EQ_STRING('', '');
+	ASSERT_EQ_STRING('ABC', 'ABC');
+{#if not (_KEYENCE or _MITSUBISHI)}
+	// Test ASSERT_EQ with TIME type
+	ASSERT_EQ_TIME(time#1s, time#1s);
+	ASSERT_EQ_TIME(time#100ms, time#100ms);
+	ASSERT_EQ_TIME(time#0s, time#0s);
+{#endif}
+	// Test ASSERT_EQ with message versions
+	ASSERT_EQ_INT_MSG(5, 5, 'Five should equal five');
+	ASSERT_EQ_BOOL_MSG(true, true, 'True should equal true');
+	ASSERT_EQ_STRING_MSG('Hello', 'Hello', 'Identical strings');
+	ASSERT_EQ_DOUBLE_MSG(1.0, 1.0, 'Identical real numbers');
+
+	// Test ASSERT_TRUE and ASSERT_FALSE
+	ASSERT_TRUE(true);
+	ASSERT_FALSE(false);
+	{end}
+END_TEST_S
