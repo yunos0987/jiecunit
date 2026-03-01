@@ -218,7 +218,7 @@ $ jiecc -I.. -I..\sys ..\test\test.txt -o .\test.xml -t codesys
 
 ## ライセンス
 
-このプロジェクトはApache License 2.0の下でライセンスされています。詳細は[LICENSE](./LICENSE)ファイルを参照してください。
+このプロジェクトはMIT Licenseのもとで公開されています。詳細は[LICENSE](./LICENSE)ファイルをご参照ください。
 
 ## その他の情報
 
