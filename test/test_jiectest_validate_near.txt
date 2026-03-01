@@ -1,0 +1,112 @@
+{#include <jiecunit.txt>}
+
+(*{doc Test for JiecTest_validateNEAR functionality with comprehensive test cases.}*)
+TEST_S(test_jiectest_validate_near)
+	var
+		jt_identical: JiecTest_t;
+		jt_within_tolerance: JiecTest_t;
+		jt_boundary: JiecTest_t;
+		jt_exceeding: JiecTest_t;
+		jt_negative: JiecTest_t;
+		jt_positive_negative: JiecTest_t;
+		jt_pos_neg_exceeding: JiecTest_t;
+		jt_zero_tolerance: JiecTest_t;
+		jt_zero_tolerance_fail: JiecTest_t;
+		jt_large_numbers: JiecTest_t;
+		jt_small_numbers: JiecTest_t;
+		jt_special_values: JiecTest_t;
+		dead_or_alive: bool;
+	end
+	{st}
+	JiecTest_initialize(jt_identical);
+	dead_or_alive := JiecTest_validateNEAR(jt_identical, 1.0, 1.0, 0.0001, 'identical values should be within tolerance', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+
+	JiecTest_initialize(jt_within_tolerance);
+	dead_or_alive := JiecTest_validateNEAR(jt_within_tolerance, 1.0, 1.00001, 0.0001, 'values within absolute error tolerance should pass', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+
+	JiecTest_initialize(jt_boundary);
+	dead_or_alive := JiecTest_validateNEAR(jt_boundary, 1.0, 1.0001, 0.0001, 'values at the boundary of tolerance should pass', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+
+	JiecTest_initialize(jt_exceeding);
+	dead_or_alive := JiecTest_validateNEAR(jt_exceeding, 1.0, 1.001, 0.0001, 'values exceeding absolute error tolerance should fail', false, TestName, __LINE__);
+	EXPECT_FALSE(dead_or_alive);
+
+	JiecTest_initialize(jt_negative);
+	dead_or_alive := JiecTest_validateNEAR(jt_negative, -1.0, -1.00001, 0.0001, 'negative values within tolerance should pass', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+
+	JiecTest_initialize(jt_positive_negative);
+	dead_or_alive := JiecTest_validateNEAR(jt_positive_negative, 1.0, -1.0, 2.1, 'positive and negative values within tolerance should pass', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+
+	JiecTest_initialize(jt_pos_neg_exceeding);
+	dead_or_alive := JiecTest_validateNEAR(jt_pos_neg_exceeding, 1.0, -1.0, 1.9, 'positive and negative values exceeding tolerance should fail', false, TestName, __LINE__);
+	EXPECT_FALSE(dead_or_alive);
+
+	JiecTest_initialize(jt_zero_tolerance);
+	dead_or_alive := JiecTest_validateNEAR(jt_zero_tolerance, 5.0, 5.0, 0.0, 'zero tolerance with identical values should pass', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+
+	JiecTest_initialize(jt_zero_tolerance_fail);
+	dead_or_alive := JiecTest_validateNEAR(jt_zero_tolerance_fail, 5.0, 5.00001, 0.0, 'zero tolerance with different values should fail', false, TestName, __LINE__);
+	EXPECT_FALSE(dead_or_alive);
+
+	JiecTest_initialize(jt_large_numbers);
+	dead_or_alive := JiecTest_validateNEAR(jt_large_numbers, 1000000.0, 1000000.1, 0.5, 'large numbers within tolerance should pass', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+
+	JiecTest_initialize(jt_small_numbers);
+	dead_or_alive := JiecTest_validateNEAR(jt_small_numbers, 0.000001, 0.000002, 0.000001, 'small numbers within tolerance should pass', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+
+	JiecTest_initialize(jt_special_values);
+	dead_or_alive := JiecTest_validateNEAR(jt_special_values, 0.0, 0.0001, 0.001, 'zero values with tolerance should pass', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+	{end}
+END_TEST_S
+
+// Test EXPECT_NEAR and ASSERT_NEAR macros
+TEST_S(test_near_macros)
+	{st}
+	// Test EXPECT_NEAR with valid cases
+	EXPECT_NEAR(1.0, 1.0001, 0.001);
+	EXPECT_NEAR(3.14159, 3.14, 0.01);
+	EXPECT_NEAR(-2.5, -2.499, 0.01);
+	EXPECT_NEAR(0.0, 0.001, 0.01);
+
+	// Test EXPECT_NEAR_MSG with meaningful messages  
+	EXPECT_NEAR_MSG(100.0, 100.1, 0.2, 'Values should be approximately equal');
+	EXPECT_NEAR_MSG(-50.0, -49.99, 0.1, 'Negative values near comparison');
+
+	// Test ASSERT_NEAR with valid cases
+	ASSERT_NEAR(2.718, 2.72, 0.01);
+	ASSERT_NEAR(-1.414, -1.41, 0.01);
+
+	// Test ASSERT_NEAR_MSG with meaningful messages
+	ASSERT_NEAR_MSG(1.0, 1.005, 0.01, 'Critical precision test must pass');
+
+	// Test edge cases for NEAR functionality
+	// Test with very small tolerances
+	EXPECT_NEAR(1.0, 1.0000001, 0.000001);
+	
+	// Test with large tolerances
+	EXPECT_NEAR(100.0, 150.0, 100.0);
+	
+	// Test with negative tolerances (absolute value should be used)
+	//EXPECT_NEAR(5.0, 5.1, -0.2);
+	
+	// Test symmetry: NEAR(a,b,tol) should equal NEAR(b,a,tol)
+	EXPECT_NEAR(7.5, 7.3, 0.5);
+	EXPECT_NEAR(7.3, 7.5, 0.5);
+	
+	// Test boundary conditions
+	EXPECT_NEAR(10.0, 10.1, 0.1);  // exactly at tolerance boundary
+	EXPECT_NEAR(-10.0, -10.1, 0.1); // negative boundary
+	
+	// Test with identical values and zero tolerance  
+	EXPECT_NEAR(42.0, 42.0, 0.0);
+	{end}
+END_TEST_S

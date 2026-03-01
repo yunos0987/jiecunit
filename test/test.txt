@@ -12,7 +12,13 @@
 
 {#include "test_sys.txt"}
 {#include "test_sys_conv.txt"}
-{#include "test_jiecunit.txt"}
+{#include "test_jiectest_validate_eq.txt"}
+{#include "test_jiectest_validate_ne.txt"}
+{#include "test_jiectest_validate_lt.txt"}
+{#include "test_jiectest_validate_le.txt"}
+{#include "test_jiectest_validate_ge.txt"}
+{#include "test_jiectest_validate_gt.txt"}
+{#include "test_jiectest_validate_near.txt"}
 
 // List test program names.
 DEFINE_CONFIGURATION(
@@ -23,7 +29,19 @@ DEFINE_CONFIGURATION(
 		'test_lreal_to_string',
 		'test_bool_to_string',
 		'test_time_to_string_sec',
-		'test_expect_cmp_double',
-		'test_JiecTest_validateNEAR'
+		'test_eq_macro',
+		'test_jiectest_validate_eq',
+		'test_ne_macro',
+		'test_jiectest_validate_ne',
+		'test_lt_macro',
+		'test_jiectest_validate_lt',
+		'test_le_macro',
+		'test_jiectest_validate_le',
+		'test_ge_macro',
+		'test_jiectest_validate_ge',
+		'test_gt_macro',
+		'test_jiectest_validate_gt',
+		'test_near_macros',
+		'test_jiectest_validate_near'
 	)
 )

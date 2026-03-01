@@ -1,0 +1,67 @@
+{#include <jiecunit.txt>}
+
+// Test internal validation functions directly
+TEST_S(test_jiectest_validate_lt)
+	var
+		jt_int32: JiecTest_t;
+		jt_uint32: JiecTest_t;
+		jt_double: JiecTest_t;
+		jt_string: JiecTest_t;
+		jt_time: JiecTest_t;
+		jt_int64: JiecTest_t;
+		jt_uint64: JiecTest_t;
+	end
+	{st}
+	JiecTest_initialize(jt_int32);
+	EXPECT_TRUE(JiecTest_validateLT_INT32(jt_int32, 1, 2, 'INT32: 1 < 2', false, TestName, __LINE__));
+	EXPECT_FALSE(JiecTest_validateLT_INT32(jt_int32, 2, 2, 'INT32: 2 < 2', false, TestName, __LINE__));
+	EXPECT_FALSE(JiecTest_validateLT_INT32(jt_int32, 3, 2, 'INT32: 3 < 2', false, TestName, __LINE__));
+
+	JiecTest_initialize(jt_uint32);
+	EXPECT_TRUE(JiecTest_validateLT_UINT32(jt_uint32, 1, 2, 'UINT32: 1 < 2', false, TestName, __LINE__));
+	EXPECT_FALSE(JiecTest_validateLT_UINT32(jt_uint32, 2, 2, 'UINT32: 2 < 2', false, TestName, __LINE__));
+	EXPECT_FALSE(JiecTest_validateLT_UINT32(jt_uint32, 3, 2, 'UINT32: 3 < 2', false, TestName, __LINE__));
+
+	JiecTest_initialize(jt_double);
+	EXPECT_TRUE(JiecTest_validateLT_DOUBLE(jt_double, 1.0, 2.0, 'DOUBLE: 1.0 < 2.0', false, TestName, __LINE__));
+	EXPECT_FALSE(JiecTest_validateLT_DOUBLE(jt_double, 2.0, 2.0, 'DOUBLE: 2.0 < 2.0', false, TestName, __LINE__));
+	EXPECT_FALSE(JiecTest_validateLT_DOUBLE(jt_double, 3.0, 2.0, 'DOUBLE: 3.0 < 2.0', false, TestName, __LINE__));
+
+	JiecTest_initialize(jt_string);
+	EXPECT_TRUE(JiecTest_validateLT_STRING(jt_string, 'A', 'B', 'STRING: "A" < "B"', false, TestName, __LINE__));
+	EXPECT_FALSE(JiecTest_validateLT_STRING(jt_string, 'A', 'A', 'STRING: "A" < "A"', false, TestName, __LINE__));
+	EXPECT_FALSE(JiecTest_validateLT_STRING(jt_string, 'B', 'A', 'STRING: "B" < "A"', false, TestName, __LINE__));
+
+{#if not (_KEYENCE or _MITSUBISHI)}
+	JiecTest_initialize(jt_time);
+	EXPECT_TRUE(JiecTest_validateLT_TIME(jt_time, time#1s, time#2s, 'TIME: 1s < 2s', false, TestName, __LINE__));
+	EXPECT_FALSE(JiecTest_validateLT_TIME(jt_time, time#2s, time#2s, 'TIME: 2s < 2s', false, TestName, __LINE__));
+	EXPECT_FALSE(JiecTest_validateLT_TIME(jt_time, time#3s, time#2s, 'TIME: 3s < 2s', false, TestName, __LINE__));
+
+	JiecTest_initialize(jt_int64);
+	EXPECT_TRUE(JiecTest_validateLT_INT64(jt_int64, 1, 2, 'INT64: 1 < 2', false, TestName, __LINE__));
+	EXPECT_FALSE(JiecTest_validateLT_INT64(jt_int64, 2, 2, 'INT64: 2 < 2', false, TestName, __LINE__));
+	EXPECT_FALSE(JiecTest_validateLT_INT64(jt_int64, 3, 2, 'INT64: 3 < 2', false, TestName, __LINE__));
+
+	JiecTest_initialize(jt_uint64);
+	EXPECT_TRUE(JiecTest_validateLT_UINT64(jt_uint64, 1, 2, 'UINT64: 1 < 2', false, TestName, __LINE__));
+	EXPECT_FALSE(JiecTest_validateLT_UINT64(jt_uint64, 2, 2, 'UINT64: 2 < 2', false, TestName, __LINE__));
+	EXPECT_FALSE(JiecTest_validateLT_UINT64(jt_uint64, 3, 2, 'UINT64: 3 < 2', false, TestName, __LINE__));
+{#endif}
+	{end}
+END_TEST_S
+
+// Test EXPECT_LT and ASSERT_LT macros with all data types
+TEST_S(test_lt_macro)
+	{st}
+	EXPECT_LT_INT(1, 2);
+	EXPECT_LT_INT(-1, 0);
+	EXPECT_LT_UINT(0, 1);
+	EXPECT_LT_DOUBLE(-1.0, 0.0);
+	EXPECT_LT_STRING('A', 'B');
+{#if not (_KEYENCE or _MITSUBISHI)}
+	EXPECT_LT_TIME(time#1s, time#2s);
+{#endif}
+	// ...他データ型・メッセージ・ASSERT_LTも同様に追加...
+	{end}
+END_TEST_S

@@ -1,0 +1,256 @@
+{#include <jiecunit.txt>}
+
+// Test internal validation functions directly
+TEST_S(test_jiectest_validate_ne)
+	var
+		jt_int32: JiecTest_t;
+		jt_int64: JiecTest_t;
+		jt_uint32: JiecTest_t;
+		jt_uint64: JiecTest_t;
+		jt_bit32: JiecTest_t;
+		jt_bit64: JiecTest_t;
+		jt_bool: JiecTest_t;
+		jt_double: JiecTest_t;
+		jt_string: JiecTest_t;
+		jt_time: JiecTest_t;
+		dead_or_alive: bool;
+	end
+	{st}
+	// Test INT32 validation
+	JiecTest_initialize(jt_int32);
+	dead_or_alive := JiecTest_validateNE_INT32(jt_int32, 5, 10, '', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+	
+	JiecTest_initialize(jt_int32);
+	dead_or_alive := JiecTest_validateNE_INT32(jt_int32, 5, 5, '', false, TestName, __LINE__);
+	EXPECT_FALSE(dead_or_alive);
+
+{#if not (_KEYENCE or _MITSUBISHI)}
+	// Test INT64 validation
+	JiecTest_initialize(jt_int64);
+	dead_or_alive := JiecTest_validateNE_INT64(jt_int64, 123, 456, '', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+	
+	JiecTest_initialize(jt_int64);
+	dead_or_alive := JiecTest_validateNE_INT64(jt_int64, 123, 123, '', false, TestName, __LINE__);
+	EXPECT_FALSE(dead_or_alive);
+{#endif}
+	
+	// Test UINT32 validation
+	JiecTest_initialize(jt_uint32);
+	dead_or_alive := JiecTest_validateNE_UINT32(jt_uint32, 100, 200, '', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+	
+	JiecTest_initialize(jt_uint32);
+	dead_or_alive := JiecTest_validateNE_UINT32(jt_uint32, 100, 100, '', false, TestName, __LINE__);
+	EXPECT_FALSE(dead_or_alive);
+
+{#if not (_KEYENCE or _MITSUBISHI)}
+	// Test UINT64 validation
+	JiecTest_initialize(jt_uint64);
+	dead_or_alive := JiecTest_validateNE_UINT64(jt_uint64, 100, 200, '', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+	
+	JiecTest_initialize(jt_uint64);
+	dead_or_alive := JiecTest_validateNE_UINT64(jt_uint64, 100, 100, '', false, TestName, __LINE__);
+	EXPECT_FALSE(dead_or_alive);
+{#endif}
+
+	// Test DOUBLE validation
+	JiecTest_initialize(jt_double);
+	dead_or_alive := JiecTest_validateNE_DOUBLE(jt_double, 1.0, 2.0, '', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+
+	JiecTest_initialize(jt_double);
+	dead_or_alive := JiecTest_validateNE_DOUBLE(jt_double, 1.0, 1.0, '', false, TestName, __LINE__);
+	EXPECT_FALSE(dead_or_alive);
+	
+	// Test BOOL validation
+	JiecTest_initialize(jt_bool);
+	dead_or_alive := JiecTest_validateNE_BOOL(jt_bool, true, false, '', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+	
+	JiecTest_initialize(jt_bool);
+	dead_or_alive := JiecTest_validateNE_BOOL(jt_bool, true, true, '', false, TestName, __LINE__);
+	EXPECT_FALSE(dead_or_alive);
+
+	// Test BIT32 validation
+	JiecTest_initialize(jt_bit32);
+	dead_or_alive := JiecTest_validateNE_BIT32(jt_bit32, 16#FF00, 16#00FF, '', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+	
+	JiecTest_initialize(jt_bit32);
+	dead_or_alive := JiecTest_validateNE_BIT32(jt_bit32, 16#FF00, 16#FF00, '', false, TestName, __LINE__);
+	EXPECT_FALSE(dead_or_alive);
+
+{#if not (_KEYENCE or _MITSUBISHI)}
+	// Test BIT64 validation
+	JiecTest_initialize(jt_bit64);
+	dead_or_alive := JiecTest_validateNE_BIT64(jt_bit64, 16#FF00FF00, 16#00FF00FF, '', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+	
+	JiecTest_initialize(jt_bit64);
+	dead_or_alive := JiecTest_validateNE_BIT64(jt_bit64, 16#FF00FF00, 16#FF00FF00, '', false, TestName, __LINE__);
+	EXPECT_FALSE(dead_or_alive);
+{#endif}
+
+	// Test STRING validation
+	JiecTest_initialize(jt_string);
+	dead_or_alive := JiecTest_validateNE_STRING(jt_string, 'Hello', 'World', '', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+	
+	JiecTest_initialize(jt_string);
+	dead_or_alive := JiecTest_validateNE_STRING(jt_string, 'Hello', 'Hello', '', false, TestName, __LINE__);
+	EXPECT_FALSE(dead_or_alive);
+
+{#if not (_KEYENCE or _MITSUBISHI)}
+	// Test TIME validation
+	JiecTest_initialize(jt_time);
+	dead_or_alive := JiecTest_validateNE_TIME(jt_time, time#1s, time#2s, '', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+	
+	JiecTest_initialize(jt_time);
+	dead_or_alive := JiecTest_validateNE_TIME(jt_time, time#1s, time#1s, '', false, TestName, __LINE__);
+	EXPECT_FALSE(dead_or_alive);
+{#endif}
+	{end}
+END_TEST_S
+
+// Test EXPECT_NE and ASSERT_NE macros with all data types
+TEST_S(test_ne_macro)
+	{st}
+	// Test EXPECT_NE with signed integers
+	EXPECT_NE_SINT(5, 10);
+	EXPECT_NE_INT(100, 200);
+	EXPECT_NE_DINT(1000, 2000);
+	EXPECT_NE_INT32(12345, 54321);
+{#if not (_KEYENCE or _MITSUBISHI)}
+	EXPECT_NE_LINT_MSG(123456789, 987654321, 'LINT values should differ');
+	EXPECT_NE_INT64(1234567890123, 9876543210987);
+{#endif}
+
+	// Test EXPECT_NE with unsigned integers
+	EXPECT_NE_USINT(5, 10);
+	EXPECT_NE_UINT(100, 200);
+	EXPECT_NE_UDINT(1000, 2000);
+	EXPECT_NE_UINT32(12345, 54321);
+{#if not (_KEYENCE or _MITSUBISHI)}
+	EXPECT_NE_ULINT(123456789, 987654321);
+	EXPECT_NE_UINT64(1234567890123, 9876543210987);
+{#endif}
+
+	// Test EXPECT_NE with floating-point types
+	EXPECT_NE_REAL(1.0, 2.0);
+	EXPECT_NE_LREAL(3.14, 2.71);
+	EXPECT_NE_FLOAT(-1.5, 1.5);
+	EXPECT_NE_DOUBLE(100.001, 100.002);
+
+	// Test EXPECT_NE with boolean type
+	EXPECT_NE_BOOL(true, false);
+	EXPECT_NE_BOOL(false, true);
+
+	// Test EXPECT_NE with bit types
+{#if not (_KEYENCE or _MITSUBISHI)}
+	EXPECT_NE_BYTE(byte#16#FF, byte#16#00);
+{#endif}
+	EXPECT_NE_WORD(word#16#FFFF, word#16#0000);
+	EXPECT_NE_DWORD(dword#16#FFFFFFFF, dword#16#00000000);
+	EXPECT_NE_BIT32(dword#16#12345678, dword#16#87654321);
+{#if not (_KEYENCE or _MITSUBISHI)}
+	EXPECT_NE_LWORD(lword#16#FFFFFFFFFFFFFFFF, lword#16#0000000000000000);
+	EXPECT_NE_BIT64(lword#16#123456789ABCDEF0, lword#16#0FEDCBA987654321);
+{#endif}
+
+	// Test EXPECT_NE with string type
+	EXPECT_NE_STRING('Hello', 'World');
+	EXPECT_NE_STRING('Test', '');
+	EXPECT_NE_STRING('', 'NotEmpty');
+	EXPECT_NE_STRING('ABC', 'XYZ');
+{#if not (_KEYENCE or _MITSUBISHI)}
+	// Test EXPECT_NE with TIME type
+	EXPECT_NE_TIME(time#1s, time#2s);
+	EXPECT_NE_TIME(time#100ms, time#200ms);
+	EXPECT_NE_TIME(time#0s, time#1ms);
+{#endif}
+	// Test EXPECT_NE with message versions
+	EXPECT_NE_INT_MSG(5, 10, 'Five should not equal ten');
+	EXPECT_NE_BOOL_MSG(true, false, 'True should not equal false');
+	EXPECT_NE_STRING_MSG('Hello', 'Goodbye', 'Different greetings');
+	EXPECT_NE_DOUBLE_MSG(1.0, 2.0, 'Different real numbers');
+
+	// Test EXPECT_NE edge cases and boundary conditions
+	// Test with zero values
+	EXPECT_NE_INT(0, 1);
+	EXPECT_NE_UINT(0, 1);
+	EXPECT_NE_DOUBLE(0.0, 0.1);
+	
+	// Test with negative values
+	EXPECT_NE_INT(-1, -2);
+	EXPECT_NE_DOUBLE(-1.0, -2.0);
+	
+	// Test with maximum values
+	EXPECT_NE_USINT(255, 254);
+	EXPECT_NE_UINT(65535, 65534);
+	
+	// Test empty vs non-empty strings
+	EXPECT_NE_STRING('', ' ');  // empty vs space
+	EXPECT_NE_STRING('a', 'A'); // case sensitivity
+
+	// Test ASSERT_NE with signed integers
+	ASSERT_NE_SINT(5, 10);
+	ASSERT_NE_INT(100, 200);
+	ASSERT_NE_DINT(1000, 2000);
+	ASSERT_NE_INT32(12345, 54321);
+{#if not (_KEYENCE or _MITSUBISHI)}
+	ASSERT_NE_LINT(123456789, 987654321);
+	ASSERT_NE_INT64(1234567890123, 9876543210987);
+{#endif}
+
+	// Test ASSERT_NE with unsigned integers
+	ASSERT_NE_USINT(5, 10);
+	ASSERT_NE_UINT(100, 200);
+	ASSERT_NE_UDINT(1000, 2000);
+	ASSERT_NE_UINT32(12345, 54321);
+{#if not (_KEYENCE or _MITSUBISHI)}
+	ASSERT_NE_ULINT(123456789, 987654321);
+	ASSERT_NE_UINT64(1234567890123, 9876543210987);
+{#endif}
+
+	// Test ASSERT_NE with floating-point types
+	ASSERT_NE_REAL(1.0, 2.0);
+	ASSERT_NE_LREAL(3.14, 2.71);
+	ASSERT_NE_FLOAT(-1.5, 1.5);
+	ASSERT_NE_DOUBLE(100.001, 100.002);
+
+	// Test ASSERT_NE with boolean type
+	ASSERT_NE_BOOL(true, false);
+	ASSERT_NE_BOOL(false, true);
+
+	// Test ASSERT_NE with bit types
+	ASSERT_NE_BYTE(16#FF, 16#00);
+	ASSERT_NE_WORD(16#FFFF, 16#0000);
+	ASSERT_NE_DWORD(16#FFFFFFFF, 16#00000000);
+	ASSERT_NE_BIT32(16#12345678, 16#87654321);
+{#if not (_KEYENCE or _MITSUBISHI)}
+	ASSERT_NE_LWORD(16#FFFFFFFFFFFFFFFF, 16#0000000000000000);
+	ASSERT_NE_BIT64(16#123456789ABCDEF0, 16#0FEDCBA987654321);
+{#endif}
+
+	// Test ASSERT_NE with string type
+	ASSERT_NE_STRING('Hello', 'World');
+	ASSERT_NE_STRING('Test', '');
+	ASSERT_NE_STRING('', 'NotEmpty');
+	ASSERT_NE_STRING('ABC', 'XYZ');
+{#if not (_KEYENCE or _MITSUBISHI)}
+	// Test ASSERT_NE with TIME type
+	ASSERT_NE_TIME(time#1s, time#2s);
+	ASSERT_NE_TIME(time#100ms, time#200ms);
+	ASSERT_NE_TIME(time#0s, time#1ms);
+{#endif}
+	// Test ASSERT_NE with message versions
+	ASSERT_NE_INT_MSG(5, 10, 'Five should not equal ten');
+	ASSERT_NE_BOOL_MSG(true, false, 'True should not equal false');
+	ASSERT_NE_STRING_MSG('Hello', 'Goodbye', 'Different greetings');
+	ASSERT_NE_DOUBLE_MSG(1.0, 2.0, 'Different real numbers');
+	{end}
+END_TEST_S
