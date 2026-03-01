@@ -7,6 +7,7 @@
 {#define EXPECT_FALSE_MSG(condition, message)   _VALIDATE_EQ_BOOL_MSG(false, false, condition, message)}
 {#define EXPECT_TRUE_MSG(condition, message)    _VALIDATE_EQ_BOOL_MSG(false, true, condition, message)}
 
+
 {#define EXPECT_EQ_SINT_MSG(expected, actual, message)      _VALIDATE_EQ_INT32_MSG(false, expected, actual, message)}
 {#define EXPECT_EQ_INT_MSG(expected, actual, message)       _VALIDATE_EQ_INT32_MSG(false, expected, actual, message)}
 {#define EXPECT_EQ_DINT_MSG(expected, actual, message)      _VALIDATE_EQ_INT32_MSG(false, expected, actual, message)}
@@ -21,6 +22,13 @@
 {#define EXPECT_EQ_UINT32_MSG(expected, actual, message)    _VALIDATE_EQ_UINT32_MSG(false, expected, actual, message)}
 {#define EXPECT_EQ_UINT64_MSG(expected, actual, message)    _VALIDATE_EQ_UINT64_MSG(false, expected, actual, message)}
 
+{#define EXPECT_EQ_REAL_MSG(expected, actual, message)      _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, message)} (* Deprecated, use EXPECT_NEAR_MSG *)
+{#define EXPECT_EQ_LREAL_MSG(expected, actual, message)     _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, message)} (* Deprecated, use EXPECT_NEAR_MSG *)
+{#define EXPECT_EQ_FLOAT_MSG(expected, actual, message)     _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, message)} (* Deprecated, use EXPECT_NEAR_MSG *)
+{#define EXPECT_EQ_DOUBLE_MSG(expected, actual, message)    _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, message)} (* Deprecated, use EXPECT_NEAR_MSG *)
+
+{#define EXPECT_EQ_BOOL_MSG(expected, actual, message)      _VALIDATE_EQ_BOOL_MSG(false, expected, actual, message)}
+
 {#define EXPECT_EQ_BYTE_MSG(expected, actual, message)      _VALIDATE_EQ_BIT32_MSG(false, expected, actual, message)}
 {#define EXPECT_EQ_WORD_MSG(expected, actual, message)      _VALIDATE_EQ_BIT32_MSG(false, expected, actual, message)}
 {#define EXPECT_EQ_DWORD_MSG(expected, actual, message)     _VALIDATE_EQ_BIT32_MSG(false, expected, actual, message)}
@@ -28,13 +36,12 @@
 {#define EXPECT_EQ_BIT32_MSG(expected, actual, message)     _VALIDATE_EQ_BIT32_MSG(false, expected, actual, message)}
 {#define EXPECT_EQ_BIT64_MSG(expected, actual, message)     _VALIDATE_EQ_BIT64_MSG(false, expected, actual, message)}
 
-{#define EXPECT_EQ_REAL_MSG(expected, actual, message)      _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, message)} (* Deprecated, use EXPECT_NEAR_MSG *)
-{#define EXPECT_EQ_LREAL_MSG(expected, actual, message)     _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, message)} (* Deprecated, use EXPECT_NEAR_MSG *)
-{#define EXPECT_EQ_FLOAT_MSG(expected, actual, message)     _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, message)} (* Deprecated, use EXPECT_NEAR_MSG *)
-{#define EXPECT_EQ_DOUBLE_MSG(expected, actual, message)    _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, message)} (* Deprecated, use EXPECT_NEAR_MSG *)
-
-{#define EXPECT_EQ_BOOL_MSG(expected, actual, message)      _VALIDATE_EQ_BOOL_MSG(false, expected, actual, message)}
 {#define EXPECT_EQ_TIME_MSG(expected, actual, message)      _VALIDATE_EQ_TIME_MSG(false, expected, actual, message)}
+
+{#define EXPECT_EQ_DATE_MSG(expected, actual, message)      _VALIDATE_EQ_DATE_MSG(false, expected, actual, message)}
+{#define EXPECT_EQ_TOD_MSG(expected, actual, message)       _VALIDATE_EQ_TOD_MSG(false, expected, actual, message)}
+{#define EXPECT_EQ_DT_MSG(expected, actual, message)        _VALIDATE_EQ_DT_MSG(false, expected, actual, message)}
+
 {#define EXPECT_EQ_STRING_MSG(expected, actual, message)    _VALIDATE_EQ_STRING_MSG(false, expected, actual, message)}
 
 
@@ -93,6 +100,15 @@
 {#define EXPECT_LT_FLOAT_MSG(lval, rval, message)   _VALIDATE_LT_DOUBLE_MSG(false, lval, rval, message)}
 {#define EXPECT_LT_DOUBLE_MSG(lval, rval, message)  _VALIDATE_LT_DOUBLE_MSG(false, lval, rval, message)}
 
+{#define EXPECT_LT_TIME_MSG(lval, rval, message)    _VALIDATE_LT_TIME_MSG(false, lval, rval, message)}
+
+{#define EXPECT_LT_DATE_MSG(lval, rval, message)    _VALIDATE_LT_DATE_MSG(false, lval, rval, message)}
+{#define EXPECT_LT_TOD_MSG(lval, rval, message)     _VALIDATE_LT_TOD_MSG(false, lval, rval, message)}
+{#define EXPECT_LT_DT_MSG(lval, rval, message)      _VALIDATE_LT_DT_MSG(false, lval, rval, message)}
+
+{#define EXPECT_LT_STRING_MSG(lval, rval, message)  _VALIDATE_LT_STRING_MSG(false, lval, rval, message)}
+
+
 {#define EXPECT_LE_SINT_MSG(lval, rval, message)    _VALIDATE_LE_INT32_MSG(false, lval, rval, message)}
 {#define EXPECT_LE_INT_MSG(lval, rval, message)     _VALIDATE_LE_INT32_MSG(false, lval, rval, message)}
 {#define EXPECT_LE_DINT_MSG(lval, rval, message)    _VALIDATE_LE_INT32_MSG(false, lval, rval, message)}
@@ -111,6 +127,15 @@
 {#define EXPECT_LE_LREAL_MSG(lval, rval, message)   _VALIDATE_LE_DOUBLE_MSG(false, lval, rval, message)}
 {#define EXPECT_LE_FLOAT_MSG(lval, rval, message)   _VALIDATE_LE_DOUBLE_MSG(false, lval, rval, message)}
 {#define EXPECT_LE_DOUBLE_MSG(lval, rval, message)  _VALIDATE_LE_DOUBLE_MSG(false, lval, rval, message)}
+
+{#define EXPECT_LE_TIME_MSG(lval, rval, message)    _VALIDATE_LE_TIME_MSG(false, lval, rval, message)}
+
+{#define EXPECT_LE_DATE_MSG(lval, rval, message)    _VALIDATE_LE_DATE_MSG(false, lval, rval, message)}
+{#define EXPECT_LE_TOD_MSG(lval, rval, message)     _VALIDATE_LE_TOD_MSG(false, lval, rval, message)}
+{#define EXPECT_LE_DT_MSG(lval, rval, message)      _VALIDATE_LE_DT_MSG(false, lval, rval, message)}
+
+{#define EXPECT_LE_STRING_MSG(lval, rval, message)  _VALIDATE_LE_STRING_MSG(false, lval, rval, message)}
+
 
 {#define EXPECT_GE_SINT_MSG(lval, rval, message)    _VALIDATE_GE_INT32_MSG(false, lval, rval, message)}
 {#define EXPECT_GE_INT_MSG(lval, rval, message)     _VALIDATE_GE_INT32_MSG(false, lval, rval, message)}
@@ -131,6 +156,15 @@
 {#define EXPECT_GE_FLOAT_MSG(lval, rval, message)   _VALIDATE_GE_DOUBLE_MSG(false, lval, rval, message)}
 {#define EXPECT_GE_DOUBLE_MSG(lval, rval, message)  _VALIDATE_GE_DOUBLE_MSG(false, lval, rval, message)}
 
+{#define EXPECT_GE_TIME_MSG(lval, rval, message)    _VALIDATE_GE_TIME_MSG(false, lval, rval, message)}
+
+{#define EXPECT_GE_DATE_MSG(lval, rval, message)    _VALIDATE_GE_DATE_MSG(false, lval, rval, message)}
+{#define EXPECT_GE_TOD_MSG(lval, rval, message)     _VALIDATE_GE_TOD_MSG(false, lval, rval, message)}
+{#define EXPECT_GE_DT_MSG(lval, rval, message)      _VALIDATE_GE_DT_MSG(false, lval, rval, message)}
+
+{#define EXPECT_GE_STRING_MSG(lval, rval, message)  _VALIDATE_GE_STRING_MSG(false, lval, rval, message)}
+
+
 {#define EXPECT_GT_SINT_MSG(lval, rval, message)    _VALIDATE_GT_INT32_MSG(false, lval, rval, message)}
 {#define EXPECT_GT_INT_MSG(lval, rval, message)     _VALIDATE_GT_INT32_MSG(false, lval, rval, message)}
 {#define EXPECT_GT_DINT_MSG(lval, rval, message)    _VALIDATE_GT_INT32_MSG(false, lval, rval, message)}
@@ -150,12 +184,22 @@
 {#define EXPECT_GT_FLOAT_MSG(lval, rval, message)   _VALIDATE_GT_DOUBLE_MSG(false, lval, rval, message)}
 {#define EXPECT_GT_DOUBLE_MSG(lval, rval, message)  _VALIDATE_GT_DOUBLE_MSG(false, lval, rval, message)}
 
+{#define EXPECT_GT_TIME_MSG(lval, rval, message)    _VALIDATE_GT_TIME_MSG(false, lval, rval, message)}
+
+{#define EXPECT_GT_DATE_MSG(lval, rval, message)    _VALIDATE_GT_DATE_MSG(false, lval, rval, message)}
+{#define EXPECT_GT_TOD_MSG(lval, rval, message)     _VALIDATE_GT_TOD_MSG(false, lval, rval, message)}
+{#define EXPECT_GT_DT_MSG(lval, rval, message)      _VALIDATE_GT_DT_MSG(false, lval, rval, message)}
+
+{#define EXPECT_GT_STRING_MSG(lval, rval, message)  _VALIDATE_GT_STRING_MSG(false, lval, rval, message)}
+
 {#define EXPECT_NEAR_MSG(val1, val2, abs_error, message)    _VALIDATE_NEAR_MSG(false, val1, val2, abs_error, message)}
 
 
 
 {#define EXPECT_FALSE(condition)    _VALIDATE_EQ_BOOL(false, false, condition)}
 {#define EXPECT_TRUE(condition)     _VALIDATE_EQ_BOOL(false, true, condition)}
+
+
 
 {#define EXPECT_EQ_SINT(expected, actual)       _VALIDATE_EQ_INT32(false, expected, actual)}
 {#define EXPECT_EQ_INT(expected, actual)        _VALIDATE_EQ_INT32(false, expected, actual)}
@@ -171,6 +215,13 @@
 {#define EXPECT_EQ_UINT32(expected, actual)     _VALIDATE_EQ_UINT32(false, expected, actual)}
 {#define EXPECT_EQ_UINT64(expected, actual)     _VALIDATE_EQ_UINT64(false, expected, actual)}
 
+{#define EXPECT_EQ_REAL(expected, actual)       _VALIDATE_EQ_DOUBLE(false, expected, actual)} (* Deprecated, use EXPECT_NEAR *)
+{#define EXPECT_EQ_LREAL(expected, actual)      _VALIDATE_EQ_DOUBLE(false, expected, actual)} (* Deprecated, use EXPECT_NEAR *)
+{#define EXPECT_EQ_FLOAT(expected, actual)      _VALIDATE_EQ_DOUBLE(false, expected, actual)} (* Deprecated, use EXPECT_NEAR *)
+{#define EXPECT_EQ_DOUBLE(expected, actual)     _VALIDATE_EQ_DOUBLE(false, expected, actual)} (* Deprecated, use EXPECT_NEAR *)
+
+{#define EXPECT_EQ_BOOL(expected, actual)       _VALIDATE_EQ_BOOL(false, expected, actual)}
+
 {#define EXPECT_EQ_BYTE(expected, actual)       _VALIDATE_EQ_BIT32(false, expected, actual)}
 {#define EXPECT_EQ_WORD(expected, actual)       _VALIDATE_EQ_BIT32(false, expected, actual)}
 {#define EXPECT_EQ_DWORD(expected, actual)      _VALIDATE_EQ_BIT32(false, expected, actual)}
@@ -178,13 +229,12 @@
 {#define EXPECT_EQ_BIT32(expected, actual)      _VALIDATE_EQ_BIT32(false, expected, actual)}
 {#define EXPECT_EQ_BIT64(expected, actual)      _VALIDATE_EQ_BIT64(false, expected, actual)}
 
-{#define EXPECT_EQ_REAL(expected, actual)       _VALIDATE_EQ_DOUBLE(false, expected, actual)} (* Deprecated, use EXPECT_NEAR *)
-{#define EXPECT_EQ_LREAL(expected, actual)      _VALIDATE_EQ_DOUBLE(false, expected, actual)} (* Deprecated, use EXPECT_NEAR *)
-{#define EXPECT_EQ_FLOAT(expected, actual)      _VALIDATE_EQ_DOUBLE(false, expected, actual)} (* Deprecated, use EXPECT_NEAR *)
-{#define EXPECT_EQ_DOUBLE(expected, actual)     _VALIDATE_EQ_DOUBLE(false, expected, actual)} (* Deprecated, use EXPECT_NEAR *)
-
-{#define EXPECT_EQ_BOOL(expected, actual)       _VALIDATE_EQ_BOOL(false, expected, actual)}
 {#define EXPECT_EQ_TIME(expected, actual)       _VALIDATE_EQ_TIME(false, expected, actual)}
+
+{#define EXPECT_EQ_DATE(expected, actual)       _VALIDATE_EQ_DATE(false, expected, actual)}
+{#define EXPECT_EQ_TOD(expected, actual)        _VALIDATE_EQ_TOD(false, expected, actual)}
+{#define EXPECT_EQ_DT(expected, actual)         _VALIDATE_EQ_DT(false, expected, actual)}
+
 {#define EXPECT_EQ_STRING(expected, actual)     _VALIDATE_EQ_STRING(false, expected, actual)}
 
 
@@ -244,6 +294,14 @@
 {#define EXPECT_LT_FLOAT(lval, rval)    _VALIDATE_LT_DOUBLE(false, lval, rval)}
 {#define EXPECT_LT_DOUBLE(lval, rval)   _VALIDATE_LT_DOUBLE(false, lval, rval)}
 
+{#define EXPECT_LT_TIME(lval, rval)     _VALIDATE_LT_TIME(false, lval, rval)}
+
+{#define EXPECT_LT_DATE(lval, rval)     _VALIDATE_LT_DATE(false, lval, rval)}
+{#define EXPECT_LT_TOD(lval, rval)      _VALIDATE_LT_TOD(false, lval, rval)}
+{#define EXPECT_LT_DT(lval, rval)       _VALIDATE_LT_DT(false, lval, rval)}
+
+{#define EXPECT_LT_STRING(lval, rval)   _VALIDATE_LT_STRING(false, lval, rval)}
+
 {#define EXPECT_LE_SINT(lval, rval)     _VALIDATE_LE_INT32(false, lval, rval)}
 {#define EXPECT_LE_INT(lval, rval)      _VALIDATE_LE_INT32(false, lval, rval)}
 {#define EXPECT_LE_DINT(lval, rval)     _VALIDATE_LE_INT32(false, lval, rval)}
@@ -262,6 +320,15 @@
 {#define EXPECT_LE_LREAL(lval, rval)    _VALIDATE_LE_DOUBLE(false, lval, rval)}
 {#define EXPECT_LE_FLOAT(lval, rval)    _VALIDATE_LE_DOUBLE(false, lval, rval)}
 {#define EXPECT_LE_DOUBLE(lval, rval)   _VALIDATE_LE_DOUBLE(false, lval, rval)}
+
+{#define EXPECT_LE_TIME(lval, rval)     _VALIDATE_LE_TIME(false, lval, rval)}
+
+{#define EXPECT_LE_DATE(lval, rval)     _VALIDATE_LE_DATE(false, lval, rval)}
+{#define EXPECT_LE_TOD(lval, rval)      _VALIDATE_LE_TOD(false, lval, rval)}
+{#define EXPECT_LE_DT(lval, rval)       _VALIDATE_LE_DT(false, lval, rval)}
+
+{#define EXPECT_LE_STRING(lval, rval)   _VALIDATE_LE_STRING(false, lval, rval)}
+
 
 {#define EXPECT_GE_SINT(lval, rval)     _VALIDATE_GE_INT32(false, lval, rval)}
 {#define EXPECT_GE_INT(lval, rval)      _VALIDATE_GE_INT32(false, lval, rval)}
@@ -282,6 +349,15 @@
 {#define EXPECT_GE_FLOAT(lval, rval)    _VALIDATE_GE_DOUBLE(false, lval, rval)}
 {#define EXPECT_GE_DOUBLE(lval, rval)   _VALIDATE_GE_DOUBLE(false, lval, rval)}
 
+{#define EXPECT_GE_TIME(lval, rval)     _VALIDATE_GE_TIME(false, lval, rval)}
+
+{#define EXPECT_GE_DATE(lval, rval)     _VALIDATE_GE_DATE(false, lval, rval)}
+{#define EXPECT_GE_TOD(lval, rval)      _VALIDATE_GE_TOD(false, lval, rval)}
+{#define EXPECT_GE_DT(lval, rval)       _VALIDATE_GE_DT(false, lval, rval)}
+
+{#define EXPECT_GE_STRING(lval, rval)   _VALIDATE_GE_STRING(false, lval, rval)}
+
+
 {#define EXPECT_GT_SINT(lval, rval)     _VALIDATE_GT_INT32(false, lval, rval)}
 {#define EXPECT_GT_INT(lval, rval)      _VALIDATE_GT_INT32(false, lval, rval)}
 {#define EXPECT_GT_DINT(lval, rval)     _VALIDATE_GT_INT32(false, lval, rval)}
@@ -301,12 +377,21 @@
 {#define EXPECT_GT_FLOAT(lval, rval)    _VALIDATE_GT_DOUBLE(false, lval, rval)}
 {#define EXPECT_GT_DOUBLE(lval, rval)   _VALIDATE_GT_DOUBLE(false, lval, rval)}
 
+{#define EXPECT_GT_TIME(lval, rval)     _VALIDATE_GT_TIME(false, lval, rval)}
+
+{#define EXPECT_GT_DATE(lval, rval)     _VALIDATE_GT_DATE(false, lval, rval)}
+{#define EXPECT_GT_TOD(lval, rval)      _VALIDATE_GT_TOD(false, lval, rval)}
+{#define EXPECT_GT_DT(lval, rval)       _VALIDATE_GT_DT(false, lval, rval)}
+
+{#define EXPECT_GT_STRING(lval, rval)   _VALIDATE_GT_STRING(false, lval, rval)}
+
 {#define EXPECT_NEAR(val1, val2, abs_error)     _VALIDATE_NEAR(false, val1, val2, abs_error)}
 
 
 
 {#define ASSERT_FALSE_MSG(condition, message)   _VALIDATE_EQ_BOOL_MSG(true, false, condition, message)}
 {#define ASSERT_TRUE_MSG(condition, message)    _VALIDATE_EQ_BOOL_MSG(true, true, condition, message)}
+
 
 {#define ASSERT_EQ_SINT_MSG(expected, actual, message)      _VALIDATE_EQ_INT32_MSG(true, expected, actual, message)}
 {#define ASSERT_EQ_INT_MSG(expected, actual, message)       _VALIDATE_EQ_INT32_MSG(true, expected, actual, message)}
@@ -322,6 +407,13 @@
 {#define ASSERT_EQ_UINT32_MSG(expected, actual, message)    _VALIDATE_EQ_UINT32_MSG(true, expected, actual, message)}
 {#define ASSERT_EQ_UINT64_MSG(expected, actual, message)    _VALIDATE_EQ_UINT64_MSG(true, expected, actual, message)}
 
+{#define ASSERT_EQ_REAL_MSG(expected, actual, message)      _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, message)} (* Deprecated, use ASSERT_NEAR_MSG *)
+{#define ASSERT_EQ_LREAL_MSG(expected, actual, message)     _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, message)} (* Deprecated, use ASSERT_NEAR_MSG *)
+{#define ASSERT_EQ_FLOAT_MSG(expected, actual, message)     _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, message)} (* Deprecated, use ASSERT_NEAR_MSG *)
+{#define ASSERT_EQ_DOUBLE_MSG(expected, actual, message)    _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, message)} (* Deprecated, use ASSERT_NEAR_MSG *)
+
+{#define ASSERT_EQ_BOOL_MSG(expected, actual, message)      _VALIDATE_EQ_BOOL_MSG(true, expected, actual, message)}
+
 {#define ASSERT_EQ_BYTE_MSG(expected, actual, message)      _VALIDATE_EQ_BIT32_MSG(true, expected, actual, message)}
 {#define ASSERT_EQ_WORD_MSG(expected, actual, message)      _VALIDATE_EQ_BIT32_MSG(true, expected, actual, message)}
 {#define ASSERT_EQ_DWORD_MSG(expected, actual, message)     _VALIDATE_EQ_BIT32_MSG(true, expected, actual, message)}
@@ -329,13 +421,12 @@
 {#define ASSERT_EQ_BIT32_MSG(expected, actual, message)     _VALIDATE_EQ_BIT32_MSG(true, expected, actual, message)}
 {#define ASSERT_EQ_BIT64_MSG(expected, actual, message)     _VALIDATE_EQ_BIT64_MSG(true, expected, actual, message)}
 
-{#define ASSERT_EQ_REAL_MSG(expected, actual, message)      _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, message)} (* Deprecated, use ASSERT_NEAR_MSG *)
-{#define ASSERT_EQ_LREAL_MSG(expected, actual, message)     _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, message)} (* Deprecated, use ASSERT_NEAR_MSG *)
-{#define ASSERT_EQ_FLOAT_MSG(expected, actual, message)     _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, message)} (* Deprecated, use ASSERT_NEAR_MSG *)
-{#define ASSERT_EQ_DOUBLE_MSG(expected, actual, message)    _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, message)} (* Deprecated, use ASSERT_NEAR_MSG *)
-
-{#define ASSERT_EQ_BOOL_MSG(expected, actual, message)      _VALIDATE_EQ_BOOL_MSG(true, expected, actual, message)}
 {#define ASSERT_EQ_TIME_MSG(expected, actual, message)      _VALIDATE_EQ_TIME_MSG(true, expected, actual, message)}
+
+{#define ASSERT_EQ_DATE_MSG(expected, actual, message)      _VALIDATE_EQ_DATE_MSG(true, expected, actual, message)}
+{#define ASSERT_EQ_TOD_MSG(expected, actual, message)       _VALIDATE_EQ_TOD_MSG(true, expected, actual, message)}
+{#define ASSERT_EQ_DT_MSG(expected, actual, message)        _VALIDATE_EQ_DT_MSG(true, expected, actual, message)}
+
 {#define ASSERT_EQ_STRING_MSG(expected, actual, message)    _VALIDATE_EQ_STRING_MSG(true, expected, actual, message)}
 
 
@@ -395,6 +486,15 @@
 {#define ASSERT_LT_FLOAT_MSG(lval, rval, message)   _VALIDATE_LT_DOUBLE_MSG(true, lval, rval, message)}
 {#define ASSERT_LT_DOUBLE_MSG(lval, rval, message)  _VALIDATE_LT_DOUBLE_MSG(true, lval, rval, message)}
 
+{#define ASSERT_LT_TIME_MSG(lval, rval, message)    _VALIDATE_LT_TIME_MSG(true, lval, rval, message)}
+
+{#define ASSERT_LT_DATE_MSG(lval, rval, message)    _VALIDATE_LT_DATE_MSG(true, lval, rval, message)}
+{#define ASSERT_LT_TOD_MSG(lval, rval, message)     _VALIDATE_LT_TOD_MSG(true, lval, rval, message)}
+{#define ASSERT_LT_DT_MSG(lval, rval, message)      _VALIDATE_LT_DT_MSG(true, lval, rval, message)}
+
+{#define ASSERT_LT_STRING_MSG(lval, rval, message)  _VALIDATE_LT_STRING_MSG(true, lval, rval, message)}
+
+
 {#define ASSERT_LE_SINT_MSG(lval, rval, message)    _VALIDATE_LE_INT32_MSG(true, lval, rval, message)}
 {#define ASSERT_LE_INT_MSG(lval, rval, message)     _VALIDATE_LE_INT32_MSG(true, lval, rval, message)}
 {#define ASSERT_LE_DINT_MSG(lval, rval, message)    _VALIDATE_LE_INT32_MSG(true, lval, rval, message)}
@@ -413,6 +513,15 @@
 {#define ASSERT_LE_LREAL_MSG(lval, rval, message)   _VALIDATE_LE_DOUBLE_MSG(true, lval, rval, message)}
 {#define ASSERT_LE_FLOAT_MSG(lval, rval, message)   _VALIDATE_LE_DOUBLE_MSG(true, lval, rval, message)}
 {#define ASSERT_LE_DOUBLE_MSG(lval, rval, message)  _VALIDATE_LE_DOUBLE_MSG(true, lval, rval, message)}
+
+{#define ASSERT_LE_TIME_MSG(lval, rval, message)    _VALIDATE_LE_TIME_MSG(true, lval, rval, message)}
+
+{#define ASSERT_LE_DATE_MSG(lval, rval, message)    _VALIDATE_LE_DATE_MSG(true, lval, rval, message)}
+{#define ASSERT_LE_TOD_MSG(lval, rval, message)     _VALIDATE_LE_TOD_MSG(true, lval, rval, message)}
+{#define ASSERT_LE_DT_MSG(lval, rval, message)      _VALIDATE_LE_DT_MSG(true, lval, rval, message)}
+
+{#define ASSERT_LE_STRING_MSG(lval, rval, message)  _VALIDATE_LE_STRING_MSG(true, lval, rval, message)}
+
 
 {#define ASSERT_GE_SINT_MSG(lval, rval, message)    _VALIDATE_GE_INT32_MSG(true, lval, rval, message)}
 {#define ASSERT_GE_INT_MSG(lval, rval, message)     _VALIDATE_GE_INT32_MSG(true, lval, rval, message)}
@@ -433,6 +542,15 @@
 {#define ASSERT_GE_FLOAT_MSG(lval, rval, message)   _VALIDATE_GE_DOUBLE_MSG(true, lval, rval, message)}
 {#define ASSERT_GE_DOUBLE_MSG(lval, rval, message)  _VALIDATE_GE_DOUBLE_MSG(true, lval, rval, message)}
 
+{#define ASSERT_GE_TIME_MSG(lval, rval, message)    _VALIDATE_GE_TIME_MSG(true, lval, rval, message)}
+
+{#define ASSERT_GE_DATE_MSG(lval, rval, message)    _VALIDATE_GE_DATE_MSG(true, lval, rval, message)}
+{#define ASSERT_GE_TOD_MSG(lval, rval, message)     _VALIDATE_GE_TOD_MSG(true, lval, rval, message)}
+{#define ASSERT_GE_DT_MSG(lval, rval, message)      _VALIDATE_GE_DT_MSG(true, lval, rval, message)}
+
+{#define ASSERT_GE_STRING_MSG(lval, rval, message)  _VALIDATE_GE_STRING_MSG(true, lval, rval, message)}
+
+
 {#define ASSERT_GT_SINT_MSG(lval, rval, message)    _VALIDATE_GT_INT32_MSG(true, lval, rval, message)}
 {#define ASSERT_GT_INT_MSG(lval, rval, message)     _VALIDATE_GT_INT32_MSG(true, lval, rval, message)}
 {#define ASSERT_GT_DINT_MSG(lval, rval, message)    _VALIDATE_GT_INT32_MSG(true, lval, rval, message)}
@@ -451,6 +569,14 @@
 {#define ASSERT_GT_LREAL_MSG(lval, rval, message)   _VALIDATE_GT_DOUBLE_MSG(true, lval, rval, message)}
 {#define ASSERT_GT_FLOAT_MSG(lval, rval, message)   _VALIDATE_GT_DOUBLE_MSG(true, lval, rval, message)}
 {#define ASSERT_GT_DOUBLE_MSG(lval, rval, message)  _VALIDATE_GT_DOUBLE_MSG(true, lval, rval, message)}
+
+{#define ASSERT_GT_TIME_MSG(lval, rval, message)    _VALIDATE_GT_TIME_MSG(true, lval, rval, message)}
+
+{#define ASSERT_GT_DATE_MSG(lval, rval, message)    _VALIDATE_GT_DATE_MSG(true, lval, rval, message)}
+{#define ASSERT_GT_TOD_MSG(lval, rval, message)     _VALIDATE_GT_TOD_MSG(true, lval, rval, message)}
+{#define ASSERT_GT_DT_MSG(lval, rval, message)      _VALIDATE_GT_DT_MSG(true, lval, rval, message)}
+
+{#define ASSERT_GT_STRING_MSG(lval, rval, message)  _VALIDATE_GT_STRING_MSG(true, lval, rval, message)}
 
 {#define ASSERT_NEAR_MSG(val1, val2, abs_error, message)    _VALIDATE_NEAR_MSG(true, val1, val2, abs_error, message)}
 
@@ -473,6 +599,13 @@
 {#define ASSERT_EQ_UINT32(expected, actual)     _VALIDATE_EQ_UINT32(true, expected, actual)}
 {#define ASSERT_EQ_UINT64(expected, actual)     _VALIDATE_EQ_UINT64(true, expected, actual)}
 
+{#define ASSERT_EQ_REAL(expected, actual)       _VALIDATE_EQ_DOUBLE(true, expected, actual)} (* Deprecated, use ASSERT_NEAR *)
+{#define ASSERT_EQ_LREAL(expected, actual)      _VALIDATE_EQ_DOUBLE(true, expected, actual)} (* Deprecated, use ASSERT_NEAR *)
+{#define ASSERT_EQ_FLOAT(expected, actual)      _VALIDATE_EQ_DOUBLE(true, expected, actual)} (* Deprecated, use ASSERT_NEAR *)
+{#define ASSERT_EQ_DOUBLE(expected, actual)     _VALIDATE_EQ_DOUBLE(true, expected, actual)} (* Deprecated, use ASSERT_NEAR *)
+
+{#define ASSERT_EQ_BOOL(expected, actual)       _VALIDATE_EQ_BOOL(true, expected, actual)}
+
 {#define ASSERT_EQ_BYTE(expected, actual)       _VALIDATE_EQ_BIT32(true, expected, actual)}
 {#define ASSERT_EQ_WORD(expected, actual)       _VALIDATE_EQ_BIT32(true, expected, actual)}
 {#define ASSERT_EQ_DWORD(expected, actual)      _VALIDATE_EQ_BIT32(true, expected, actual)}
@@ -480,13 +613,12 @@
 {#define ASSERT_EQ_BIT32(expected, actual)      _VALIDATE_EQ_BIT32(true, expected, actual)}
 {#define ASSERT_EQ_BIT64(expected, actual)      _VALIDATE_EQ_BIT64(true, expected, actual)}
 
-{#define ASSERT_EQ_REAL(expected, actual)       _VALIDATE_EQ_DOUBLE(true, expected, actual)} (* Deprecated, use ASSERT_NEAR *)
-{#define ASSERT_EQ_LREAL(expected, actual)      _VALIDATE_EQ_DOUBLE(true, expected, actual)} (* Deprecated, use ASSERT_NEAR *)
-{#define ASSERT_EQ_FLOAT(expected, actual)      _VALIDATE_EQ_DOUBLE(true, expected, actual)} (* Deprecated, use ASSERT_NEAR *)
-{#define ASSERT_EQ_DOUBLE(expected, actual)     _VALIDATE_EQ_DOUBLE(true, expected, actual)} (* Deprecated, use ASSERT_NEAR *)
-
-{#define ASSERT_EQ_BOOL(expected, actual)       _VALIDATE_EQ_BOOL(true, expected, actual)}
 {#define ASSERT_EQ_TIME(expected, actual)       _VALIDATE_EQ_TIME(true, expected, actual)}
+
+{#define ASSERT_EQ_DATE(expected, actual)       _VALIDATE_EQ_DATE(true, expected, actual)}
+{#define ASSERT_EQ_TOD(expected, actual)        _VALIDATE_EQ_TOD(true, expected, actual)}
+{#define ASSERT_EQ_DT(expected, actual)         _VALIDATE_EQ_DT(true, expected, actual)}
+
 {#define ASSERT_EQ_STRING(expected, actual)     _VALIDATE_EQ_STRING(true, expected, actual)}
 
 
@@ -546,6 +678,15 @@
 {#define ASSERT_LT_FLOAT(lval, rval)    _VALIDATE_LT_DOUBLE(true, lval, rval)}
 {#define ASSERT_LT_DOUBLE(lval, rval)   _VALIDATE_LT_DOUBLE(true, lval, rval)}
 
+{#define ASSERT_LT_TIME(lval, rval)     _VALIDATE_LT_TIME(true, lval, rval)}
+
+{#define ASSERT_LT_DATE(lval, rval)     _VALIDATE_LT_DATE(true, lval, rval)}
+{#define ASSERT_LT_TOD(lval, rval)      _VALIDATE_LT_TOD(true, lval, rval)}
+{#define ASSERT_LT_DT(lval, rval)       _VALIDATE_LT_DT(true, lval, rval)}
+
+{#define ASSERT_LT_STRING(lval, rval)   _VALIDATE_LT_STRING(true, lval, rval)}
+
+
 {#define ASSERT_LE_SINT(lval, rval)     _VALIDATE_LE_INT32(true, lval, rval)}
 {#define ASSERT_LE_INT(lval, rval)      _VALIDATE_LE_INT32(true, lval, rval)}
 {#define ASSERT_LE_DINT(lval, rval)     _VALIDATE_LE_INT32(true, lval, rval)}
@@ -564,6 +705,15 @@
 {#define ASSERT_LE_LREAL(lval, rval)    _VALIDATE_LE_DOUBLE(true, lval, rval)}
 {#define ASSERT_LE_FLOAT(lval, rval)    _VALIDATE_LE_DOUBLE(true, lval, rval)}
 {#define ASSERT_LE_DOUBLE(lval, rval)   _VALIDATE_LE_DOUBLE(true, lval, rval)}
+
+{#define ASSERT_LE_TIME(lval, rval)     _VALIDATE_LE_TIME(true, lval, rval)}
+
+{#define ASSERT_LE_DATE(lval, rval)     _VALIDATE_LE_DATE(true, lval, rval)}
+{#define ASSERT_LE_TOD(lval, rval)      _VALIDATE_LE_TOD(true, lval, rval)}
+{#define ASSERT_LE_DT(lval, rval)       _VALIDATE_LE_DT(true, lval, rval)}
+
+{#define ASSERT_LE_STRING(lval, rval)   _VALIDATE_LE_STRING(true, lval, rval)}
+
 
 {#define ASSERT_GE_SINT(lval, rval)     _VALIDATE_GE_INT32(true, lval, rval)}
 {#define ASSERT_GE_INT(lval, rval)      _VALIDATE_GE_INT32(true, lval, rval)}
@@ -584,6 +734,15 @@
 {#define ASSERT_GE_FLOAT(lval, rval)    _VALIDATE_GE_DOUBLE(true, lval, rval)}
 {#define ASSERT_GE_DOUBLE(lval, rval)   _VALIDATE_GE_DOUBLE(true, lval, rval)}
 
+{#define ASSERT_GE_TIME(lval, rval)     _VALIDATE_GE_TIME(true, lval, rval)}
+
+{#define ASSERT_GE_DATE(lval, rval)     _VALIDATE_GE_DATE(true, lval, rval)}
+{#define ASSERT_GE_TOD(lval, rval)      _VALIDATE_GE_TOD(true, lval, rval)}
+{#define ASSERT_GE_DT(lval, rval)       _VALIDATE_GE_DT(true, lval, rval)}
+
+{#define ASSERT_GE_STRING(lval, rval)   _VALIDATE_GE_STRING(true, lval, rval)}
+
+
 {#define ASSERT_GT_SINT(lval, rval)     _VALIDATE_GT_INT32(true, lval, rval)}
 {#define ASSERT_GT_INT(lval, rval)      _VALIDATE_GT_INT32(true, lval, rval)}
 {#define ASSERT_GT_DINT(lval, rval)     _VALIDATE_GT_INT32(true, lval, rval)}
@@ -602,6 +761,14 @@
 {#define ASSERT_GT_LREAL(lval, rval)    _VALIDATE_GT_DOUBLE(true, lval, rval)}
 {#define ASSERT_GT_FLOAT(lval, rval)    _VALIDATE_GT_DOUBLE(true, lval, rval)}
 {#define ASSERT_GT_DOUBLE(lval, rval)   _VALIDATE_GT_DOUBLE(true, lval, rval)}
+
+{#define ASSERT_GT_TIME(lval, rval)     _VALIDATE_GT_TIME(true, lval, rval)}
+
+{#define ASSERT_GT_DATE(lval, rval)     _VALIDATE_GT_DATE(true, lval, rval)}
+{#define ASSERT_GT_TOD(lval, rval)      _VALIDATE_GT_TOD(true, lval, rval)}
+{#define ASSERT_GT_DT(lval, rval)       _VALIDATE_GT_DT(true, lval, rval)}
+
+{#define ASSERT_GT_STRING(lval, rval)   _VALIDATE_GT_STRING(true, lval, rval)}
 
 {#define ASSERT_NEAR(val1, val2, abs_error)     _VALIDATE_NEAR(true, val1, val2, abs_error)}
 
