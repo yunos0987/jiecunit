@@ -477,6 +477,12 @@ var_input
 	line: dint;
 end
 {st}
+if abs_error < 0.0 then
+	JiecTest_failure(self:=self, message:='Absolute error cannot be negative.', die:=die, file:=file, line:=line);
+	JiecTest_validateNEAR := false;
+	return;
+end_if;
+
 JiecTest_validateNEAR := abs(val1 - val2) <= abs_error;
 if JiecTest_validateNEAR then
 	return;
