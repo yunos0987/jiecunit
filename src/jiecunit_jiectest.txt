@@ -283,6 +283,71 @@ DEFINE_JiecTest_validateEQ_DATATYPE(STRING, string[STRING_MAX_SIZE], )
 
 
 
+{#define DEFINE_JiecTest_validateNE_DATATYPE(DATATYPE, datatype_, to_string)
+	(*${doc Validate that the expected value is not equal to the actual value.$n
+	@inout self The JiecTest_t structure.$n
+	@input expected The expected value.$n
+	@input actual The actual value.$n
+	@input message The failure message.$n
+	@input die Whether to abort the test on failure.$n
+	@input file The source file name.$n
+	@input line The line number.$n
+	@return True if the values are not equal, false otherwise.$}*)
+	function JiecTest_validateNE_ @@ DATATYPE: bool
+	_PROLOGUE_OF_FUNCTION_()
+	_DECLARE_CONSOLE_IN_POU_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*${doc The expected value.$}*)
+		expected: datatype_;
+		(*${doc The actual value.$}*)
+		actual: datatype_;
+		(*${doc The failure message.$}*)
+		message: string[128];
+		(*${doc Whether to abort the test on failure.$}*)
+		die: bool := true;
+		(*${doc The source file name.$}*)
+		file: string[FILENAME_MAX_SIZE];
+		(*${doc The line number.$}*)
+		line: dint;
+	end
+	${st$}
+	JiecTest_validateNE_ @@ DATATYPE := expected <> actual;
+	if JiecTest_validateNE_ @@ DATATYPE then
+		return;
+	end_if;
+
+	puts(jiec_concat('Expected NOT: ', to_string(expected)));
+	puts(jiec_concat('Actual: ', to_string(actual)));
+
+	JiecTest_failure(self:=self, message:=message, die:=die, file:=file, line:=line);
+	${end$}
+	end
+}
+DEFINE_JiecTest_validateNE_DATATYPE(INT32, dint, dint_to_string)
+{#if not (_KEYENCE or _MITSUBISHI)}
+DEFINE_JiecTest_validateNE_DATATYPE(INT64, lint, lint_to_string)
+{#endif}
+DEFINE_JiecTest_validateNE_DATATYPE(UINT32, udint, udint_to_string)
+{#if not (_KEYENCE or _MITSUBISHI)}
+DEFINE_JiecTest_validateNE_DATATYPE(UINT64, ulint, ulint_to_string)
+{#endif}
+DEFINE_JiecTest_validateNE_DATATYPE(DOUBLE, lreal, lreal_to_string)
+DEFINE_JiecTest_validateNE_DATATYPE(BOOL, bool, bool_to_string)
+DEFINE_JiecTest_validateNE_DATATYPE(BIT32, dword, dword_to_string)
+{#if not (_KEYENCE or _MITSUBISHI)}
+DEFINE_JiecTest_validateNE_DATATYPE(BIT64, lword, lword_to_string)
+{#endif}
+{#if not (_KEYENCE or _MITSUBISHI)}
+DEFINE_JiecTest_validateNE_DATATYPE(TIME, time, time_to_string_sec)
+DEFINE_JiecTest_validateNE_DATATYPE(DATE, date, date_to_string)
+DEFINE_JiecTest_validateNE_DATATYPE(TOD, time_of_day, tod_to_string)
+DEFINE_JiecTest_validateNE_DATATYPE(DT, date_and_time, dt_to_string)
+{#endif}
+DEFINE_JiecTest_validateNE_DATATYPE(STRING, string[STRING_MAX_SIZE], )
+
+
+
 {#define DEFINE_JiecTest_validateCMP_DATATYPE(CMP, DATATYPE, operator_, datatype_, to_string)
 	(*${doc Validate a comparison between two values using the specified operator.$n
 @inout self The JiecTest_t structure.$n
@@ -424,6 +489,32 @@ end
 {#define _VALIDATE_EQ_TIME_MSG(die, expected, actual, message)      _VALIDATE_EQ_DATATYPE(TIME, die, expected, actual, message)}
 {#define _VALIDATE_EQ_STRING_MSG(die, expected, actual, message)    _VALIDATE_EQ_DATATYPE(STRING, die, expected, actual, message)}
 
+{#define _VALIDATE_NE_DATATYPE(DATATYPE, die_, expected_, actual_, message_)
+	if not JiecTest_validateNE_ @@ DATATYPE(self:=_JIECTEST_, expected:=expected_, actual:=actual_, message:=message_, die:=die_, file:=TestName, line:=__LINE__) then
+		_ON_FAILED_ACTION(die_);
+	end_if}
+{#define _VALIDATE_NE_INT32_MSG(die, expected, actual, message)     _VALIDATE_NE_DATATYPE(INT32, die, expected, actual, message)}
+{#if not (_KEYENCE or _MITSUBISHI)}
+{#define _VALIDATE_NE_INT64_MSG(die, expected, actual, message)     _VALIDATE_NE_DATATYPE(INT64, die, expected, actual, message)}
+{#endif}
+{#define _VALIDATE_NE_UINT32_MSG(die, expected, actual, message)    _VALIDATE_NE_DATATYPE(UINT32, die, expected, actual, message)}
+{#if not (_KEYENCE or _MITSUBISHI)}
+{#define _VALIDATE_NE_UINT64_MSG(die, expected, actual, message)    _VALIDATE_NE_DATATYPE(UINT64, die, expected, actual, message)}
+{#endif}
+{#define _VALIDATE_NE_DOUBLE_MSG(die, expected, actual, message)    _VALIDATE_NE_DATATYPE(DOUBLE, die, expected, actual, message)}
+{#define _VALIDATE_NE_BOOL_MSG(die, expected, actual, message)      _VALIDATE_NE_DATATYPE(BOOL, die, expected, actual, message)}
+{#define _VALIDATE_NE_BIT32_MSG(die, expected, actual, message)     _VALIDATE_NE_DATATYPE(BIT32, die, expected, actual, message)}
+{#if not (_KEYENCE or _MITSUBISHI)}
+{#define _VALIDATE_NE_BIT64_MSG(die, expected, actual, message)     _VALIDATE_NE_DATATYPE(BIT64, die, expected, actual, message)}
+{#endif}
+{#define _VALIDATE_NE_TIME_MSG(die, expected, actual, message)      _VALIDATE_NE_DATATYPE(TIME, die, expected, actual, message)}
+{#if not (_KEYENCE or _MITSUBISHI)}
+{#define _VALIDATE_NE_DATE_MSG(die, expected, actual, message)      _VALIDATE_NE_DATATYPE(DATE, die, expected, actual, message)}
+{#define _VALIDATE_NE_TOD_MSG(die, expected, actual, message)       _VALIDATE_NE_DATATYPE(TOD, die, expected, actual, message)}
+{#define _VALIDATE_NE_DT_MSG(die, expected, actual, message)        _VALIDATE_NE_DATATYPE(DT, die, expected, actual, message)}
+{#endif}
+{#define _VALIDATE_NE_STRING_MSG(die, expected, actual, message)    _VALIDATE_NE_DATATYPE(STRING, die, expected, actual, message)}
+
 {#define _VALIDATE_EQ_INT32(die, expected, actual)      _VALIDATE_EQ_DATATYPE(INT32, die, expected, actual, '')}
 {#if not (_KEYENCE or _MITSUBISHI)}
 {#define _VALIDATE_EQ_INT64(die, expected, actual)      _VALIDATE_EQ_DATATYPE(INT64, die, expected, actual, '')}
@@ -440,6 +531,28 @@ end
 {#define _VALIDATE_EQ_BOOL(die, expected, actual)       _VALIDATE_EQ_DATATYPE(BOOL, die, expected, actual, '')}
 {#define _VALIDATE_EQ_TIME(die, expected, actual)       _VALIDATE_EQ_DATATYPE(TIME, die, expected, actual, '')}
 {#define _VALIDATE_EQ_STRING(die, expected, actual)     _VALIDATE_EQ_DATATYPE(STRING, die, expected, actual, '')}
+
+{#define _VALIDATE_NE_INT32(die, expected, actual)      _VALIDATE_NE_DATATYPE(INT32, die, expected, actual, '')}
+{#if not (_KEYENCE or _MITSUBISHI)}
+{#define _VALIDATE_NE_INT64(die, expected, actual)      _VALIDATE_NE_DATATYPE(INT64, die, expected, actual, '')}
+{#endif}
+{#define _VALIDATE_NE_UINT32(die, expected, actual)     _VALIDATE_NE_DATATYPE(UINT32, die, expected, actual, '')}
+{#if not (_KEYENCE or _MITSUBISHI)}
+{#define _VALIDATE_NE_UINT64(die, expected, actual)     _VALIDATE_NE_DATATYPE(UINT64, die, expected, actual, '')}
+{#endif}
+{#define _VALIDATE_NE_DOUBLE(die, expected, actual)     _VALIDATE_NE_DATATYPE(DOUBLE, die, expected, actual, '')}
+{#define _VALIDATE_NE_BOOL(die, expected, actual)       _VALIDATE_NE_DATATYPE(BOOL, die, expected, actual, '')}
+{#define _VALIDATE_NE_BIT32(die, expected, actual)      _VALIDATE_NE_DATATYPE(BIT32, die, expected, actual, '')}
+{#if not (_KEYENCE or _MITSUBISHI)}
+{#define _VALIDATE_NE_BIT64(die, expected, actual)      _VALIDATE_NE_DATATYPE(BIT64, die, expected, actual, '')}
+{#endif}
+{#define _VALIDATE_NE_TIME(die, expected, actual)       _VALIDATE_NE_DATATYPE(TIME, die, expected, actual, '')}
+{#if not (_KEYENCE or _MITSUBISHI)}
+{#define _VALIDATE_NE_DATE(die, expected, actual)       _VALIDATE_NE_DATATYPE(DATE, die, expected, actual, '')}
+{#define _VALIDATE_NE_TOD(die, expected, actual)        _VALIDATE_NE_DATATYPE(TOD, die, expected, actual, '')}
+{#define _VALIDATE_NE_DT(die, expected, actual)         _VALIDATE_NE_DATATYPE(DT, die, expected, actual, '')}
+{#endif}
+{#define _VALIDATE_NE_STRING(die, expected, actual)     _VALIDATE_NE_DATATYPE(STRING, die, expected, actual, '')}
 
 {#define _VALIDATE_CMP_DATATYPE(CMP, DATATYPE, die_, lval_, rval_, message_)
 	if not JiecTest_validate @@ CMP @@ _ @@ DATATYPE(self:=_JIECTEST_, lval:=lval_, rval:=rval_, message:=message_, die:=die_, file:=TestName, line:=__LINE__) then

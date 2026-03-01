@@ -37,6 +37,43 @@
 {#define EXPECT_EQ_TIME_MSG(expected, actual, message)      _VALIDATE_EQ_TIME_MSG(false, expected, actual, message)}
 {#define EXPECT_EQ_STRING_MSG(expected, actual, message)    _VALIDATE_EQ_STRING_MSG(false, expected, actual, message)}
 
+
+{#define EXPECT_NE_SINT_MSG(expected, actual, message)      _VALIDATE_NE_INT32_MSG(false, expected, actual, message)}
+{#define EXPECT_NE_INT_MSG(expected, actual, message)       _VALIDATE_NE_INT32_MSG(false, expected, actual, message)}
+{#define EXPECT_NE_DINT_MSG(expected, actual, message)      _VALIDATE_NE_INT32_MSG(false, expected, actual, message)}
+{#define EXPECT_NE_LINT_MSG(expected, actual, message)      _VALIDATE_NE_INT64_MSG(false, expected, actual, message)}
+{#define EXPECT_NE_INT32_MSG(expected, actual, message)     _VALIDATE_NE_INT32_MSG(false, expected, actual, message)}
+{#define EXPECT_NE_INT64_MSG(expected, actual, message)     _VALIDATE_NE_INT64_MSG(false, expected, actual, message)}
+
+{#define EXPECT_NE_USINT_MSG(expected, actual, message)     _VALIDATE_NE_UINT32_MSG(false, expected, actual, message)}
+{#define EXPECT_NE_UINT_MSG(expected, actual, message)      _VALIDATE_NE_UINT32_MSG(false, expected, actual, message)}
+{#define EXPECT_NE_UDINT_MSG(expected, actual, message)     _VALIDATE_NE_UINT32_MSG(false, expected, actual, message)}
+{#define EXPECT_NE_ULINT_MSG(expected, actual, message)     _VALIDATE_NE_UINT64_MSG(false, expected, actual, message)}
+{#define EXPECT_NE_UINT32_MSG(expected, actual, message)    _VALIDATE_NE_UINT32_MSG(false, expected, actual, message)}
+{#define EXPECT_NE_UINT64_MSG(expected, actual, message)    _VALIDATE_NE_UINT64_MSG(false, expected, actual, message)}
+
+{#define EXPECT_NE_REAL_MSG(expected, actual, message)      _VALIDATE_NE_DOUBLE_MSG(false, expected, actual, message)}
+{#define EXPECT_NE_LREAL_MSG(expected, actual, message)     _VALIDATE_NE_DOUBLE_MSG(false, expected, actual, message)}
+{#define EXPECT_NE_FLOAT_MSG(expected, actual, message)     _VALIDATE_NE_DOUBLE_MSG(false, expected, actual, message)}
+{#define EXPECT_NE_DOUBLE_MSG(expected, actual, message)    _VALIDATE_NE_DOUBLE_MSG(false, expected, actual, message)}
+
+{#define EXPECT_NE_BOOL_MSG(expected, actual, message)      _VALIDATE_NE_BOOL_MSG(false, expected, actual, message)}
+
+{#define EXPECT_NE_BYTE_MSG(expected, actual, message)      _VALIDATE_NE_BIT32_MSG(false, expected, actual, message)}
+{#define EXPECT_NE_WORD_MSG(expected, actual, message)      _VALIDATE_NE_BIT32_MSG(false, expected, actual, message)}
+{#define EXPECT_NE_DWORD_MSG(expected, actual, message)     _VALIDATE_NE_BIT32_MSG(false, expected, actual, message)}
+{#define EXPECT_NE_LWORD_MSG(expected, actual, message)     _VALIDATE_NE_BIT64_MSG(false, expected, actual, message)}
+{#define EXPECT_NE_BIT32_MSG(expected, actual, message)     _VALIDATE_NE_BIT32_MSG(false, expected, actual, message)}
+{#define EXPECT_NE_BIT64_MSG(expected, actual, message)     _VALIDATE_NE_BIT64_MSG(false, expected, actual, message)}
+
+{#define EXPECT_NE_TIME_MSG(expected, actual, message)      _VALIDATE_NE_TIME_MSG(false, expected, actual, message)}
+
+{#define EXPECT_NE_DATE_MSG(expected, actual, message)      _VALIDATE_NE_DATE_MSG(false, expected, actual, message)}
+{#define EXPECT_NE_TOD_MSG(expected, actual, message)       _VALIDATE_NE_TOD_MSG(false, expected, actual, message)}
+{#define EXPECT_NE_DT_MSG(expected, actual, message)        _VALIDATE_NE_DT_MSG(false, expected, actual, message)}
+{#define EXPECT_NE_STRING_MSG(expected, actual, message)    _VALIDATE_NE_STRING_MSG(false, expected, actual, message)}
+
+
 {#define EXPECT_LT_SINT_MSG(lval, rval, message)    _VALIDATE_LT_INT32_MSG(false, lval, rval, message)}
 {#define EXPECT_LT_INT_MSG(lval, rval, message)     _VALIDATE_LT_INT32_MSG(false, lval, rval, message)}
 {#define EXPECT_LT_DINT_MSG(lval, rval, message)    _VALIDATE_LT_INT32_MSG(false, lval, rval, message)}
@@ -149,6 +186,44 @@
 {#define EXPECT_EQ_BOOL(expected, actual)       _VALIDATE_EQ_BOOL(false, expected, actual)}
 {#define EXPECT_EQ_TIME(expected, actual)       _VALIDATE_EQ_TIME(false, expected, actual)}
 {#define EXPECT_EQ_STRING(expected, actual)     _VALIDATE_EQ_STRING(false, expected, actual)}
+
+
+{#define EXPECT_NE_SINT(expected, actual)       _VALIDATE_NE_INT32(false, expected, actual)}
+{#define EXPECT_NE_INT(expected, actual)        _VALIDATE_NE_INT32(false, expected, actual)}
+{#define EXPECT_NE_DINT(expected, actual)       _VALIDATE_NE_INT32(false, expected, actual)}
+{#define EXPECT_NE_LINT(expected, actual)       _VALIDATE_NE_INT64(false, expected, actual)}
+{#define EXPECT_NE_INT32(expected, actual)      _VALIDATE_NE_INT32(false, expected, actual)}
+{#define EXPECT_NE_INT64(expected, actual)      _VALIDATE_NE_INT64(false, expected, actual)}
+
+{#define EXPECT_NE_USINT(expected, actual)      _VALIDATE_NE_UINT32(false, expected, actual)}
+{#define EXPECT_NE_UINT(expected, actual)       _VALIDATE_NE_UINT32(false, expected, actual)}
+{#define EXPECT_NE_UDINT(expected, actual)      _VALIDATE_NE_UINT32(false, expected, actual)}
+{#define EXPECT_NE_ULINT(expected, actual)      _VALIDATE_NE_UINT64(false, expected, actual)}
+{#define EXPECT_NE_UINT32(expected, actual)     _VALIDATE_NE_UINT32(false, expected, actual)}
+{#define EXPECT_NE_UINT64(expected, actual)     _VALIDATE_NE_UINT64(false, expected, actual)}
+
+{#define EXPECT_NE_REAL(expected, actual)       _VALIDATE_NE_DOUBLE(false, expected, actual)}
+{#define EXPECT_NE_LREAL(expected, actual)      _VALIDATE_NE_DOUBLE(false, expected, actual)}
+{#define EXPECT_NE_FLOAT(expected, actual)      _VALIDATE_NE_DOUBLE(false, expected, actual)}
+{#define EXPECT_NE_DOUBLE(expected, actual)     _VALIDATE_NE_DOUBLE(false, expected, actual)}
+
+{#define EXPECT_NE_BOOL(expected, actual)       _VALIDATE_NE_BOOL(false, expected, actual)}
+
+{#define EXPECT_NE_BYTE(expected, actual)       _VALIDATE_NE_BIT32(false, expected, actual)}
+{#define EXPECT_NE_WORD(expected, actual)       _VALIDATE_NE_BIT32(false, expected, actual)}
+{#define EXPECT_NE_DWORD(expected, actual)      _VALIDATE_NE_BIT32(false, expected, actual)}
+{#define EXPECT_NE_LWORD(expected, actual)      _VALIDATE_NE_BIT64(false, expected, actual)}
+{#define EXPECT_NE_BIT32(expected, actual)      _VALIDATE_NE_BIT32(false, expected, actual)}
+{#define EXPECT_NE_BIT64(expected, actual)      _VALIDATE_NE_BIT64(false, expected, actual)}
+
+{#define EXPECT_NE_TIME(expected, actual)       _VALIDATE_NE_TIME(false, expected, actual)}
+
+{#define EXPECT_NE_DATE(expected, actual)       _VALIDATE_NE_DATE(false, expected, actual)}
+{#define EXPECT_NE_TOD(expected, actual)        _VALIDATE_NE_TOD(false, expected, actual)}
+{#define EXPECT_NE_DT(expected, actual)         _VALIDATE_NE_DT(false, expected, actual)}
+
+{#define EXPECT_NE_STRING(expected, actual)     _VALIDATE_NE_STRING(false, expected, actual)}
+
 
 {#define EXPECT_LT_SINT(lval, rval)     _VALIDATE_LT_INT32(false, lval, rval)}
 {#define EXPECT_LT_INT(lval, rval)      _VALIDATE_LT_INT32(false, lval, rval)}
@@ -263,6 +338,44 @@
 {#define ASSERT_EQ_TIME_MSG(expected, actual, message)      _VALIDATE_EQ_TIME_MSG(true, expected, actual, message)}
 {#define ASSERT_EQ_STRING_MSG(expected, actual, message)    _VALIDATE_EQ_STRING_MSG(true, expected, actual, message)}
 
+
+{#define ASSERT_NE_SINT_MSG(expected, actual, message)      _VALIDATE_NE_INT32_MSG(true, expected, actual, message)}
+{#define ASSERT_NE_INT_MSG(expected, actual, message)       _VALIDATE_NE_INT32_MSG(true, expected, actual, message)}
+{#define ASSERT_NE_DINT_MSG(expected, actual, message)      _VALIDATE_NE_INT32_MSG(true, expected, actual, message)}
+{#define ASSERT_NE_LINT_MSG(expected, actual, message)      _VALIDATE_NE_INT64_MSG(true, expected, actual, message)}
+{#define ASSERT_NE_INT32_MSG(expected, actual, message)     _VALIDATE_NE_INT32_MSG(true, expected, actual, message)}
+{#define ASSERT_NE_INT64_MSG(expected, actual, message)     _VALIDATE_NE_INT64_MSG(true, expected, actual, message)}
+
+{#define ASSERT_NE_USINT_MSG(expected, actual, message)     _VALIDATE_NE_UINT32_MSG(true, expected, actual, message)}
+{#define ASSERT_NE_UINT_MSG(expected, actual, message)      _VALIDATE_NE_UINT32_MSG(true, expected, actual, message)}
+{#define ASSERT_NE_UDINT_MSG(expected, actual, message)     _VALIDATE_NE_UINT32_MSG(true, expected, actual, message)}
+{#define ASSERT_NE_ULINT_MSG(expected, actual, message)     _VALIDATE_NE_UINT64_MSG(true, expected, actual, message)}
+{#define ASSERT_NE_UINT32_MSG(expected, actual, message)    _VALIDATE_NE_UINT32_MSG(true, expected, actual, message)}
+{#define ASSERT_NE_UINT64_MSG(expected, actual, message)    _VALIDATE_NE_UINT64_MSG(true, expected, actual, message)}
+
+{#define ASSERT_NE_REAL_MSG(expected, actual, message)      _VALIDATE_NE_DOUBLE_MSG(true, expected, actual, message)}
+{#define ASSERT_NE_LREAL_MSG(expected, actual, message)     _VALIDATE_NE_DOUBLE_MSG(true, expected, actual, message)}
+{#define ASSERT_NE_FLOAT_MSG(expected, actual, message)     _VALIDATE_NE_DOUBLE_MSG(true, expected, actual, message)}
+{#define ASSERT_NE_DOUBLE_MSG(expected, actual, message)    _VALIDATE_NE_DOUBLE_MSG(true, expected, actual, message)}
+
+{#define ASSERT_NE_BOOL_MSG(expected, actual, message)      _VALIDATE_NE_BOOL_MSG(true, expected, actual, message)}
+
+{#define ASSERT_NE_BYTE_MSG(expected, actual, message)      _VALIDATE_NE_BIT32_MSG(true, expected, actual, message)}
+{#define ASSERT_NE_WORD_MSG(expected, actual, message)      _VALIDATE_NE_BIT32_MSG(true, expected, actual, message)}
+{#define ASSERT_NE_DWORD_MSG(expected, actual, message)     _VALIDATE_NE_BIT32_MSG(true, expected, actual, message)}
+{#define ASSERT_NE_LWORD_MSG(expected, actual, message)     _VALIDATE_NE_BIT64_MSG(true, expected, actual, message)}
+{#define ASSERT_NE_BIT32_MSG(expected, actual, message)     _VALIDATE_NE_BIT32_MSG(true, expected, actual, message)}
+{#define ASSERT_NE_BIT64_MSG(expected, actual, message)     _VALIDATE_NE_BIT64_MSG(true, expected, actual, message)}
+
+{#define ASSERT_NE_TIME_MSG(expected, actual, message)      _VALIDATE_NE_TIME_MSG(true, expected, actual, message)}
+
+{#define ASSERT_NE_DATE_MSG(expected, actual, message)      _VALIDATE_NE_DATE_MSG(true, expected, actual, message)}
+{#define ASSERT_NE_TOD_MSG(expected, actual, message)       _VALIDATE_NE_TOD_MSG(true, expected, actual, message)}
+{#define ASSERT_NE_DT_MSG(expected, actual, message)        _VALIDATE_NE_DT_MSG(true, expected, actual, message)}
+
+{#define ASSERT_NE_STRING_MSG(expected, actual, message)    _VALIDATE_NE_STRING_MSG(true, expected, actual, message)}
+
+
 {#define ASSERT_LT_SINT_MSG(lval, rval, message)    _VALIDATE_LT_INT32_MSG(true, lval, rval, message)}
 {#define ASSERT_LT_INT_MSG(lval, rval, message)     _VALIDATE_LT_INT32_MSG(true, lval, rval, message)}
 {#define ASSERT_LT_DINT_MSG(lval, rval, message)    _VALIDATE_LT_INT32_MSG(true, lval, rval, message)}
@@ -375,6 +488,44 @@
 {#define ASSERT_EQ_BOOL(expected, actual)       _VALIDATE_EQ_BOOL(true, expected, actual)}
 {#define ASSERT_EQ_TIME(expected, actual)       _VALIDATE_EQ_TIME(true, expected, actual)}
 {#define ASSERT_EQ_STRING(expected, actual)     _VALIDATE_EQ_STRING(true, expected, actual)}
+
+
+{#define ASSERT_NE_SINT(expected, actual)       _VALIDATE_NE_INT32(true, expected, actual)}
+{#define ASSERT_NE_INT(expected, actual)        _VALIDATE_NE_INT32(true, expected, actual)}
+{#define ASSERT_NE_DINT(expected, actual)       _VALIDATE_NE_INT32(true, expected, actual)}
+{#define ASSERT_NE_LINT(expected, actual)       _VALIDATE_NE_INT64(true, expected, actual)}
+{#define ASSERT_NE_INT32(expected, actual)      _VALIDATE_NE_INT32(true, expected, actual)}
+{#define ASSERT_NE_INT64(expected, actual)      _VALIDATE_NE_INT64(true, expected, actual)}
+
+{#define ASSERT_NE_USINT(expected, actual)      _VALIDATE_NE_UINT32(true, expected, actual)}
+{#define ASSERT_NE_UINT(expected, actual)       _VALIDATE_NE_UINT32(true, expected, actual)}
+{#define ASSERT_NE_UDINT(expected, actual)      _VALIDATE_NE_UINT32(true, expected, actual)}
+{#define ASSERT_NE_ULINT(expected, actual)      _VALIDATE_NE_UINT64(true, expected, actual)}
+{#define ASSERT_NE_UINT32(expected, actual)     _VALIDATE_NE_UINT32(true, expected, actual)}
+{#define ASSERT_NE_UINT64(expected, actual)     _VALIDATE_NE_UINT64(true, expected, actual)}
+
+{#define ASSERT_NE_REAL(expected, actual)       _VALIDATE_NE_DOUBLE(true, expected, actual)}
+{#define ASSERT_NE_LREAL(expected, actual)      _VALIDATE_NE_DOUBLE(true, expected, actual)}
+{#define ASSERT_NE_FLOAT(expected, actual)      _VALIDATE_NE_DOUBLE(true, expected, actual)}
+{#define ASSERT_NE_DOUBLE(expected, actual)     _VALIDATE_NE_DOUBLE(true, expected, actual)}
+
+{#define ASSERT_NE_BOOL(expected, actual)       _VALIDATE_NE_BOOL(true, expected, actual)}
+
+{#define ASSERT_NE_BYTE(expected, actual)       _VALIDATE_NE_BIT32(true, expected, actual)}
+{#define ASSERT_NE_WORD(expected, actual)       _VALIDATE_NE_BIT32(true, expected, actual)}
+{#define ASSERT_NE_DWORD(expected, actual)      _VALIDATE_NE_BIT32(true, expected, actual)}
+{#define ASSERT_NE_LWORD(expected, actual)      _VALIDATE_NE_BIT64(true, expected, actual)}
+{#define ASSERT_NE_BIT32(expected, actual)      _VALIDATE_NE_BIT32(true, expected, actual)}
+{#define ASSERT_NE_BIT64(expected, actual)      _VALIDATE_NE_BIT64(true, expected, actual)}
+
+{#define ASSERT_NE_TIME(expected, actual)       _VALIDATE_NE_TIME(true, expected, actual)}
+
+{#define ASSERT_NE_DATE(expected, actual)       _VALIDATE_NE_DATE(true, expected, actual)}
+{#define ASSERT_NE_TOD(expected, actual)        _VALIDATE_NE_TOD(true, expected, actual)}
+{#define ASSERT_NE_DT(expected, actual)         _VALIDATE_NE_DT(true, expected, actual)}
+
+{#define ASSERT_NE_STRING(expected, actual)     _VALIDATE_NE_STRING(true, expected, actual)}
+
 
 {#define ASSERT_LT_SINT(lval, rval)     _VALIDATE_LT_INT32(true, lval, rval)}
 {#define ASSERT_LT_INT(lval, rval)      _VALIDATE_LT_INT32(true, lval, rval)}
