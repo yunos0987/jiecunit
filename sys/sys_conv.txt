@@ -5,14 +5,16 @@
 
 {#if _KEYENCE}
 	{#define word uint}
+	{#define int_to_word(...) int_to_uint(__VA_ARGS__)}
 	{#define uint_to_word(...) uint_to_uint(__VA_ARGS__)}
-	{#define word_to_uint(...) uint_to_uint(__VA_ARGS__)}
 	{#define word_to_int(...) uint_to_int(__VA_ARGS__)}
+	{#define word_to_uint(...) uint_to_uint(__VA_ARGS__)}
 
 	{#define dword udint}
+	{#define dint_to_dword(...) dint_to_udint(__VA_ARGS__)}
 	{#define udint_to_dword(...) udint_to_udint(__VA_ARGS__)}
-	{#define dword_to_udint(...) udint_to_udint(__VA_ARGS__)}
 	{#define dword_to_dint(...) udint_to_dint(__VA_ARGS__)}
+	{#define dword_to_udint(...) udint_to_udint(__VA_ARGS__)}
 
 	(*{doc Convert a 32-bit signed integer to a decimal string representation.
 	@input in The 32-bit signed integer to convert.
