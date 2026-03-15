@@ -1,0 +1,34 @@
+{#include <jiecunit.txt>}
+
+TEST_S(test_jiectest_register)
+	var
+		jt: JiecTest_t;
+		result: dint;
+	end
+	{st}
+	JiecTest_initialize(jt);
+
+	// Register succeeds and returns number of registered tests.
+	result := JiecTest_register(jt, 'test_alpha');
+	EXPECT_EQ_INT(1, result);
+	EXPECT_EQ_INT(1, jt.num_of_tests);
+	EXPECT_EQ_STRING('test_alpha', jt.testnames[0]);
+
+	// Register another unique name.
+	result := JiecTest_register(jt, 'test_beta');
+	EXPECT_EQ_INT(2, result);
+	EXPECT_EQ_INT(2, jt.num_of_tests);
+	EXPECT_EQ_STRING('test_beta', jt.testnames[1]);
+
+	// Duplicate names are rejected with -1 and do not increment the count.
+	result := JiecTest_register(jt, 'test_alpha');
+	EXPECT_EQ_INT(-1, result);
+	EXPECT_EQ_INT(2, jt.num_of_tests);
+
+	// Overflow is rejected with -2 when MAX_TESTS is reached.
+	jt.num_of_tests := MAX_TESTS;
+	result := JiecTest_register(jt, 'test_overflow');
+	EXPECT_EQ_INT(-2, result);
+	EXPECT_EQ_INT(MAX_TESTS, jt.num_of_tests);
+	{end}
+END_TEST_S

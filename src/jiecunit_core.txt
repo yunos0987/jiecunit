@@ -266,6 +266,7 @@ program {__func__:this_name} JiecUnitMain
 		//
 		testname_index: dint;
 		testname: string[TESTNAME_MAX_SIZE];
+		register_result: dint;
 		//
 		is_first_scan: bool := true;
 		//
@@ -293,8 +294,12 @@ program {__func__:this_name} JiecUnitMain
 		for testname_index := 0 to MAX_TESTS - 1 do
 			testname := _JIECTESTNAMES_[testname_index];
 			if (testname <> '') and (testname <> this_name) then
-				if _register(testname) = -1 then
+				register_result := _register(testname);
+				if register_result = -1 then
 					puts(jiec_concat('Fatal error: program $'', testname, '$' is already registered.'));
+					_bye();
+				elsif register_result = -2 then
+					puts(jiec_concat('Fatal error: too many tests. MAX_TESTS=', dint_to_string(MAX_TESTS), '.'));
 					_bye();
 				end_if;
 			end_if;
