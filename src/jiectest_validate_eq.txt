@@ -1,0 +1,116 @@
+{#ifndef __JIECTEST_VALIDATE_EQ_TXT__}
+{#define __JIECTEST_VALIDATE_EQ_TXT__}
+
+{#define JiecUnitValidatorName INT32}
+{#define JiecUnitValueDatatype dint}
+{#define JiecUnitToString dint_to_string}
+{#include "jiectest_validate_eq_template.txt"}
+{#undef JiecUnitToString}
+{#undef JiecUnitValueDatatype}
+{#undef JiecUnitValidatorName}
+
+{#if not (_KEYENCE or _MITSUBISHI)}
+{#define JiecUnitValidatorName INT64}
+{#define JiecUnitValueDatatype lint}
+{#define JiecUnitToString lint_to_string}
+{#include "jiectest_validate_eq_template.txt"}
+{#undef JiecUnitToString}
+{#undef JiecUnitValueDatatype}
+{#undef JiecUnitValidatorName}
+{#endif}
+
+{#define JiecUnitValidatorName UINT32}
+{#define JiecUnitValueDatatype udint}
+{#define JiecUnitToString udint_to_string}
+{#include "jiectest_validate_eq_template.txt"}
+{#undef JiecUnitToString}
+{#undef JiecUnitValueDatatype}
+{#undef JiecUnitValidatorName}
+
+{#if not (_KEYENCE or _MITSUBISHI)}
+{#define JiecUnitValidatorName UINT64}
+{#define JiecUnitValueDatatype ulint}
+{#define JiecUnitToString ulint_to_string}
+{#include "jiectest_validate_eq_template.txt"}
+{#undef JiecUnitToString}
+{#undef JiecUnitValueDatatype}
+{#undef JiecUnitValidatorName}
+{#endif}
+
+{#define JiecUnitValidatorName DOUBLE}
+{#define JiecUnitValueDatatype lreal}
+{#define JiecUnitToString lreal_to_string}
+{#include "jiectest_validate_eq_template.txt"}
+{#undef JiecUnitToString}
+{#undef JiecUnitValueDatatype}
+{#undef JiecUnitValidatorName}
+
+{#define JiecUnitValidatorName BOOL}
+{#define JiecUnitValueDatatype bool}
+{#define JiecUnitToString bool_to_string}
+{#include "jiectest_validate_eq_template.txt"}
+{#undef JiecUnitToString}
+{#undef JiecUnitValueDatatype}
+{#undef JiecUnitValidatorName}
+
+{#define JiecUnitValidatorName BIT32}
+{#define JiecUnitValueDatatype dword}
+{#define JiecUnitToString dword_to_string}
+{#include "jiectest_validate_eq_template.txt"}
+{#undef JiecUnitToString}
+{#undef JiecUnitValueDatatype}
+{#undef JiecUnitValidatorName}
+
+{#if not (_KEYENCE or _MITSUBISHI)}
+{#define JiecUnitValidatorName BIT64}
+{#define JiecUnitValueDatatype lword}
+{#define JiecUnitToString lword_to_string}
+{#include "jiectest_validate_eq_template.txt"}
+{#undef JiecUnitToString}
+{#undef JiecUnitValueDatatype}
+{#undef JiecUnitValidatorName}
+{#endif}
+
+{#if not (_KEYENCE or _MITSUBISHI)}
+{#define JiecUnitValidatorName TIME}
+{#define JiecUnitValueDatatype time}
+{#define JiecUnitToString time_to_string_sec}
+{#include "jiectest_validate_eq_template.txt"}
+{#undef JiecUnitToString}
+{#undef JiecUnitValueDatatype}
+{#undef JiecUnitValidatorName}
+
+{#define JiecUnitValidatorName DATE}
+{#define JiecUnitValueDatatype date}
+{#define JiecUnitToString date_to_string}
+{#include "jiectest_validate_eq_template.txt"}
+{#undef JiecUnitToString}
+{#undef JiecUnitValueDatatype}
+{#undef JiecUnitValidatorName}
+
+{#define JiecUnitValidatorName TOD}
+{#define JiecUnitValueDatatype time_of_day}
+{#define JiecUnitToString tod_to_string}
+{#include "jiectest_validate_eq_template.txt"}
+{#undef JiecUnitToString}
+{#undef JiecUnitValueDatatype}
+{#undef JiecUnitValidatorName}
+
+{#define JiecUnitValidatorName DT}
+{#define JiecUnitValueDatatype date_and_time}
+{#define JiecUnitToString dt_to_string}
+{#include "jiectest_validate_eq_template.txt"}
+{#undef JiecUnitToString}
+{#undef JiecUnitValueDatatype}
+{#undef JiecUnitValidatorName}
+{#endif}
+
+{#define JiecUnitValidatorName STRING}
+{#define JiecUnitValueDatatype string[STRING_MAX_SIZE]}
+{#define JiecUnitToString }
+{#include "jiectest_validate_eq_template.txt"}
+{#undef JiecUnitToString}
+{#undef JiecUnitValueDatatype}
+{#undef JiecUnitValidatorName}
+
+{#endif}

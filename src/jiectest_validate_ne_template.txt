@@ -1,0 +1,73 @@
+(*
+This template generates inequality validators (NE) for each datatype.
+Required macros before include:
+- JiecUnitValidatorName : function name part
+- JiecUnitValueDatatype  : datatype used for expected/actual
+- JiecUnitToString       : function-like macro for value string conversion
+
+Generated function name:
+JiecTest_validateNE_<datatype>
+*)
+{#include <sys.txt>}
+{#include <sys_conv.txt>}
+
+{#ifndef JiecUnitValidatorName}
+	{#error require JiecUnitValidatorName macro.}
+{#endif}
+
+{#ifndef JiecUnitValueDatatype}
+	{#error require JiecUnitValueDatatype macro.}
+{#endif}
+
+{#ifndef JiecUnitToString}
+	{#error require JiecUnitToString macro.}
+{#endif}
+
+{#define _JIECTEST_VALIDATE_NE_NAME_(DATATYPE) JiecTest_validateNE_@@DATATYPE}
+{#define JIECTEST_VALIDATE_NE_NAME(DATATYPE) _JIECTEST_VALIDATE_NE_NAME_(DATATYPE)}
+{#define JiecTest_validateNE JIECTEST_VALIDATE_NE_NAME(JiecUnitValidatorName)}
+
+(*{doc Validate that the expected value is not equal to the actual value.
+@inout self The JiecTest_t structure.
+@input expected The expected value.
+@input actual The actual value.
+@input message The failure message.
+@input die Whether to abort the test on failure.
+@input file The source file name.
+@input line The line number.
+@return True if the values are not equal, false otherwise.
+}*)
+function JiecTest_validateNE: bool
+	_PROLOGUE_OF_FUNCTION_()
+	_DECLARE_CONSOLE_IN_POU_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc The expected value.}*)
+		expected: JiecUnitValueDatatype;
+		(*{doc The actual value.}*)
+		actual: JiecUnitValueDatatype;
+		(*{doc The failure message.}*)
+		message: string[128];
+		(*{doc Whether to abort the test on failure.}*)
+		die: bool := true;
+		(*{doc The source file name.}*)
+		file: string[FILENAME_MAX_SIZE];
+		(*{doc The line number.}*)
+		line: dint;
+	end
+	{st}
+	JiecTest_validateNE := expected <> actual;
+	if JiecTest_validateNE then
+		return;
+	end_if;
+
+	puts(jiec_concat('Expected NOT: ', JiecUnitToString(expected)));
+	puts(jiec_concat('Actual: ', JiecUnitToString(actual)));
+
+	JiecTest_failure(self:=self, message:=message, die:=die, file:=file, line:=line);
+	{end}
+end
+
+{#undef JiecTest_validateNE}
+{#undef JIECTEST_VALIDATE_NE_NAME}
+{#undef _JIECTEST_VALIDATE_NE_NAME_}

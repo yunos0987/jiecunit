@@ -1,0 +1,54 @@
+{#ifndef __JIECTEST_VALIDATE_NEAR_TXT__}
+{#define __JIECTEST_VALIDATE_NEAR_TXT__}
+
+(*{doc Validate that two floating-point values are nearly equal within the specified absolute error tolerance.
+@inout self The JiecTest_t structure.
+@input val1 The first value.
+@input val2 The second value.
+@input abs_error The allowed absolute error.
+@input message The failure message.
+@input die Whether to abort the test on failure. Default: true
+@input file The source file name.
+@input line The line number.
+@return True if the values are equal within the tolerance, false otherwise.}*)
+function JiecTest_validateNEAR: bool
+	_PROLOGUE_OF_FUNCTION_()
+	_DECLARE_CONSOLE_IN_POU_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc The first value.}*)
+		val1: lreal;
+		(*{doc The second value.}*)
+		val2: lreal;
+		(*{doc The allowed absolute error.}*)
+		abs_error: lreal;
+		(*{doc The failure message.}*)
+		message: string[128];
+		(*{doc Whether to abort the test on failure.}*)
+		die: bool := true;
+		(*{doc The source file name.}*)
+		file: string[FILENAME_MAX_SIZE];
+		(*{doc The line number.}*)
+		line: dint;
+	end
+	{st}
+	if abs_error < 0.0 then
+		JiecTest_failure(self:=self, message:='Absolute error cannot be negative.', die:=die, file:=file, line:=line);
+		JiecTest_validateNEAR := false;
+		return;
+	end_if;
+
+	JiecTest_validateNEAR := abs(val1 - val2) <= abs_error;
+	if JiecTest_validateNEAR then
+		return;
+	end_if;
+
+	puts(jiec_concat('Value1: ', lreal_to_string(val1)));
+	puts(jiec_concat('Value2: ', lreal_to_string(val2)));
+	puts(jiec_concat('Value1 - Value2: ', lreal_to_string(val1 - val2)));
+
+	JiecTest_failure(self:=self, message:=message, die:=die, file:=file, line:=line);
+	{end}
+end
+
+{#endif}
