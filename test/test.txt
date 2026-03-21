@@ -44,6 +44,18 @@ DEFINE_CONFIGURATION(
 		'test_jiectest_validate_gt',
 		'test_near_macros',
 		'test_jiectest_validate_near',
-		'test_jiectest_register'
+		// jiectest.txt
+		'test_jiectest_initialize',
+		'test_jiectest_register',
+		'test_jiectest_empty',
+		'test_jiectest_is_active',
+		'test_jiectest_activate',
+		'test_jiectest_deactivate',
+		'test_jiectest_current_cycle',
+		'test_jiectest_next_cycle',
+		'test_jiectest_active_test_index',
+		'test_jiectest_active_testname',
+		'test_jiectest_testname',
+		'test_jiectest_failure'
 	)
 )
