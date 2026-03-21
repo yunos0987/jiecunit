@@ -38,10 +38,21 @@ end_if;
 
 ## 命名規則
 
-- "p_", "P_"で始まる名前で定義することを禁止する。
-	- オムロン環境が禁止しているため。
-- アルファベット一文字の名前で定義することを禁止する。
-	- 三菱環境において問題が発生するため。
+- 以下の名前で定義することを禁止する。
+  - left, right
+    - IEC 61131-3 の定義と重複するため。
+  - `h`, `H`で始まり、`_`を含まない変数名
+    - キーエンス環境の制約
+  - ^\[rRtTcC\]\\d+$ にマッチする変数名
+    - キーエンス環境の制約
+  - `p\_`, `P\_`で始まる要素名
+	- オムロン環境の制約。
+　- アルファベット1文字の要素名。
+    - キーエンス環境や三菱環境の制約。
+- POU名は、64バイト以内とすること。
+  - キーエンス環境の制約。
+- IEC 61131-3は、ASCIIの大文字・小文字を区別しないことに注意すること。
+	- 例えば、行列を意味する変数Aと、ベクトルを意味する変数aを同一のものとして解釈します。
 
 ## フォーマット
 
@@ -54,7 +65,54 @@ end_if;
 
 ## テスト
 
-- TBD
+次の例のように記述すること。要点については後述する。
+
+```
+TEST_S(test_mean)
+	var
+		x_regular: array[0..3] of lreal;
+		x_zeros: array[0..2] of lreal;
+		x_negative: array[0..2] of lreal;
+		mean_val: lreal;
+	end
+	{st}
+	// Fact: The mean of a sequence of values equals their arithmetic average.
+		// Arrange
+	x_regular[0] := 6.0;
+	x_regular[1] := 3.0;
+	x_regular[2] := 5.0;
+	x_regular[3] := 2.0;
+		// Act
+	mean_val := mean(x_regular);
+		// Assert
+	EXPECT_NEAR(4.0, mean_val, 1.0e-6);
+
+	// Fact: The mean of all-zero values is 0.
+		// Arrange
+	x_zeros[0] := 0.0;
+	x_zeros[1] := 0.0;
+	x_zeros[2] := 0.0;
+		// Act/Assert
+	EXPECT_NEAR(0.0, mean(x_zeros), 1.0e-6);
+
+	// Fact: The mean is correctly computed even when values include negatives.
+		// Arrange
+	x_negative[0] := -7.0;
+	x_negative[1] := -1.0;
+	x_negative[2] := 2.0;
+		// Act
+	mean_val := mean(x_negative);
+		// Assert
+	EXPECT_NEAR(-2.0, mean_val, 1.0e-6);
+	{end}
+END_TEST_S
+```
+
+- 1事実を1インスタンスでテストコードを記述する。
+- 1関数のn事実を一つのTEST_S内に記述する。
+  - オムロン環境にて、タスクの数が増えると登録に時間が掛かるため。
+- 事実を1行のコメントで記述する。
+- AAA形式で、Arrange節, Act節, Assert節を明示する。
 
 ## ドキュメント
 
