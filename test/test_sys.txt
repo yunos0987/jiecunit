@@ -25,3 +25,103 @@ TEST_S(test_jiec_concat)
 	EXPECT_EQ_STRING('', jiec_concat(''));
 	{end}
 END_TEST_S
+
+TEST_S(test_console_initialize)
+	var
+		console: Console_t;
+	end
+	{st}
+	// Fact: Console_initialize clears rows and resets row_index to 0.
+		// Arrange
+	console.row_index := 7;
+	console.rows[0] := 'dirty0';
+	console.rows[1] := 'dirty1';
+		// Act
+	Console_initialize(console);
+		// Assert
+	EXPECT_EQ_INT(0, console.row_index);
+	EXPECT_EQ_STRING('', console.rows[0]);
+	EXPECT_EQ_STRING('', console.rows[1]);
+
+	// Fact: Console_initialize can recover from abnormal row_index values.
+		// Arrange
+	console.row_index := -123;
+	console.rows[0] := 'x';
+		// Act
+	Console_initialize(console);
+		// Assert
+	EXPECT_EQ_INT(0, console.row_index);
+	EXPECT_EQ_STRING('', console.rows[0]);
+	{end}
+END_TEST_S
+
+TEST_S(test_console_print)
+	var
+		console: Console_t;
+	end
+	{st}
+	// Fact: Console_print appends text to the current row.
+		// Arrange
+	Console_initialize(console);
+		// Act
+	Console_print(console, 'abc');
+		// Assert
+	EXPECT_EQ_STRING('abc', console.rows[0]);
+	EXPECT_EQ_INT(0, console.row_index);
+
+	// Fact: Console_print keeps appending on repeated calls.
+		// Arrange
+	// (keep previous state)
+		// Act
+	Console_print(console, 'def');
+		// Assert
+	EXPECT_EQ_STRING('abcdef', console.rows[0]);
+
+	// Fact: Console_print with empty text keeps the existing row text.
+		// Arrange
+	// (keep previous state)
+		// Act
+	Console_print(console, '');
+		// Assert
+	EXPECT_EQ_STRING('abcdef', console.rows[0]);
+	EXPECT_EQ_INT(0, console.row_index);
+	{end}
+END_TEST_S
+
+TEST_S(test_console_puts)
+	var
+		console: Console_t;
+		next_row: dint;
+	end
+	{st}
+	// Fact: Console_puts writes one line and advances row_index by one.
+		// Arrange
+	Console_initialize(console);
+		// Act
+	next_row := Console_puts(console, 'line0');
+		// Assert
+	EXPECT_EQ_STRING('line0', console.rows[0]);
+	EXPECT_EQ_INT(1, console.row_index);
+	EXPECT_EQ_INT(1, next_row);
+
+	// Fact: Console_puts wraps row_index to 0 at the last row boundary.
+		// Arrange
+	console.row_index := CONSOLE_MAX_ROWS - 1;
+		// Act
+	next_row := Console_puts(console, 'tail');
+		// Assert
+	EXPECT_EQ_STRING('tail', console.rows[CONSOLE_MAX_ROWS - 1]);
+	EXPECT_EQ_INT(0, console.row_index);
+	EXPECT_EQ_INT(0, next_row);
+
+	// Fact: Console_puts accepts empty lines and still advances row_index.
+		// Arrange
+	// (keep wrapped state)
+		// Act
+	next_row := Console_puts(console, '');
+		// Assert
+	EXPECT_EQ_STRING('', console.rows[0]);
+	EXPECT_EQ_INT(1, console.row_index);
+	EXPECT_EQ_INT(1, next_row);
+	{end}
+END_TEST_S

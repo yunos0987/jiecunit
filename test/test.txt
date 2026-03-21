@@ -25,11 +25,16 @@
 DEFINE_CONFIGURATION(
 	_JIEC_TESTNAMES_LIST_(
 		'test_jiec_concat',
+		'test_console_initialize',
+		'test_console_print',
+		'test_console_puts',
+		// sys_conv.txt
 		'test_udint_to_string',
 		'test_dint_to_string',
 		'test_lreal_to_string',
 		'test_bool_to_string',
 		'test_time_to_string_sec',
+		// validate_*.txt
 		'test_eq_macro',
 		'test_jiectest_validate_eq',
 		'test_ne_macro',
