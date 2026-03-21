@@ -45,6 +45,18 @@ TEST_S(test_jiectest_validate_eq)
 	dead_or_alive := JiecTest_validateEQ_TIME(jt_time, time#5s, time#5s, 'JiecTest_validateEQ_TIME should return true for equal values', false, TestName, __LINE__);
 	EXPECT_TRUE(dead_or_alive);
 
+	JiecTest_initialize(jt_time);
+	dead_or_alive := JiecTest_validateEQ_DATE(jt_time, date#2026-03-18, date#2026-03-18, 'JiecTest_validateEQ_DATE should return true for equal values', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+
+	JiecTest_initialize(jt_time);
+	dead_or_alive := JiecTest_validateEQ_TOD(jt_time, tod#12:34:56, tod#12:34:56, 'JiecTest_validateEQ_TOD should return true for equal values', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+
+	JiecTest_initialize(jt_time);
+	dead_or_alive := JiecTest_validateEQ_DT(jt_time, dt#2026-03-18-12:34:56, dt#2026-03-18-12:34:56, 'JiecTest_validateEQ_DT should return true for equal values', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+
 	JiecTest_initialize(jt_int64);
 	dead_or_alive := JiecTest_validateEQ_INT64(jt_int64, 9876543210, 9876543210, 'JiecTest_validateEQ_INT64 should return true for equal values', false, TestName, __LINE__);
 	EXPECT_TRUE(dead_or_alive);
@@ -140,6 +152,9 @@ TEST_S(test_eq_macro)
 	EXPECT_EQ_TIME(time#1s, time#1s);
 	EXPECT_EQ_TIME(time#100ms, time#100ms);
 	EXPECT_EQ_TIME(time#0s, time#0s);
+	EXPECT_EQ_DATE(date#2026-03-18, date#2026-03-18);
+	EXPECT_EQ_TOD(tod#12:34:56, tod#12:34:56);
+	EXPECT_EQ_DT(dt#2026-03-18-12:34:56, dt#2026-03-18-12:34:56);
 {#endif}
 	// Test EXPECT_EQ with message versions
 	EXPECT_EQ_INT_MSG(5, 5, 'Five should equal five');
@@ -222,6 +237,9 @@ TEST_S(test_eq_macro)
 	ASSERT_EQ_TIME(time#1s, time#1s);
 	ASSERT_EQ_TIME(time#100ms, time#100ms);
 	ASSERT_EQ_TIME(time#0s, time#0s);
+	ASSERT_EQ_DATE(date#2026-03-18, date#2026-03-18);
+	ASSERT_EQ_TOD(tod#12:34:56, tod#12:34:56);
+	ASSERT_EQ_DT(dt#2026-03-18-12:34:56, dt#2026-03-18-12:34:56);
 {#endif}
 	// Test ASSERT_EQ with message versions
 	ASSERT_EQ_INT_MSG(5, 5, 'Five should equal five');

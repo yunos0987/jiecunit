@@ -112,6 +112,33 @@ TEST_S(test_jiectest_validate_ne)
 	JiecTest_initialize(jt_time);
 	dead_or_alive := JiecTest_validateNE_TIME(jt_time, time#1s, time#1s, '', false, TestName, __LINE__);
 	EXPECT_FALSE(dead_or_alive);
+
+	// Test DATE validation
+	JiecTest_initialize(jt_time);
+	dead_or_alive := JiecTest_validateNE_DATE(jt_time, date#2026-03-18, date#2026-03-19, '', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+
+	JiecTest_initialize(jt_time);
+	dead_or_alive := JiecTest_validateNE_DATE(jt_time, date#2026-03-18, date#2026-03-18, '', false, TestName, __LINE__);
+	EXPECT_FALSE(dead_or_alive);
+
+	// Test TOD validation
+	JiecTest_initialize(jt_time);
+	dead_or_alive := JiecTest_validateNE_TOD(jt_time, tod#12:34:56, tod#12:34:57, '', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+
+	JiecTest_initialize(jt_time);
+	dead_or_alive := JiecTest_validateNE_TOD(jt_time, tod#12:34:56, tod#12:34:56, '', false, TestName, __LINE__);
+	EXPECT_FALSE(dead_or_alive);
+
+	// Test DT validation
+	JiecTest_initialize(jt_time);
+	dead_or_alive := JiecTest_validateNE_DT(jt_time, dt#2026-03-18-12:34:56, dt#2026-03-18-12:34:57, '', false, TestName, __LINE__);
+	EXPECT_TRUE(dead_or_alive);
+
+	JiecTest_initialize(jt_time);
+	dead_or_alive := JiecTest_validateNE_DT(jt_time, dt#2026-03-18-12:34:56, dt#2026-03-18-12:34:56, '', false, TestName, __LINE__);
+	EXPECT_FALSE(dead_or_alive);
 {#endif}
 	{end}
 END_TEST_S
@@ -171,6 +198,9 @@ TEST_S(test_ne_macro)
 	EXPECT_NE_TIME(time#1s, time#2s);
 	EXPECT_NE_TIME(time#100ms, time#200ms);
 	EXPECT_NE_TIME(time#0s, time#1ms);
+	EXPECT_NE_DATE(date#2026-03-18, date#2026-03-19);
+	EXPECT_NE_TOD(tod#12:34:56, tod#12:34:57);
+	EXPECT_NE_DT(dt#2026-03-18-12:34:56, dt#2026-03-18-12:34:57);
 {#endif}
 	// Test EXPECT_NE with message versions
 	EXPECT_NE_INT_MSG(5, 10, 'Five should not equal ten');
@@ -246,6 +276,9 @@ TEST_S(test_ne_macro)
 	ASSERT_NE_TIME(time#1s, time#2s);
 	ASSERT_NE_TIME(time#100ms, time#200ms);
 	ASSERT_NE_TIME(time#0s, time#1ms);
+	ASSERT_NE_DATE(date#2026-03-18, date#2026-03-19);
+	ASSERT_NE_TOD(tod#12:34:56, tod#12:34:57);
+	ASSERT_NE_DT(dt#2026-03-18-12:34:56, dt#2026-03-18-12:34:57);
 {#endif}
 	// Test ASSERT_NE with message versions
 	ASSERT_NE_INT_MSG(5, 10, 'Five should not equal ten');
