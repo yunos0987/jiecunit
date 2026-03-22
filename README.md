@@ -83,7 +83,7 @@ $ jiecc .\samples\sample.txt -I. -I.\sys -t omron -o .\samples\sample.xml
 
 2つのテスト`test_mean`と`test_RunningMean`が実行され、テストをパス（成功）したことを意味します。
 
-以下は、テストが失敗したときの例です。テスト`tset_RunningMean`のテストコード57行目の3サイクル目（@2）において、期待値は5であったが、実値は3となり、失敗したことを意味します。
+以下は、テストが失敗したときの例です。テスト`test_RunningMean`のテストコード57行目の3サイクル目（@2）において、期待値は5であったが、実値は3となり、失敗したことを意味します。
 
 ※*57行目*という数字は、XMLにコンバートする前のテキストの行番号です。これをSysmac Studio上のtest_RunningMeanの行数で表示するテクニックは、[Jieccソフトウェア](https://www.graviness.com/iec_61131-3/jiecc.html)の機能を活用します。ここでは、深く述べません。
 
@@ -122,7 +122,7 @@ $ jiecc .\samples\sample.txt -I. -I.\sys -t keyence -o .\samples\sample.xml
 
 2つのテスト`test_mean`と`test_RunningMean`が実行され、テストをパス（成功）したことを意味します。
 
-以下は、テストが失敗したときの例です。テスト`tset_RunningMean`のテストコード56行目の3サイクル目（@2）において、期待値は5であったが、実値は3となり、失敗したことを意味します。
+以下は、テストが失敗したときの例です。テスト`test_RunningMean`のテストコード56行目の3サイクル目（@2）において、期待値は5であったが、実値は3となり、失敗したことを意味します。
 
 ※*56行目*という数字は、XMLにコンバートする前のテキストの行番号です。これをKV Studio上のtest_RunningMeanの行数で表示するテクニックは、[Jieccソフトウェア](https://www.graviness.com/iec_61131-3/jiecc.html)の機能を活用します。ここでは、深く述べません。
 
@@ -176,21 +176,21 @@ MainResouce下にオブジェクトが移動されます。
 
 Standardライブラリが追加されます。
 
-7. Generate Code（F11キー）すると、「C0174: VAR_TEMP declaration not allowwed in this place」エラーが複数出力されますので、Replaceダイアログで次のように設定し、Replace Allボタンを押下します。
+8. Generate Code（F11キー）すると、「C0174: VAR_TEMP declaration not allowed in this place」エラーが複数出力されますので、Replaceダイアログで次のように設定し、Replace Allボタンを押下します。
 
 ![Replaceダイアログ](./docs/co.dialog_replace_VAR_TEMP_to_VAR.png)
 
 ソースコード内のすべての`VAR_TEMP`が`VAR`に置換されます。
 
-8. Generate Code（F11キー）し、成功することを確認します。シミュレーションや実機で実行（シミュレーションの場合、[ Debug | F5 ]）します。
+9. Generate Code（F11キー）し、成功することを確認します。シミュレーションや実機で実行（シミュレーションの場合、[ Debug | F5 ]）します。
 
-9. テストの実行結果がグローバル変数`g_console`に出力されます。
+10. テストの実行結果がグローバル変数`g_console`に出力されます。
 
 ![テスト実行ログ](./docs/co.display_test_result.png)
 
 2つのテスト`test_mean`と`test_RunningMean`が実行され、テストをパス（成功）したことを意味します。
 
-以下は、テストが失敗したときの例です。テスト`tset_RunningMean`のテストコード58行目の3サイクル目（@2）において、期待値は5.0であったが、実値は3.0となり、失敗したことを意味します。
+以下は、テストが失敗したときの例です。テスト`test_RunningMean`のテストコード58行目の3サイクル目（@2）において、期待値は5.0であったが、実値は3.0となり、失敗したことを意味します。
 
 ※*58行目*という数字は、XMLにコンバートする前のテキストの行番号です。これをCODESYS上のtest_RunningMeanの行数で表示するテクニックは、[Jieccソフトウェア](https://www.graviness.com/iec_61131-3/jiecc.html)の機能を活用します。ここでは、深く述べません。
 
@@ -205,7 +205,7 @@ Standardライブラリが追加されます。
 * [samplesディレクトリ](./samples/)：JiecUnitの使い方サンプル。テスト対象POU（sample_pous.txt）とテストコード（sample.txt）を含む。
 * [srcディレクトリ](./src/)：JiecUnit本体のソースコード。コア機能、テスト実行エンジン、設定ファイルなど。
 * [sysディレクトリ](./sys/)：JiecUnitの動作に必要な補助的コード。型変換ファンクション、コンソール出力、メーカー依存の補助関数など。
-* [testディレクトリ](./test/)：JiecUnit自体の単体テストコード。各種マクロ・内部関数の動作検証用テストファイル（test_jiecunit.txt等）を含む。
+* [testディレクトリ](./test/)：JiecUnit自体の単体テストコード。各種マクロ・内部関数の動作検証用テストファイル（test_jiectest.txt等）を含む。
 * [checkディレクトリ](./check/)：テスト結果（XMLファイル等）の出力先。テスト実行時に生成される成果物を格納。
 * [wsディレクトリ](./ws/)：作業用・バックアップ用ディレクトリ。履歴管理や一時保存に利用。
 * [README.md](./README.md)：本ドキュメント。使い方・構成・サポート状況などを記載。

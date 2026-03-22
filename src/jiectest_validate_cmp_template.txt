@@ -1,0 +1,79 @@
+
+(*
+This template generates comparison validators (LT/LE/GE/GT) for each datatype.
+Required macros before include:
+- JiecUnitOperatorName and JiecUnitValidatorName : function name parts
+- JiecUnitOperator       : comparison operator (<, <=, >=, >)
+- JiecUnitValueDatatype  : datatype used for lval/rval
+- JiecUnitToString       : function-like macro for value string conversion
+
+Generated function name:
+JiecTest_validate<cmp>_<datatype>
+*)
+{#include <sys.txt>}
+{#include <sys_conv.txt>}
+
+{#ifndef JiecUnitOperatorName}
+	{#error require JiecUnitOperatorName macro.}
+{#endif}
+
+{#ifndef JiecUnitOperator}
+	{#error require JiecUnitOperator macro.}
+{#endif}
+
+{#ifndef JiecUnitValueDatatype}
+	{#error require JiecUnitValueDatatype macro.}
+{#endif}
+
+{#ifndef JiecUnitToString}
+	{#error require JiecUnitToString macro.}
+{#endif}
+
+{#define _JIECTEST_VALIDATE_CMP_NAME_(CMP, DATATYPE) JiecTest_validate@@CMP@@_@@DATATYPE}
+{#define JIECTEST_VALIDATE_CMP_NAME(CMP, DATATYPE) _JIECTEST_VALIDATE_CMP_NAME_(CMP, DATATYPE)}
+{#define JiecTest_validateCMP JIECTEST_VALIDATE_CMP_NAME(JiecUnitOperatorName, JiecUnitValidatorName)}
+
+(*{doc Validate a comparison between two values using the specified operator.
+@inout self The JiecTest_t structure.
+@input lval The left-hand side value.
+@input rval The right-hand side value.
+@input message The failure message.
+@input die Whether to abort the test on failure.
+@input file The source file name.
+@input line The line number.
+@return True if the comparison holds, false otherwise.
+}*)
+function JiecTest_validateCMP: bool
+	_PROLOGUE_OF_FUNCTION_()
+	_DECLARE_CONSOLE_IN_POU_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc The left-hand side value.}*)
+		lval: JiecUnitValueDatatype;
+		(*{doc The right-hand side value.}*)
+		rval: JiecUnitValueDatatype;
+		(*{doc The failure message.}*)
+		message: string[128];
+		(*{doc Whether to abort the test on failure.}*)
+		die: bool := true;
+		(*{doc The source file name.}*)
+		file: string[FILENAME_MAX_SIZE];
+		(*{doc The line number.}*)
+		line: dint;
+	end
+	{st}
+	JiecTest_validateCMP := lval JiecUnitOperator rval;
+	if JiecTest_validateCMP then
+		return;
+	end_if;
+
+	puts(jiec_concat('Expected lhs: ', JiecUnitToString(lval), ', rhs: ', JiecUnitToString(rval)));
+	puts(jiec_concat('Actual: ', JiecUnitToString(lval), ' vs ', JiecUnitToString(rval)));
+
+	JiecTest_failure(self:=self, message:=message, die:=die, file:=file, line:=line);
+	{end}
+end
+
+{#undef JiecTest_validateCMP}
+{#undef JIECTEST_VALIDATE_CMP_NAME}
+{#undef _JIECTEST_VALIDATE_CMP_NAME_}

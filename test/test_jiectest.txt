@@ -1,0 +1,401 @@
+{#include <jiecunit.txt>}
+
+TEST_S(test_jiectest_initialize)
+	var
+		jt: JiecTest_t;
+	end
+	{st}
+	// Fact: JiecTest_initialize resets all state fields to their initial values.
+		// Arrange
+	jt.num_of_tests := 3;
+	jt.testnames[0] := 'dummy0';
+	jt.testnames[1] := 'dummy1';
+	jt.tmp_cycle := 12;
+	jt.tmp_active_test_index := 7;
+	jt.tmp_is_test_available := true;
+	jt.num_of_failures := 9;
+		// Act
+	JiecTest_initialize(jt);
+		// Assert
+	EXPECT_EQ_INT(0, jt.num_of_tests);
+	EXPECT_EQ_STRING('', jt.testnames[0]);
+	EXPECT_EQ_STRING('', jt.testnames[1]);
+	EXPECT_EQ_INT(dint#__DINT_MIN__, jt.tmp_cycle);
+	EXPECT_EQ_INT(-1, jt.tmp_active_test_index);
+	EXPECT_FALSE(jt.tmp_is_test_available);
+	EXPECT_EQ_INT(0, jt.num_of_failures);
+	{end}
+END_TEST_S
+
+TEST_S(test_jiectest_register)
+	var
+		jt: JiecTest_t;
+		jt_full: JiecTest_t;
+		result: dint;
+	end
+	{st}
+	// Fact: JiecTest_register returns 1 and stores the first test name.
+		// Arrange
+	JiecTest_initialize(jt);
+		// Act
+	result := JiecTest_register(jt, 'test_alpha');
+		// Assert
+	EXPECT_EQ_INT(1, result);
+	EXPECT_EQ_INT(1, jt.num_of_tests);
+	EXPECT_EQ_STRING('test_alpha', jt.testnames[0]);
+
+	// Fact: JiecTest_register increments count when registering another unique name.
+		// Arrange
+	// (keep previous state)
+		// Act
+	result := JiecTest_register(jt, 'test_beta');
+		// Assert
+	EXPECT_EQ_INT(2, result);
+	EXPECT_EQ_INT(2, jt.num_of_tests);
+	EXPECT_EQ_STRING('test_beta', jt.testnames[1]);
+
+	// Fact: JiecTest_register rejects a duplicate name with -1 without incrementing count.
+		// Arrange
+	// (keep previous state)
+		// Act
+	result := JiecTest_register(jt, 'test_alpha');
+		// Assert
+	EXPECT_EQ_INT(-1, result);
+	EXPECT_EQ_INT(2, jt.num_of_tests);
+
+	// Fact: JiecTest_register rejects overflow with -2 when num_of_tests reaches MAX_TESTS.
+		// Arrange
+	jt.num_of_tests := MAX_TESTS;
+		// Act
+	result := JiecTest_register(jt, 'test_overflow');
+		// Assert
+	EXPECT_EQ_INT(-2, result);
+	EXPECT_EQ_INT(MAX_TESTS, jt.num_of_tests);
+
+	// Fact: JiecTest_register accepts an empty test name as a distinct entry.
+		// Arrange
+	JiecTest_initialize(jt);
+		// Act
+	result := JiecTest_register(jt, '');
+		// Assert
+	EXPECT_EQ_INT(1, result);
+	EXPECT_EQ_INT(1, jt.num_of_tests);
+	EXPECT_EQ_STRING('', jt.testnames[0]);
+
+	// Fact: JiecTest_register succeeds at MAX_TESTS-1 and fails at MAX_TESTS.
+		// Arrange
+	JiecTest_initialize(jt_full);
+	jt_full.num_of_tests := MAX_TESTS - 1;
+	jt_full.testnames[MAX_TESTS - 2] := 'tail';
+		// Act
+	result := JiecTest_register(jt_full, 'last_slot');
+		// Assert
+	EXPECT_EQ_INT(MAX_TESTS, result);
+	EXPECT_EQ_INT(MAX_TESTS, jt_full.num_of_tests);
+	EXPECT_EQ_STRING('last_slot', jt_full.testnames[MAX_TESTS - 1]);
+
+	// Fact: JiecTest_register keeps the last slot unchanged when overflow is rejected.
+		// Arrange
+	// (keep full state)
+		// Act
+	result := JiecTest_register(jt_full, 'overflow');
+		// Assert
+	EXPECT_EQ_INT(-2, result);
+	EXPECT_EQ_INT(MAX_TESTS, jt_full.num_of_tests);
+	EXPECT_EQ_STRING('last_slot', jt_full.testnames[MAX_TESTS - 1]);
+	{end}
+END_TEST_S
+
+TEST_S(test_jiectest_empty)
+	var
+		jt: JiecTest_t;
+	end
+	{st}
+	// Fact: JiecTest_empty returns true when no tests are registered.
+		// Arrange
+	JiecTest_initialize(jt);
+		// Act/Assert
+	EXPECT_TRUE(JiecTest_empty(jt));
+
+	// Fact: JiecTest_empty returns false after registering at least one test.
+		// Arrange
+	JiecTest_register(jt, 'test_alpha');
+		// Act/Assert
+	EXPECT_FALSE(JiecTest_empty(jt));
+
+	// Fact: JiecTest_empty returns false for abnormal negative num_of_tests states.
+		// Arrange
+	jt.num_of_tests := -1;
+		// Act/Assert
+	EXPECT_FALSE(JiecTest_empty(jt));
+	{end}
+END_TEST_S
+
+TEST_S(test_jiectest_is_active)
+	var
+		jt: JiecTest_t;
+		alive: bool;
+	end
+	{st}
+	// Fact: JiecTest_isActive returns false right after initialization.
+		// Arrange
+	JiecTest_initialize(jt);
+		// Act
+	alive := JiecTest_isActive(jt);
+		// Assert
+	EXPECT_FALSE(alive);
+
+	// Fact: JiecTest_isActive returns true after activation.
+		// Arrange
+	JiecTest_activate(jt);
+		// Act
+	alive := JiecTest_isActive(jt);
+		// Assert
+	EXPECT_TRUE(alive);
+
+	// Fact: JiecTest_isActive returns false after deactivation.
+		// Arrange
+	JiecTest_deactivate(jt);
+		// Act
+	alive := JiecTest_isActive(jt);
+		// Assert
+	EXPECT_FALSE(alive);
+
+	// Fact: JiecTest_isActive returns false at the boundary tmp_cycle = -1.
+		// Arrange
+	jt.tmp_cycle := -1;
+		// Act
+	alive := JiecTest_isActive(jt);
+		// Assert
+	EXPECT_FALSE(alive);
+
+	// Fact: JiecTest_isActive returns true at the boundary tmp_cycle = 0.
+		// Arrange
+	jt.tmp_cycle := 0;
+		// Act
+	alive := JiecTest_isActive(jt);
+		// Assert
+	EXPECT_TRUE(alive);
+	{end}
+END_TEST_S
+
+TEST_S(test_jiectest_activate)
+	var
+		jt: JiecTest_t;
+	end
+	{st}
+	// Fact: JiecTest_activate sets tmp_cycle to 0.
+		// Arrange
+	JiecTest_initialize(jt);
+	jt.tmp_cycle := 123;
+		// Act
+	JiecTest_activate(jt);
+		// Assert
+	EXPECT_EQ_INT(0, jt.tmp_cycle);
+
+	// Fact: JiecTest_activate does not modify tmp_active_test_index.
+		// Arrange
+	jt.tmp_active_test_index := 5;
+		// Act
+	JiecTest_activate(jt);
+		// Assert
+	EXPECT_EQ_INT(5, jt.tmp_active_test_index);
+	{end}
+END_TEST_S
+
+TEST_S(test_jiectest_deactivate)
+	var
+		jt: JiecTest_t;
+	end
+	{st}
+	// Fact: JiecTest_deactivate sets tmp_cycle to DINT minimum.
+		// Arrange
+	JiecTest_initialize(jt);
+	JiecTest_activate(jt);
+		// Act
+	JiecTest_deactivate(jt);
+		// Assert
+	EXPECT_EQ_INT(dint#__DINT_MIN__, jt.tmp_cycle);
+
+	// Fact: JiecTest_deactivate is idempotent.
+		// Arrange
+	// (already deactivated)
+		// Act
+	JiecTest_deactivate(jt);
+		// Assert
+	EXPECT_EQ_INT(dint#__DINT_MIN__, jt.tmp_cycle);
+	{end}
+END_TEST_S
+
+TEST_S(test_jiectest_current_cycle)
+	var
+		jt: JiecTest_t;
+		cycle: dint;
+	end
+	{st}
+	// Fact: JiecTest_currentCycle returns DINT minimum right after initialization.
+		// Arrange
+	JiecTest_initialize(jt);
+		// Act
+	cycle := JiecTest_currentCycle(jt);
+		// Assert
+	EXPECT_EQ_INT(dint#__DINT_MIN__, cycle);
+
+	// Fact: JiecTest_currentCycle returns 0 after activation.
+		// Arrange
+	JiecTest_activate(jt);
+		// Act
+	cycle := JiecTest_currentCycle(jt);
+		// Assert
+	EXPECT_EQ_INT(0, cycle);
+
+	// Fact: JiecTest_currentCycle returns the current tmp_cycle value.
+		// Arrange
+	jt.tmp_cycle := 42;
+		// Act
+	cycle := JiecTest_currentCycle(jt);
+		// Assert
+	EXPECT_EQ_INT(42, cycle);
+	{end}
+END_TEST_S
+
+TEST_S(test_jiectest_next_cycle)
+	var
+		jt: JiecTest_t;
+		alive: bool;
+	end
+	{st}
+	// Fact: JiecTest_nextCycle increments cycle and returns true before overflow.
+		// Arrange
+	JiecTest_initialize(jt);
+	JiecTest_activate(jt);
+		// Act
+	alive := JiecTest_nextCycle(jt);
+		// Assert
+	EXPECT_TRUE(alive);
+	EXPECT_EQ_INT(1, jt.tmp_cycle);
+
+	// Fact: JiecTest_nextCycle transitions from -1 to 0 and returns true.
+		// Arrange
+	jt.tmp_cycle := -1;
+		// Act
+	alive := JiecTest_nextCycle(jt);
+		// Assert
+	EXPECT_TRUE(alive);
+	EXPECT_EQ_INT(0, jt.tmp_cycle);
+
+	// Fact: JiecTest_nextCycle returns false at DINT max overflow boundary.
+		// Arrange
+	jt.tmp_cycle := dint#__DINT_MAX__;
+		// Act
+	alive := JiecTest_nextCycle(jt);
+		// Assert
+	EXPECT_FALSE(alive);
+	{end}
+END_TEST_S
+
+TEST_S(test_jiectest_active_test_index)
+	var
+		jt: JiecTest_t;
+		index: dint;
+	end
+	{st}
+	// Fact: JiecTest_activeTestIndex returns tmp_active_test_index.
+		// Arrange
+	JiecTest_initialize(jt);
+	jt.tmp_active_test_index := 1;
+		// Act
+	index := JiecTest_activeTestIndex(jt);
+		// Assert
+	EXPECT_EQ_INT(1, index);
+
+	// Fact: JiecTest_activeTestIndex returns -1 after initialization.
+		// Arrange
+	JiecTest_initialize(jt);
+		// Act
+	index := JiecTest_activeTestIndex(jt);
+		// Assert
+	EXPECT_EQ_INT(-1, index);
+	{end}
+END_TEST_S
+
+TEST_S(test_jiectest_active_testname)
+	var
+		jt: JiecTest_t;
+		name: string[TESTNAME_MAX_SIZE];
+	end
+	{st}
+	// Fact: JiecTest_activeTestname returns the registered name at active index.
+		// Arrange
+	JiecTest_initialize(jt);
+	JiecTest_register(jt, 'test_alpha');
+	JiecTest_register(jt, 'test_beta');
+	jt.tmp_active_test_index := 1;
+		// Act
+	name := JiecTest_activeTestname(jt);
+		// Assert
+	EXPECT_EQ_STRING('test_beta', name);
+
+	// Fact: JiecTest_activeTestname returns first name when active index is 0.
+		// Arrange
+	jt.tmp_active_test_index := 0;
+		// Act
+	name := JiecTest_activeTestname(jt);
+		// Assert
+	EXPECT_EQ_STRING('test_alpha', name);
+	{end}
+END_TEST_S
+
+TEST_S(test_jiectest_testname)
+	var
+		jt: JiecTest_t;
+	end
+	{st}
+	// Fact: JiecTest_testname returns fallback when no tests are registered.
+		// Arrange
+	JiecTest_initialize(jt);
+		// Act/Assert
+	EXPECT_EQ_STRING('!No available tests!', JiecTest_testname(jt, 0));
+
+	// Fact: JiecTest_testname returns the registered names for valid indexes.
+		// Arrange
+	JiecTest_register(jt, 'test_alpha');
+	JiecTest_register(jt, 'test_beta');
+		// Act/Assert
+	EXPECT_EQ_STRING('test_alpha', JiecTest_testname(jt, 0));
+	EXPECT_EQ_STRING('test_beta', JiecTest_testname(jt, 1));
+
+	// Fact: JiecTest_testname returns fallback message for invalid indexes.
+		// Arrange
+	// (keep registered tests)
+		// Act/Assert
+	EXPECT_EQ_STRING('!No available tests!', JiecTest_testname(jt, -1));
+	EXPECT_EQ_STRING('!No available tests!', JiecTest_testname(jt, 99));
+	{end}
+END_TEST_S
+
+TEST_S(test_jiectest_failure)
+	var
+		jt: JiecTest_t;
+	end
+	{st}
+	// Fact: JiecTest_failure increments num_of_failures when message is provided.
+		// Arrange
+	JiecTest_initialize(jt);
+	EXPECT_EQ_INT(0, jt.num_of_failures);
+
+	jt.tmp_cycle := 3;
+		// Act
+	JiecTest_failure(jt, 'first failure', false, TestName, __LINE__);
+		// Assert
+	EXPECT_EQ_INT(1, jt.num_of_failures);
+
+	// Fact: JiecTest_failure increments num_of_failures even when message is empty.
+		// Arrange
+	// (keep current state)
+		// Act
+	JiecTest_failure(jt, '', true, TestName, __LINE__);
+		// Assert
+	EXPECT_EQ_INT(2, jt.num_of_failures);
+	{end}
+END_TEST_S
