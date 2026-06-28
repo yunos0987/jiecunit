@@ -1,8 +1,8 @@
-{#ifndef __JIECUNIT_TXT__}
-{#define __JIECUNIT_TXT__}
+{#ifndef __JIECUNIT_IEC__}
+{#define __JIECUNIT_IEC__}
 
-{#include "src/jiecunit_config.txt"}
-{#include "src/jiecunit_core.txt"}
+{#include "src/jiecunit_config.iec"}
+{#include "src/jiecunit_core.iec"}
 
 {#define EXPECT_FALSE_MSG(condition, message)   _VALIDATE_EQ_BOOL_MSG(false, false, condition, message)}
 {#define EXPECT_TRUE_MSG(condition, message)    _VALIDATE_EQ_BOOL_MSG(false, true, condition, message)}

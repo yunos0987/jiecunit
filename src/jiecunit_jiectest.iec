@@ -1,10 +1,10 @@
-{#ifndef __JIECUNIT_JIECTEST_TXT__}
-{#define __JIECUNIT_JIECTEST_TXT__}
+{#ifndef __JIECUNIT_JIECTEST_IEC__}
+{#define __JIECUNIT_JIECTEST_IEC__}
 
-{#include <sys.txt>}
-{#include <sys_conv.txt>}
+{#include <sys.iec>}
+{#include <sys_conv.iec>}
 
-{#include "jiecunit_config.txt"}
+{#include "jiecunit_config.iec"}
 
 type
 	(*{doc The structure to manage the test cases and test results.}*)
@@ -229,12 +229,12 @@ end
 
 // ------------------------ Define validator functions ------------------------ //
 
-{#include "jiectest_validate_eq.txt"}
-{#include "jiectest_validate_ne.txt"}
-{#include "jiectest_validate_lt.txt"}
-{#include "jiectest_validate_le.txt"}
-{#include "jiectest_validate_ge.txt"}
-{#include "jiectest_validate_gt.txt"}
-{#include "jiectest_validate_near.txt"}
+{#include "jiectest_validate_eq.iec"}
+{#include "jiectest_validate_ne.iec"}
+{#include "jiectest_validate_lt.iec"}
+{#include "jiectest_validate_le.iec"}
+{#include "jiectest_validate_ge.iec"}
+{#include "jiectest_validate_gt.iec"}
+{#include "jiectest_validate_near.iec"}
 
 {#endif}

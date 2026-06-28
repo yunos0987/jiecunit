@@ -2,24 +2,24 @@
  * $ cd <JiecUnit Project Root>
  * $ mkdir check
  * $ cd check
- * $ jiecc -I.. -I..\sys ..\test\test.txt -o .\test.xml -t omron
+ * $ jiecc -I.. -I..\sys ..\test\test.iec -o .\test.xml -t omron
  * or
- * $ jiecc -I.. -I..\sys ..\test\test.txt -o .\test.xml -t keyence
+ * $ jiecc -I.. -I..\sys ..\test\test.iec -o .\test.xml -t keyence
  * or
- * $ jiecc -I.. -I..\sys ..\test\test.txt -o .\test.xml -t codesys
+ * $ jiecc -I.. -I..\sys ..\test\test.iec -o .\test.xml -t codesys
  *)
-{#include <jiecunit.txt>}
+{#include <jiecunit.iec>}
 
-{#include "test_sys.txt"}
-{#include "test_sys_conv.txt"}
-{#include "test_jiectest_validate_eq.txt"}
-{#include "test_jiectest_validate_ne.txt"}
-{#include "test_jiectest_validate_lt.txt"}
-{#include "test_jiectest_validate_le.txt"}
-{#include "test_jiectest_validate_ge.txt"}
-{#include "test_jiectest_validate_gt.txt"}
-{#include "test_jiectest_validate_near.txt"}
-{#include "test_jiectest.txt"}
+{#include "test_sys.iec"}
+{#include "test_sys_conv.iec"}
+{#include "test_jiectest_validate_eq.iec"}
+{#include "test_jiectest_validate_ne.iec"}
+{#include "test_jiectest_validate_lt.iec"}
+{#include "test_jiectest_validate_le.iec"}
+{#include "test_jiectest_validate_ge.iec"}
+{#include "test_jiectest_validate_gt.iec"}
+{#include "test_jiectest_validate_near.iec"}
+{#include "test_jiectest.iec"}
 
 // List test program names.
 DEFINE_CONFIGURATION(
@@ -28,13 +28,13 @@ DEFINE_CONFIGURATION(
 		'test_console_initialize',
 		'test_console_print',
 		'test_console_puts',
-		// sys_conv.txt
+		// sys_conv.iec
 		'test_udint_to_string',
 		'test_dint_to_string',
 		'test_lreal_to_string',
 		'test_bool_to_string',
 		'test_time_to_string_sec',
-		// validate_*.txt
+		// validate_*.iec
 		'test_eq_macro',
 		'test_jiectest_validate_eq',
 		'test_ne_macro',
@@ -49,7 +49,7 @@ DEFINE_CONFIGURATION(
 		'test_jiectest_validate_gt',
 		'test_near_macros',
 		'test_jiectest_validate_near',
-		// jiectest.txt
+		// jiectest.iec
 		'test_jiectest_initialize',
 		'test_jiectest_register',
 		'test_jiectest_empty',

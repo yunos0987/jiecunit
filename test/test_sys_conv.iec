@@ -1,5 +1,5 @@
-{#include <jiecunit.txt>}
-{#include <sys_conv.txt>}
+{#include <jiecunit.iec>}
+{#include <sys_conv.iec>}
 
 TEST_S(test_udint_to_string)
 	{st}
