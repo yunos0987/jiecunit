@@ -1,10 +1,10 @@
-{#ifndef __JIECUNIT_CORE_TXT__}
-{#define __JIECUNIT_CORE_TXT__}
+{#ifndef __JIECUNIT_CORE_IEC__}
+{#define __JIECUNIT_CORE_IEC__}
 
-{#include <sys.txt>}
-{#include <sys_conv.txt>}
+{#include <sys.iec>}
+{#include <sys_conv.iec>}
 
-{#include "jiecunit_jiectest.txt"}
+{#include "jiecunit_jiectest.iec"}
 
 // ------------------------ Define low level macros ------------------------ //
 

@@ -1,12 +1,12 @@
-{#ifndef __JIECTEST_VALIDATE_GE_TXT__}
-{#define __JIECTEST_VALIDATE_GE_TXT__}
+{#ifndef __JIECTEST_VALIDATE_LT_IEC__}
+{#define __JIECTEST_VALIDATE_LT_IEC__}
 
-{#define JiecUnitOperatorName GE}
+{#define JiecUnitOperatorName LT}
 {#define JiecUnitValidatorName INT32}
-{#define JiecUnitOperator >=}
+{#define JiecUnitOperator <}
 {#define JiecUnitValueDatatype dint}
 {#define JiecUnitToString dint_to_string}
-{#include "jiectest_validate_cmp_template.txt"}
+{#include "jiectest_validate_cmp_template.iec"}
 {#undef JiecUnitToString}
 {#undef JiecUnitValueDatatype}
 {#undef JiecUnitOperator}
@@ -14,12 +14,12 @@
 {#undef JiecUnitOperatorName}
 
 {#if not (_KEYENCE or _MITSUBISHI)}
-{#define JiecUnitOperatorName GE}
+{#define JiecUnitOperatorName LT}
 {#define JiecUnitValidatorName INT64}
-{#define JiecUnitOperator >=}
+{#define JiecUnitOperator <}
 {#define JiecUnitValueDatatype lint}
 {#define JiecUnitToString lint_to_string}
-{#include "jiectest_validate_cmp_template.txt"}
+{#include "jiectest_validate_cmp_template.iec"}
 {#undef JiecUnitToString}
 {#undef JiecUnitValueDatatype}
 {#undef JiecUnitOperator}
@@ -27,12 +27,12 @@
 {#undef JiecUnitOperatorName}
 
 {#endif}
-{#define JiecUnitOperatorName GE}
+{#define JiecUnitOperatorName LT}
 {#define JiecUnitValidatorName UINT32}
-{#define JiecUnitOperator >=}
+{#define JiecUnitOperator <}
 {#define JiecUnitValueDatatype udint}
 {#define JiecUnitToString udint_to_string}
-{#include "jiectest_validate_cmp_template.txt"}
+{#include "jiectest_validate_cmp_template.iec"}
 {#undef JiecUnitToString}
 {#undef JiecUnitValueDatatype}
 {#undef JiecUnitOperator}
@@ -40,12 +40,12 @@
 {#undef JiecUnitOperatorName}
 
 {#if not (_KEYENCE or _MITSUBISHI)}
-{#define JiecUnitOperatorName GE}
+{#define JiecUnitOperatorName LT}
 {#define JiecUnitValidatorName UINT64}
-{#define JiecUnitOperator >=}
+{#define JiecUnitOperator <}
 {#define JiecUnitValueDatatype ulint}
 {#define JiecUnitToString ulint_to_string}
-{#include "jiectest_validate_cmp_template.txt"}
+{#include "jiectest_validate_cmp_template.iec"}
 {#undef JiecUnitToString}
 {#undef JiecUnitValueDatatype}
 {#undef JiecUnitOperator}
@@ -53,24 +53,24 @@
 {#undef JiecUnitOperatorName}
 
 {#endif}
-{#define JiecUnitOperatorName GE}
+{#define JiecUnitOperatorName LT}
 {#define JiecUnitValidatorName DOUBLE}
-{#define JiecUnitOperator >=}
+{#define JiecUnitOperator <}
 {#define JiecUnitValueDatatype lreal}
 {#define JiecUnitToString lreal_to_string}
-{#include "jiectest_validate_cmp_template.txt"}
+{#include "jiectest_validate_cmp_template.iec"}
 {#undef JiecUnitToString}
 {#undef JiecUnitValueDatatype}
 {#undef JiecUnitOperator}
 {#undef JiecUnitValidatorName}
 {#undef JiecUnitOperatorName}
 
-{#define JiecUnitOperatorName GE}
+{#define JiecUnitOperatorName LT}
 {#define JiecUnitValidatorName TIME}
-{#define JiecUnitOperator >=}
+{#define JiecUnitOperator <}
 {#define JiecUnitValueDatatype time}
 {#define JiecUnitToString time_to_string_sec}
-{#include "jiectest_validate_cmp_template.txt"}
+{#include "jiectest_validate_cmp_template.iec"}
 {#undef JiecUnitToString}
 {#undef JiecUnitValueDatatype}
 {#undef JiecUnitOperator}
@@ -78,36 +78,36 @@
 {#undef JiecUnitOperatorName}
 
 {#if not (_KEYENCE or _MITSUBISHI)}
-{#define JiecUnitOperatorName GE}
+{#define JiecUnitOperatorName LT}
 {#define JiecUnitValidatorName DATE}
-{#define JiecUnitOperator >=}
+{#define JiecUnitOperator <}
 {#define JiecUnitValueDatatype date}
 {#define JiecUnitToString date_to_string}
-{#include "jiectest_validate_cmp_template.txt"}
+{#include "jiectest_validate_cmp_template.iec"}
 {#undef JiecUnitToString}
 {#undef JiecUnitValueDatatype}
 {#undef JiecUnitOperator}
 {#undef JiecUnitValidatorName}
 {#undef JiecUnitOperatorName}
 
-{#define JiecUnitOperatorName GE}
+{#define JiecUnitOperatorName LT}
 {#define JiecUnitValidatorName TOD}
-{#define JiecUnitOperator >=}
+{#define JiecUnitOperator <}
 {#define JiecUnitValueDatatype time_of_day}
 {#define JiecUnitToString tod_to_string}
-{#include "jiectest_validate_cmp_template.txt"}
+{#include "jiectest_validate_cmp_template.iec"}
 {#undef JiecUnitToString}
 {#undef JiecUnitValueDatatype}
 {#undef JiecUnitOperator}
 {#undef JiecUnitValidatorName}
 {#undef JiecUnitOperatorName}
 
-{#define JiecUnitOperatorName GE}
+{#define JiecUnitOperatorName LT}
 {#define JiecUnitValidatorName DT}
-{#define JiecUnitOperator >=}
+{#define JiecUnitOperator <}
 {#define JiecUnitValueDatatype date_and_time}
 {#define JiecUnitToString dt_to_string}
-{#include "jiectest_validate_cmp_template.txt"}
+{#include "jiectest_validate_cmp_template.iec"}
 {#undef JiecUnitToString}
 {#undef JiecUnitValueDatatype}
 {#undef JiecUnitOperator}
@@ -115,12 +115,12 @@
 {#undef JiecUnitOperatorName}
 
 {#endif}
-{#define JiecUnitOperatorName GE}
+{#define JiecUnitOperatorName LT}
 {#define JiecUnitValidatorName STRING}
-{#define JiecUnitOperator >=}
+{#define JiecUnitOperator <}
 {#define JiecUnitValueDatatype string[STRING_MAX_SIZE]}
 {#define JiecUnitToString }
-{#include "jiectest_validate_cmp_template.txt"}
+{#include "jiectest_validate_cmp_template.iec"}
 {#undef JiecUnitToString}
 {#undef JiecUnitValueDatatype}
 {#undef JiecUnitOperator}

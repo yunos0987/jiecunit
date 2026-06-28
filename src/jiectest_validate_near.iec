@@ -1,5 +1,5 @@
-{#ifndef __JIECTEST_VALIDATE_NEAR_TXT__}
-{#define __JIECTEST_VALIDATE_NEAR_TXT__}
+{#ifndef __JIECTEST_VALIDATE_NEAR_IEC__}
+{#define __JIECTEST_VALIDATE_NEAR_IEC__}
 
 (*{doc Validate that two floating-point values are nearly equal within the specified absolute error tolerance.
 @inout self The JiecTest_t structure.

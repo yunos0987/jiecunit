@@ -1,4 +1,4 @@
-{#include <jiecunit.txt>}
+{#include <jiecunit.iec>}
 
 // Test internal validation functions directly
 TEST_S(test_jiectest_validate_gt)

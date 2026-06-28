@@ -8,8 +8,8 @@ Required macros before include:
 Generated function name:
 JiecTest_validateEQ_<datatype>
 *)
-{#include <sys.txt>}
-{#include <sys_conv.txt>}
+{#include <sys.iec>}
+{#include <sys_conv.iec>}
 
 {#ifndef JiecUnitValidatorName}
 	{#error require JiecUnitValidatorName macro.}

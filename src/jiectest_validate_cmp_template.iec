@@ -10,8 +10,8 @@ Required macros before include:
 Generated function name:
 JiecTest_validate<cmp>_<datatype>
 *)
-{#include <sys.txt>}
-{#include <sys_conv.txt>}
+{#include <sys.iec>}
+{#include <sys_conv.iec>}
 
 {#ifndef JiecUnitOperatorName}
 	{#error require JiecUnitOperatorName macro.}

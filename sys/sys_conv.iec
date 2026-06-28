@@ -1,7 +1,7 @@
-{#ifndef __SYS_CONV_TXT__}
-{#define __SYS_CONV_TXT__}
+{#ifndef __SYS_CONV_IEC__}
+{#define __SYS_CONV_IEC__}
 
-{#include "sys.txt"}
+{#include "sys.iec"}
 
 {#if _KEYENCE}
 	{#define word uint}

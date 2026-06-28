@@ -18,7 +18,7 @@ Example:
 
 ## Accessing Version from Code
 
-The version is defined in `src/jiecunit_config.txt` and can be accessed using the following macros:
+The version is defined in `src/jiecunit_config.iec` and can be accessed using the following macros:
 
 - `_JIECUNIT` - Always true (indicates JiecUnit is included)
 - `_JIECUNIT_VERSION` - Full version string (e.g., "2.8.1")
@@ -35,7 +35,7 @@ The version is defined in `src/jiecunit_config.txt` and can be accessed using th
 ### Example Usage
 
 ```iec-st
-{#include <jiecunit.txt>}
+{#include <jiecunit.iec>}
 
 TEST_S(test_version_info)
     {st}
@@ -46,14 +46,14 @@ TEST_S(test_version_info)
 END_TEST_S
 ```
 
-See `samples/version_sample.txt` for a complete working example.
+See `samples/version_sample.iec` for a complete working example.
 
 ## Updating Version
 
 To update the version:
 
 1. Update the `VERSION` file with the new version number
-2. Update the version macros in `src/jiecunit_config.txt`:
+2. Update the version macros in `src/jiecunit_config.iec`:
    ```
    {#define _JIECUNIT true}
    {#define _JIECUNIT_FULL_VER XXXXX}  // MAJOR*10000 + MINOR*100 + PATCH
