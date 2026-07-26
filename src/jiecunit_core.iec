@@ -379,4 +379,18 @@ program {__func__:this_name} JiecUnitMain
 	{#undef _bye}
 end
 
+{#include "jiecunit_macros.iec"}
+
+{#if _JIER}
+	{#define _JIECUNIT_DEFINE_TASKS(...)
+		_JIECUNIT_EXTERN_PROGRAMS(__VA_ARGC__, __VA_ARGS__);
+		task JiecUnitTask(priority := 0);
+		program JiecUnitMain with JiecUnitTask: JiecUnitMain();
+		_JIECUNIT_TASK_BIND_(__VA_ARGS__)
+	}
+{#else}
+	// Oops! No vendor supports task definitions.
+	{#define _JIECUNIT_DEFINE_TASKS(...)}
+{#endif}
+
 {#endif}

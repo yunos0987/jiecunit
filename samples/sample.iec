@@ -8,8 +8,8 @@
 // List test program names.
 DEFINE_CONFIGURATION(
 	_JIEC_TESTNAMES_LIST_(
-		'test_mean',
-		'test_RunningMean'
+		test_mean,
+		test_RunningMean
 	)
 )
 

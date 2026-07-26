@@ -776,9 +776,10 @@
 
 {#define _JIEC_TESTNAMES_LIST_(...)
 	var_global
-		_JIECTESTNAMES_: array[MAX_TESTS] of string[TESTNAME_MAX_SIZE] := [__VA_ARGS__, (MAX_TESTS - __VA_ARGC__)('')];
+		_JIECTESTNAMES_: array[MAX_TESTS] of string[TESTNAME_MAX_SIZE] := [_STRINGIFY_(__VA_ARGS__), (MAX_TESTS - __VA_ARGC__)('')];
 		_JIECTEST_: JiecTest_t;
 	end
+	_JIECUNIT_DEFINE_TASKS(__VA_ARGS__)
 }
 
 
