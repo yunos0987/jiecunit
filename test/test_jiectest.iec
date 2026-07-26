@@ -1,4 +1,4 @@
-{#include <jiecunit.txt>}
+{#include <jiecunit.iec>}
 
 TEST_S(test_jiectest_initialize)
 	var

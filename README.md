@@ -42,11 +42,11 @@ JiecUnitのサンプル単体テストを実行するには、以下の環境が
 
 まず、JiecUnitプロジェクトをダウンロードします。mainブランチの[Download ZIP](https://github.com/yunos0987/jiecunit/archive/refs/heads/main.zip)で取得するか、`git clone https://github.com/yunos0987/jiecunit.git`でクローンしてください。
 
-JiecUnitプロジェクトには、単体テスト実行可能なサンプルが[samplesディレクトリ](./samples/)にあります。[samples/sample_pous.txt](./samples/sample_pous.txt)には、テスト対象POUとして以下2つが含まれます。
+JiecUnitプロジェクトには、単体テスト実行可能なサンプルが[samplesディレクトリ](./samples/)にあります。[samples/sample_pous.iec](./samples/sample_pous.iec)には、テスト対象POUとして以下2つが含まれます。
 * `mean`ファンクション：配列入力の平均値を計算
 * `RunningMean`ファンクションブロック：状態を記憶し逐次平均値を出力
 
-[samples/sample.txt](./samples/sample.txt)には、上記POUをテストする2つのテストプログラム`test_mean`と`test_RunningMean`が含まれています。
+[samples/sample.iec](./samples/sample.iec)には、上記POUをテストする2つのテストプログラム`test_mean`と`test_RunningMean`が含まれています。
 
 テストサンプルの実行方法は環境ごとに異なります。
 
@@ -58,7 +58,7 @@ JiecUnitプロジェクトには、単体テスト実行可能なサンプルが
 
 ```
 $ cd <JiecUnit Project Root>
-$ jiecc .\samples\sample.txt -I. -I.\sys -t omron -o .\samples\sample.xml
+$ jiecc .\samples\sample.iec -I. -I.\sys -t omron -o .\samples\sample.xml
 ```
 
 `.\samples\sample.xml`が出力されます。
@@ -97,7 +97,7 @@ $ jiecc .\samples\sample.txt -I. -I.\sys -t omron -o .\samples\sample.xml
 
 ```
 $ cd <JiecUnit Project Root>
-$ jiecc .\samples\sample.txt -I. -I.\sys -t keyence -o .\samples\sample.xml
+$ jiecc .\samples\sample.iec -I. -I.\sys -t keyence -o .\samples\sample.xml
 ```
 
 `.\samples\sample.xml`が出力されます。
@@ -138,7 +138,7 @@ $ jiecc .\samples\sample.txt -I. -I.\sys -t keyence -o .\samples\sample.xml
 
 ```
 $ cd <JiecUnit Project Root>
-$ jiecc .\samples\sample.txt -I. -I.\sys -t codesys -o .\samples\sample.xml
+$ jiecc .\samples\sample.iec -I. -I.\sys -t codesys -o .\samples\sample.xml
 ```
 
 `.\samples\sample.xml`が出力されます。
@@ -200,12 +200,13 @@ Standardライブラリが追加されます。
 
 ### リポジトリ構成
 
-* [jiecunit.txt](./jiecunit.txt)：JiecUnitユーザが使用すべき公開API。テスト記述用のマクロや関数群を定義。
+* [jiecunit.iec](./jiecunit.iec)：JiecUnitユーザが使用すべき公開API。テスト記述用のマクロや関数群を定義。
 * [docsディレクトリ](./docs/)：補助資料（各種画像、説明図、メーカー別手順、技術資料など）を格納。
-* [samplesディレクトリ](./samples/)：JiecUnitの使い方サンプル。テスト対象POU（sample_pous.txt）とテストコード（sample.txt）を含む。
+* [samplesディレクトリ](./samples/)：JiecUnitの使い方サンプル。テスト対象POU（sample_pous.iec）とテストコード（sample.iec）を含む。
 * [srcディレクトリ](./src/)：JiecUnit本体のソースコード。コア機能、テスト実行エンジン、設定ファイルなど。
 * [sysディレクトリ](./sys/)：JiecUnitの動作に必要な補助的コード。型変換ファンクション、コンソール出力、メーカー依存の補助関数など。
-* [testディレクトリ](./test/)：JiecUnit自体の単体テストコード。各種マクロ・内部関数の動作検証用テストファイル（test_jiectest.txt等）を含む。
+* [testディレクトリ](./test/)：JiecUnit自体の単体テストコード。各種マクロ・内部関数の動作検証用テストファイル（test_jiectest.iec等）を含む。
+* [checkディレクトリ](./check/)：テスト結果（XMLファイル等）の出力先。テスト実行時に生成される成果物を格納。
 * [README.md](./README.md)：本ドキュメント。使い方・構成・サポート状況などを記載。
 * [LICENSE](./LICENSE)：ライセンス情報。
 * [VERSION](./VERSION)：バージョン管理用ファイル。
@@ -219,11 +220,11 @@ Standardライブラリが追加されます。
 $ cd <JiecUnit Project Root>
 $ mkdir check
 $ cd check
-$ jiecc -I.. -I..\sys ..\test\test.txt -o .\test.xml -t omron
+$ jiecc -I.. -I..\sys ..\test\test.iec -o .\test.xml -t omron
 or
-$ jiecc -I.. -I..\sys ..\test\test.txt -o .\test.xml -t keyence
+$ jiecc -I.. -I..\sys ..\test\test.iec -o .\test.xml -t keyence
 or
-$ jiecc -I.. -I..\sys ..\test\test.txt -o .\test.xml -t codesys
+$ jiecc -I.. -I..\sys ..\test\test.iec -o .\test.xml -t codesys
 ```
 
 ### 各メーカーのIEC 61131-3言語サポート状況

@@ -1,9 +1,9 @@
-{#ifndef __SYS_TXT__}
-{#define __SYS_TXT__}
+{#ifndef __SYS_IEC__}
+{#define __SYS_IEC__}
 
 // note: This program does not fully support Mitsubishi, especially the handling of VAR_IN_OUT parameters in functions.
 
-{#include "sys_config.txt"}
+{#include "sys_config.iec"}
 
 {#if not (_KEYENCE or _MITSUBISHI)}
 	{#define DEFINE_CONFIGURATION(var_global_decls)

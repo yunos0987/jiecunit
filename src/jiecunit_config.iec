@@ -1,5 +1,5 @@
-{#ifndef __JIECUNIT_CONFIG_TXT__}
-{#define __JIECUNIT_CONFIG_TXT__}
+{#ifndef __JIECUNIT_CONFIG_IEC__}
+{#define __JIECUNIT_CONFIG_IEC__}
 
 {#define _JIECUNIT          true}
 {#define _JIECUNIT_FULL_VER 30400}

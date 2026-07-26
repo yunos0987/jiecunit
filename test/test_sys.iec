@@ -1,5 +1,5 @@
-{#include <jiecunit.txt>}
-{#include <sys.txt>}
+{#include <jiecunit.iec>}
+{#include <sys.iec>}
 
 TEST_S(test_jiec_concat)
 	{st}
