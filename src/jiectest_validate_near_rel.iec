@@ -1,0 +1,66 @@
+{#ifndef __JIECTEST_VALIDATE_NEAR_REL_IEC__}
+{#define __JIECTEST_VALIDATE_NEAR_REL_IEC__}
+
+(*{doc Validate that two floating-point values are nearly equal within the specified relative error tolerance.
+The allowed absolute difference is rel_error multiplied by the larger of the two values' magnitudes.
+@inout self The JiecTest_t structure.
+@input val1 The first value.
+@input val2 The second value.
+@input rel_error The allowed relative error.
+@input message The failure message.
+@input die Whether to abort the test on failure. Default: true
+@input file The source file name.
+@input line The line number.
+@return True if the values are equal within the tolerance, false otherwise.}*)
+function JiecTest_validateNEARREL: bool
+	_PROLOGUE_OF_FUNCTION_()
+	_DECLARE_CONSOLE_IN_POU_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc The first value.}*)
+		val1: lreal;
+		(*{doc The second value.}*)
+		val2: lreal;
+		(*{doc The allowed relative error.}*)
+		rel_error: lreal;
+		(*{doc The failure message.}*)
+		message: string[128];
+		(*{doc Whether to abort the test on failure.}*)
+		die: bool := true;
+		(*{doc The source file name.}*)
+		file: string[FILENAME_MAX_SIZE];
+		(*{doc The line number.}*)
+		line: dint;
+	end
+	var_temp
+		scale_value: lreal;
+		allowed_value: lreal;
+	end
+	{st}
+	if rel_error < 0.0 then
+		JiecTest_failure(self:=self, message:='Relative error cannot be negative.', die:=die, file:=file, line:=line);
+		JiecTest_validateNEARREL := false;
+		return;
+	end_if;
+
+	scale_value := abs(val1);
+	if abs(val2) > scale_value then
+		scale_value := abs(val2);
+	end_if;
+	allowed_value := rel_error * scale_value;
+
+	JiecTest_validateNEARREL := abs(val1 - val2) <= allowed_value;
+	if JiecTest_validateNEARREL then
+		return;
+	end_if;
+
+	puts(jiec_concat('Value1: ', lreal_to_string(val1)));
+	puts(jiec_concat('Value2: ', lreal_to_string(val2)));
+	puts(jiec_concat('Value1 - Value2: ', lreal_to_string(val1 - val2)));
+	puts(jiec_concat('Allowed: ', lreal_to_string(allowed_value)));
+
+	JiecTest_failure(self:=self, message:=message, die:=die, file:=file, line:=line);
+	{end}
+end
+
+{#endif}

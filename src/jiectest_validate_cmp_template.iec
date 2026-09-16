@@ -33,6 +33,17 @@ JiecTest_validate<cmp>_<datatype>
 {#define JIECTEST_VALIDATE_CMP_NAME(CMP, DATATYPE) _JIECTEST_VALIDATE_CMP_NAME_(CMP, DATATYPE)}
 {#define JiecTest_validateCMP JIECTEST_VALIDATE_CMP_NAME(JiecUnitOperatorName, JiecUnitValidatorName)}
 
+{#ifndef _JIECUNIT_OPLABEL_TABLE_}
+{#define _JIECUNIT_OPLABEL_TABLE_}
+	{#define _JIECUNIT_OPLABEL_LT '<'}
+	{#define _JIECUNIT_OPLABEL_LE '<='}
+	{#define _JIECUNIT_OPLABEL_GE '>='}
+	{#define _JIECUNIT_OPLABEL_GT '>'}
+	{#define _JIECUNIT_OPLABEL_(N) _JIECUNIT_OPLABEL_@@N}
+	{#define JIECUNIT_OPLABEL(N) _JIECUNIT_OPLABEL_(N)}
+	{#define JiecUnitOperatorLabel JIECUNIT_OPLABEL(JiecUnitOperatorName)}
+{#endif}
+
 (*{doc Validate a comparison between two values using the specified operator.
 @inout self The JiecTest_t structure.
 @input lval The left-hand side value.
@@ -67,7 +78,7 @@ function JiecTest_validateCMP: bool
 		return;
 	end_if;
 
-	puts(jiec_concat('Expected lhs: ', JiecUnitToString(lval), ', rhs: ', JiecUnitToString(rval)));
+	puts(jiec_concat('Expected: lhs ', JiecUnitOperatorLabel, ' rhs'));
 	puts(jiec_concat('Actual: ', JiecUnitToString(lval), ' vs ', JiecUnitToString(rval)));
 
 	JiecTest_failure(self:=self, message:=message, die:=die, file:=file, line:=line);

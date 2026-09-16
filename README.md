@@ -12,6 +12,7 @@
 - [JiecUnit開発者向け](#jiecunit開発者向け)
   - [リポジトリ構成](#リポジトリ構成)
   - [JiecUnitのテスト方法](#jiecunitのテスト方法)
+  - [追加したアサーション API](#追加したアサーション-api)
   - [各メーカーの言語サポート状況](#各メーカーの言語サポート状況)
 - [ライセンス](#ライセンス)
 - [その他の情報](#その他の情報)
@@ -28,6 +29,7 @@ JiecUnitは現在、[IEC 61131-10 XML](https://plcopen.org/sites/default/files/d
 * オムロン社製[Sysmac Studio](https://www.fa.omron.co.jp/products/family/3077/download/software.html)
 * キーエンス社製[KV Studio](https://www.keyence.co.jp/support/user/controls/installer/)
 * CODESYS社製[CODESYS](https://content.helpme-codesys.com/en/CODESYS%20Installer/_inst_start_page.html)
+* Jieccのjierインタプリタによる直接実行（`jiecc --run`。PLC・IDE不要。開発者検証／CI用途）
 
 ## 必要環境
 
@@ -35,8 +37,10 @@ JiecUnitのサンプル単体テストを実行するには、以下の環境が
 
 * [Jiecc 5.14以降](https://www.graviness.com/iec_61131-3/jiecc.html#Header.Jiecc%E3%81%AE%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89%E3%81%A8%E5%AE%9F%E8%A1%8C%E6%96%B9%E6%B3%95)
   * Jieccは、IEC 61131-3テキストをIEC 61131-10 XMLに変換する無料のコマンドラインソフトウェアです。[Jieccのダウンロードと実行方法](https://www.graviness.com/iec_61131-3/jiecc.html#Header.Jiecc%E3%81%AE%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89%E3%81%A8%E5%AE%9F%E8%A1%8C%E6%96%B9%E6%B3%95)を参照してください。
+  * `jiecc --run`（jierインタプリタによる直接実行）や`scripts/run_tests.py`を使用する場合は、Jiecc 7.1.0以降が必要です。
 * [Sysmac Studio](https://www.fa.omron.co.jp/products/family/3077/download/software.html)（試用期間制限あり）、[KV Studio](https://www.keyence.co.jp/support/user/controls/installer/)（試用回数制限あり）、または[CODESYS](https://content.helpme-codesys.com/en/CODESYS%20Installer/_inst_start_page.html)
   * いずれも同梱シミュレータでテスト可能。必要に応じてPLC本体もご用意ください。
+  * `jiecc --run`による直接実行のみで検証する場合は、ベンダIDEは不要です。
 
 ## 単体テストのサンプルの実行方法
 
@@ -206,15 +210,33 @@ Standardライブラリが追加されます。
 * [srcディレクトリ](./src/)：JiecUnit本体のソースコード。コア機能、テスト実行エンジン、設定ファイルなど。
 * [sysディレクトリ](./sys/)：JiecUnitの動作に必要な補助的コード。型変換ファンクション、コンソール出力、メーカー依存の補助関数など。
 * [testディレクトリ](./test/)：JiecUnit自体の単体テストコード。各種マクロ・内部関数の動作検証用テストファイル（test_jiectest.iec等）を含む。
+* [scriptsディレクトリ](./scripts/)：開発補助スクリプト。マクロ生成（generate_macros.py）とテスト一括実行（run_tests.py）を含む。
 * [checkディレクトリ](./check/)：テスト結果（XMLファイル等）の出力先。テスト実行時に生成される成果物を格納。
 * [README.md](./README.md)：本ドキュメント。使い方・構成・サポート状況などを記載。
+* [CODING_RULES.md](./CODING_RULES.md)：コーディング規約。命名規則・フォーマット・テストの書き方などを記載。
 * [LICENSE](./LICENSE)：ライセンス情報。
 * [VERSION](./VERSION)：バージョン管理用ファイル。
 * [VERSION_MANAGEMENT.md](./VERSION_MANAGEMENT.md)：バージョン管理の運用ルールや履歴。
 
 ### JiecUnitのテスト方法
 
-ターゲットの環境ごとに以下のコマンドを実行し、上述と同じ手順を実行します。
+まず、以下のコマンドで一括検証することを推奨します（全ターゲットのコンパイル確認と、jierインタプリタによるテスト実行を一度に行います）。
+
+```
+$ cd <JiecUnit Project Root>
+$ python scripts/run_tests.py
+```
+
+個別にjierインタプリタで実行する場合は、以下のコマンドを使用します。
+
+```
+$ jiecc --run test/test.iec -I. -I./sys --max-cycles 200
+```
+
+* jiecc --runモードのプロセス終了コードはテスト結果を反映しません。テストの成否は標準出力の`[ PASSED ]`/`[ FAILED ]`行で判定してください（`scripts/run_tests.py`はこれを自動判定します）。
+* `--max-cycles`オプションは必須です。指定しない場合、複数スキャンサイクルにまたがるテストが完走しません。
+
+ベンダIDEへの取り込みを確認する場合は、ターゲットの環境ごとに以下のコマンドを実行し、上述と同じ手順を実行します。
 
 ```
 $ cd <JiecUnit Project Root>
@@ -225,6 +247,25 @@ or
 $ jiecc -I.. -I..\sys ..\test\test.iec -o .\test.xml -t keyence
 or
 $ jiecc -I.. -I..\sys ..\test\test.iec -o .\test.xml -t codesys
+```
+
+### 追加したアサーション API
+
+* `EXPECT_NEAR_REL(val1, val2, rel_error)` / `ASSERT_NEAR_REL(val1, val2, rel_error)`（`_MSG`版あり）：相対誤差による近似比較。許容差は`rel_error * max(abs(val1), abs(val2))`。
+```
+EXPECT_NEAR_REL(100.0, 101.0, 0.02); // |100.0 - 101.0| <= 0.02 * 101.0 なので成功
+```
+* `FAIL()` / `FAIL_MSG(message)`：即座に失敗として記録し、テストを中断する。
+```
+FAIL_MSG('到達してはならない分岐に到達した');
+```
+* `ADD_FAILURE()` / `ADD_FAILURE_MSG(message)`：失敗として記録するが、テストは継続する。
+```
+ADD_FAILURE_MSG('この時点で不整合を検出したが、後続の検証も継続する');
+```
+* `SKIP_TEST(reason)`：現在のテストをスキップとして報告し、テストを終了する（成功でも失敗でもない）。
+```
+SKIP_TEST('この環境では出力フォーマットが処理系依存のため検証しない');
 ```
 
 ### 各メーカーのIEC 61131-3言語サポート状況

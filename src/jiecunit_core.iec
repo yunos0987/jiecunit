@@ -223,6 +223,17 @@
 
 {#define _VALIDATE_NEAR(die, val1, val2, abs_error)                 _VALIDATE_NEAR_DATATYPE(DOUBLE, die, val1, val2, abs_error, '')}
 
+{#define _VALIDATE_NEAR_REL_(die_, val1_, val2_, rel_error_, message_)
+	if not JiecTest_validateNEARREL(self:=_JIECTEST_, val1:=val1_, val2:=val2_, rel_error:=rel_error_, message:=message_, die:=die_, file:=TestName, line:=__LINE__) then
+		_ON_FAILED_ACTION(die_);
+	end_if}
+{#define _VALIDATE_NEAR_REL_MSG(die, val1, val2, rel_error, message)   _VALIDATE_NEAR_REL_(die, val1, val2, rel_error, message)}
+{#define _VALIDATE_NEAR_REL(die, val1, val2, rel_error)                _VALIDATE_NEAR_REL_(die, val1, val2, rel_error, '')}
+
+{#define _VALIDATE_FAILURE_(die_, message_)
+	JiecTest_failure(self:=_JIECTEST_, message:=message_, die:=die_, file:=TestName, line:=__LINE__);
+	_ON_FAILED_ACTION(die_)}
+
 {#define _JIECTEST_ g_jiectest}
 {#define _JIECTESTNAMES_ g_jiectestnames}
 
@@ -280,6 +291,8 @@ program {__func__:this_name} JiecUnitMain
 		//
 		num_of_failed_tests: dint := 0;
 		failed_testnames: array[MAX_TESTS] of string[TESTNAME_MAX_SIZE];
+		// The count of tests reported as skipped, i.e. tests where _JIECTEST_.tmp_is_skipped was set (see JiecTest_skip).
+		num_of_skipped_tests: dint := 0;
 	end
 	{st}
 	if done then
@@ -304,6 +317,7 @@ program {__func__:this_name} JiecUnitMain
 				end_if;
 			end_if;
 		end_for;
+		puts(jiec_concat('[========] Running ', dint_to_string(_num_of_tests()), ' tests.'));
 		is_first_scan := false;
 	else
 		// epilogue
@@ -327,7 +341,10 @@ program {__func__:this_name} JiecUnitMain
 			tests_time_in_us := tests_time_in_us + active_test_acuumulated_time_in_us;
 
 			active_test_failures1 := _num_of_failures();
-			if active_test_failures0 = active_test_failures1 then
+			if _JIECTEST_.tmp_is_skipped then
+				inc(num_of_skipped_tests);
+				puts(jiec_concat('[ SKIPPED] ', _active_testname(), ' (', udint_to_string(active_test_acuumulated_time_in_us), 'us)'));
+			elsif active_test_failures0 = active_test_failures1 then
 				puts(jiec_concat('[     OK ] ', _active_testname(), ' (', udint_to_string(active_test_acuumulated_time_in_us), 'us)'));
 			else
 				failed_testnames[num_of_failed_tests] := _active_testname();
@@ -339,7 +356,10 @@ program {__func__:this_name} JiecUnitMain
 				// finish
 				tmp_string := jiec_concat(' (', udint_to_string(tests_time_in_us), 'us)');
 				puts(jiec_concat('[========] ', dint_to_string(_num_of_tests()), ' tests ran.', tmp_string));
-				puts(jiec_concat('[ PASSED ] ', dint_to_string(_num_of_tests() - num_of_failed_tests), ' tests.'));
+				puts(jiec_concat('[ PASSED ] ', dint_to_string(_num_of_tests() - num_of_failed_tests - num_of_skipped_tests), ' tests.'));
+				if num_of_skipped_tests > 0 then
+					puts(jiec_concat('[ SKIPPED] ', dint_to_string(num_of_skipped_tests), ' tests.'));
+				end_if;
 				if _num_of_failures() > 0 then
 					puts(jiec_concat('[ FAILED ] ', dint_to_string(num_of_failed_tests), ' tests, listed below.'));
 					for test_index := 0 to num_of_failed_tests - 1 do
@@ -357,6 +377,7 @@ program {__func__:this_name} JiecUnitMain
 			// run the next test case.
 			inc(_JIECTEST_.tmp_active_test_index);
 			_JIECTEST_.tmp_is_test_available := false;
+			_JIECTEST_.tmp_is_skipped := false;
 			_activate();
 			active_test_failures0 := _num_of_failures();
 			testname := _active_testname();

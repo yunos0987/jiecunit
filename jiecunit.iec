@@ -193,6 +193,7 @@
 {#define EXPECT_GT_STRING_MSG(lval, rval, message)  _VALIDATE_GT_STRING_MSG(false, lval, rval, message)}
 
 {#define EXPECT_NEAR_MSG(val1, val2, abs_error, message)    _VALIDATE_NEAR_MSG(false, val1, val2, abs_error, message)}
+{#define EXPECT_NEAR_REL_MSG(val1, val2, rel_error, message)   _VALIDATE_NEAR_REL_MSG(false, val1, val2, rel_error, message)}
 
 
 
@@ -386,6 +387,7 @@
 {#define EXPECT_GT_STRING(lval, rval)   _VALIDATE_GT_STRING(false, lval, rval)}
 
 {#define EXPECT_NEAR(val1, val2, abs_error)     _VALIDATE_NEAR(false, val1, val2, abs_error)}
+{#define EXPECT_NEAR_REL(val1, val2, rel_error)     _VALIDATE_NEAR_REL(false, val1, val2, rel_error)}
 
 
 
@@ -579,6 +581,7 @@
 {#define ASSERT_GT_STRING_MSG(lval, rval, message)  _VALIDATE_GT_STRING_MSG(true, lval, rval, message)}
 
 {#define ASSERT_NEAR_MSG(val1, val2, abs_error, message)    _VALIDATE_NEAR_MSG(true, val1, val2, abs_error, message)}
+{#define ASSERT_NEAR_REL_MSG(val1, val2, rel_error, message)   _VALIDATE_NEAR_REL_MSG(true, val1, val2, rel_error, message)}
 
 
 
@@ -771,6 +774,7 @@
 {#define ASSERT_GT_STRING(lval, rval)   _VALIDATE_GT_STRING(true, lval, rval)}
 
 {#define ASSERT_NEAR(val1, val2, abs_error)     _VALIDATE_NEAR(true, val1, val2, abs_error)}
+{#define ASSERT_NEAR_REL(val1, val2, rel_error)     _VALIDATE_NEAR_REL(true, val1, val2, rel_error)}
 
 
 
@@ -824,10 +828,20 @@ end}
 // End of Test. Terminate the current test.
 {#define EOT() JiecTest_deactivate(_JIECTEST_); return}
 
+// Skip the current test. The test is reported as skipped, not as passed.
+{#define SKIP_TEST(reason_) JiecTest_skip(self:=_JIECTEST_, reason:=reason_); EOT()}
+
 (*
  * The current cycle number.
  *  Info.: In the unit test for the single-cycle test, the result is always 0.
  *)
 {#define CURRENT_CYCLE() JiecTest_currentCycle(_JIECTEST_)}
+
+// Record a failure without aborting the test.
+{#define ADD_FAILURE()             _VALIDATE_FAILURE_(false, '')}
+{#define ADD_FAILURE_MSG(message)  _VALIDATE_FAILURE_(false, message)}
+// Record a failure and abort the test immediately.
+{#define FAIL()                    _VALIDATE_FAILURE_(true, '')}
+{#define FAIL_MSG(message)         _VALIDATE_FAILURE_(true, message)}
 
 {#endif}

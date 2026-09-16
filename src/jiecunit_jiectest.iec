@@ -17,6 +17,8 @@ type
 		tmp_cycle: dint; // There is a active test, if tmp_cycle >= 0.
 		tmp_active_test_index: dint;
 		tmp_is_test_available: bool; // error, if the test specified test is not found.
+		(*{doc Whether the active test has been marked as skipped via JiecTest_skip.}*)
+		tmp_is_skipped: bool;
 		(*{doc The number of failed assertions in the active test.}*)
 		num_of_failures: dint;
 	end
@@ -42,6 +44,7 @@ function JiecTest_initialize
 	self.tmp_cycle := dint#__DINT_MIN__;
 	self.tmp_active_test_index := -1;
 	self.tmp_is_test_available := false;
+	self.tmp_is_skipped := false;
 	self.num_of_failures := 0;
 	{end}
 end
@@ -126,6 +129,28 @@ function JiecTest_failure
 	puts(msg);
 
 	inc(self.num_of_failures);
+	{end}
+end
+
+(*{doc Mark the active test as skipped.
+The test is reported as skipped rather than passed or failed. Does not abort the test by itself;
+combine with EOT() (see the SKIP_TEST macro) to end the test immediately.
+@inout self The JiecTest_t structure.
+@input reason The reason for skipping the test (optional).
+@return Always returns true.}*)
+function JiecTest_skip
+	_PROLOGUE_OF_FUNCTION_()
+	_DECLARE_CONSOLE_IN_POU_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc The reason for skipping the test (optional).}*)
+		reason: string[STRING_MAX_SIZE] := '';
+	end
+	{st}
+	self.tmp_is_skipped := true;
+	if reason <> '' then
+		puts(jiec_concat('Skipped: ', reason));
+	end_if;
 	{end}
 end
 
@@ -236,5 +261,6 @@ end
 {#include "jiectest_validate_ge.iec"}
 {#include "jiectest_validate_gt.iec"}
 {#include "jiectest_validate_near.iec"}
+{#include "jiectest_validate_near_rel.iec"}
 
 {#endif}

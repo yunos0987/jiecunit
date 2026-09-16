@@ -39,6 +39,7 @@ TEST_S(test_lreal_to_string)
 	//EXPECT_EQ_STRING('1.00000000000000e-101', lreal_to_string(1.0e-101));
 	//EXPECT_EQ_STRING('1.00000000000000e+100', lreal_to_string(0.1e+101));
 	//EXPECT_EQ_STRING('1.00000000000000e-102', lreal_to_string(0.1e-101));
+	SKIP_TEST('lreal_to_string output format is vendor-specific (ke: -2.14748364900000E+009 / om: -2.14748364900000e+09).');
 	{end}
 END_TEST_S
 

@@ -46,8 +46,6 @@ TEST_S(test_version_info)
 END_TEST_S
 ```
 
-See `samples/version_sample.iec` for a complete working example.
-
 ## Updating Version
 
 To update the version:
