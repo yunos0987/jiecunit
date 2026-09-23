@@ -5,10 +5,16 @@
 Compiles each suite for every requested target (to catch vendor-specific
 compile errors) and, separately, interprets and runs each suite with the
 jiecc jier interpreter (`jiecc --run`), parsing its stdout summary lines
-to determine pass/fail/skip counts.
+to determine pass/fail/skip counts. It also runs scripts/check_macro_expansion.py
+to verify that the optional-message assertion macros stay equivalent to their
+deprecated *_MSG aliases.
 
 Note: jiecc's process exit code does not reflect test failures in --run
 mode, so this script parses stdout instead.
+
+The macro-check phase runs by default; pass --skip-macro-check to disable it.
+--compile-only and --run-only both skip the macro-check phase as well, since
+it is neither a compile nor a run step.
 
 Usage:
   python scripts/run_tests.py
@@ -16,6 +22,7 @@ Usage:
   python scripts/run_tests.py test/test.iec --targets OMRON,STD
   python scripts/run_tests.py --compile-only
   python scripts/run_tests.py --run-only --max-cycles 500
+  python scripts/run_tests.py --skip-macro-check
 """
 import argparse
 import os
@@ -151,6 +158,25 @@ def run_suite(jiecc, root, suite, max_cycles, timeout):
     return True, summary
 
 
+def run_macro_check(jiecc, root, timeout):
+    # type: (str, str, int) -> tuple
+    script = os.path.join(root, 'scripts', 'check_macro_expansion.py')
+    cmd = [sys.executable, script, '--jiecc', jiecc]
+    try:
+        proc = subprocess.run(
+            cmd, cwd=root, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+            timeout=timeout)
+    except subprocess.TimeoutExpired:
+        return False, 'timed out after {}s'.format(timeout)
+    output = proc.stdout.decode('utf-8', errors='replace') if proc.stdout else ''
+    if proc.returncode != 0:
+        return False, output.strip() or 'exit code {}'.format(proc.returncode)
+    ok_lines = [line for line in output.strip().splitlines() if line.startswith('OK:')]
+    if ok_lines:
+        return True, '; '.join(ok_lines)
+    return True, output.strip().splitlines()[-1] if output.strip() else ''
+
+
 def main():
     # type: () -> int
     parser = argparse.ArgumentParser(
@@ -174,6 +200,10 @@ def main():
                         help='Only compile the suites; do not run them.')
     parser.add_argument('--run-only', action='store_true',
                         help='Only run the suites; do not compile them.')
+    parser.add_argument('--skip-macro-check', action='store_true',
+                        help='Skip the scripts/check_macro_expansion.py phase '
+                             '(also skipped automatically when --compile-only '
+                             'or --run-only is given).')
     parser.add_argument('--timeout', type=int, default=600,
                         help='Timeout in seconds for each jiecc invocation (default: 600)')
     args = parser.parse_args()
@@ -199,6 +229,7 @@ def main():
 
     do_compile = not args.run_only
     do_run = not args.compile_only
+    do_macro_check = not args.run_only and not args.compile_only and not args.skip_macro_check
 
     try:
         if do_compile:
@@ -213,15 +244,20 @@ def main():
                 ok, detail = run_suite(jiecc, root, suite, args.max_cycles, args.timeout)
                 results.append(('run', suite, '-', ok, detail))
                 all_ok = all_ok and ok
+
+        if do_macro_check:
+            ok, detail = run_macro_check(jiecc, root, args.timeout)
+            results.append(('macro-check', 'jiecunit.iec', '-', ok, detail))
+            all_ok = all_ok and ok
     finally:
         if cleanup_outdir:
             shutil.rmtree(outdir, ignore_errors=True)
 
-    print('{:<8} {:<24} {:<12} {:<6} {}'.format('PHASE', 'SUITE', 'TARGET', 'OK', 'DETAIL'))
+    print('{:<11} {:<24} {:<12} {:<6} {}'.format('PHASE', 'SUITE', 'TARGET', 'OK', 'DETAIL'))
     for phase, suite, target, ok, detail in results:
         status = 'OK' if ok else 'FAIL'
         first_line = detail.splitlines()[0] if detail else ''
-        print('{:<8} {:<24} {:<12} {:<6} {}'.format(phase, suite, target, status, first_line))
+        print('{:<11} {:<24} {:<12} {:<6} {}'.format(phase, suite, target, status, first_line))
         if not ok and detail:
             for line in detail.splitlines()[1:]:
                 print('         ' + line)

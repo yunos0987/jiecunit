@@ -4,6 +4,7 @@
 
 ## 目次
 - [概要](#概要)
+- [アサーションのメッセージ引数](#アサーションのメッセージ引数)
 - [必要環境](#必要環境)
 - [単体テストのサンプルの実行方法](#単体テストのサンプルの実行方法)
   - [オムロン社製Sysmac Studioの場合](#オムロン社製sysmac-studioの場合の単体テストサンプルの実行方法)
@@ -30,6 +31,26 @@ JiecUnitは現在、[IEC 61131-10 XML](https://plcopen.org/sites/default/files/d
 * キーエンス社製[KV Studio](https://www.keyence.co.jp/support/user/controls/installer/)
 * CODESYS社製[CODESYS](https://content.helpme-codesys.com/en/CODESYS%20Installer/_inst_start_page.html)
 * Jieccのjierインタプリタによる直接実行（`jiecc --run`。PLC・IDE不要。開発者検証／CI用途）
+
+## アサーションのメッセージ引数
+
+すべての`EXPECT_*`・`ASSERT_*`アサーションマクロ、および`FAIL`・`ADD_FAILURE`は、失敗時に表示するメッセージを末尾の省略可能な引数として受け取ります。メッセージを渡すために`_MSG`サフィックス付きのマクロ名を使う必要はありません。
+
+```
+EXPECT_EQ_INT(expected, actual);
+EXPECT_EQ_INT(expected, actual, '期待値と一致しません');
+EXPECT_TRUE(condition, '条件を満たしていません');
+EXPECT_NEAR(1.0, 1.001, 0.01, '許容誤差を超えています');
+FAIL('想定外の分岐に到達しました');
+ADD_FAILURE('この時点で失敗として記録します');
+```
+
+- `_MSG`サフィックス付きのマクロ（`EXPECT_EQ_INT_MSG`など）は後方互換のために残していますが、**非推奨**です。新規コードでは末尾の省略可能な引数としてメッセージを渡してください。
+- メッセージ文字列や値引数に含まれるカンマ・括弧はそのまま書けます（例: `EXPECT_EQ_STRING(a, b, 'カンマ, と (括弧)');`）。
+- 引数が16個以下の範囲で個数を間違えると、`JIECUNIT_ASSERTION_TAKES_<lo>_OR_<hi>_ARGUMENTS`という名前の構文エラーになります。この名前は`jiecc -c`によるコンパイル時、`jiecc --run`による直接実行時のいずれでも、呼び出し元の行番号とともに検出されます。`jiecc`がXMLを生成する前に失敗するため、各社IDEには到達しません。
+- 値引数の直後に置く最後の省略可能な引数（`EXPECT_TRUE`・`EXPECT_FALSE`なら2番目、`EXPECT_EQ_*`などの2値比較系は3番目、`EXPECT_NEAR`・`EXPECT_NEAR_REL`のような3値比較系は4番目、`FAIL`・`ADD_FAILURE`なら1番目の引数）は、常にSTRINGのメッセージとして解釈されます。数値やBOOLを渡してしまっても`jiecc -c`では検出されず、実行時に型不一致で停止するため注意してください（例: 許容誤差のつもりで`EXPECT_NEAR`ではなく`EXPECT_EQ_INT(a, b, tol)`のように書いてしまうミスに注意）。
+- `SKIP_TEST(reason)`の理由は、スキップした事実を記録に残すため省略できません。
+- `python scripts/check_macro_expansion.py`で、この省略可能引数の展開結果と`_MSG`版の展開結果が一致することを検証できます。
 
 ## 必要環境
 
@@ -210,7 +231,7 @@ Standardライブラリが追加されます。
 * [srcディレクトリ](./src/)：JiecUnit本体のソースコード。コア機能、テスト実行エンジン、設定ファイルなど。
 * [sysディレクトリ](./sys/)：JiecUnitの動作に必要な補助的コード。型変換ファンクション、コンソール出力、メーカー依存の補助関数など。
 * [testディレクトリ](./test/)：JiecUnit自体の単体テストコード。各種マクロ・内部関数の動作検証用テストファイル（test_jiectest.iec等）を含む。
-* [scriptsディレクトリ](./scripts/)：開発補助スクリプト。マクロ生成（generate_macros.py）とテスト一括実行（run_tests.py）を含む。
+* [scriptsディレクトリ](./scripts/)：開発補助スクリプト。マクロ生成（generate_macros.py）、テスト一括実行（run_tests.py）、およびメッセージ引数省略形と`_MSG`形の展開結果一致検証（check_macro_expansion.py）を含む。
 * [checkディレクトリ](./check/)：テスト結果（XMLファイル等）の出力先。テスト実行時に生成される成果物を格納。
 * [README.md](./README.md)：本ドキュメント。使い方・構成・サポート状況などを記載。
 * [CODING_RULES.md](./CODING_RULES.md)：コーディング規約。命名規則・フォーマット・テストの書き方などを記載。
@@ -220,11 +241,17 @@ Standardライブラリが追加されます。
 
 ### JiecUnitのテスト方法
 
-まず、以下のコマンドで一括検証することを推奨します（全ターゲットのコンパイル確認と、jierインタプリタによるテスト実行を一度に行います）。
+まず、以下のコマンドで一括検証することを推奨します（全ターゲットのコンパイル確認、jierインタプリタによるテスト実行、およびメッセージ引数省略形と`_MSG`形の展開結果一致検証を一度に行います）。
 
 ```
 $ cd <JiecUnit Project Root>
 $ python scripts/run_tests.py
+```
+
+マクロ展開の同値検証だけを単独で実行したい場合は、以下のコマンドを使用します。
+
+```
+$ python scripts/check_macro_expansion.py
 ```
 
 個別にjierインタプリタで実行する場合は、以下のコマンドを使用します。
@@ -251,17 +278,17 @@ $ jiecc -I.. -I..\sys ..\test\test.iec -o .\test.xml -t codesys
 
 ### 追加したアサーション API
 
-* `EXPECT_NEAR_REL(val1, val2, rel_error)` / `ASSERT_NEAR_REL(val1, val2, rel_error)`（`_MSG`版あり）：相対誤差による近似比較。許容差は`rel_error * max(abs(val1), abs(val2))`。
+* `EXPECT_NEAR_REL(val1, val2, rel_error)` / `ASSERT_NEAR_REL(val1, val2, rel_error)`（末尾にmessageを追加可能）：相対誤差による近似比較。許容差は`rel_error * max(abs(val1), abs(val2))`。
 ```
 EXPECT_NEAR_REL(100.0, 101.0, 0.02); // |100.0 - 101.0| <= 0.02 * 101.0 なので成功
 ```
-* `FAIL()` / `FAIL_MSG(message)`：即座に失敗として記録し、テストを中断する。
+* `FAIL()` / `FAIL(message)`：即座に失敗として記録し、テストを中断する。
 ```
-FAIL_MSG('到達してはならない分岐に到達した');
+FAIL('到達してはならない分岐に到達した');
 ```
-* `ADD_FAILURE()` / `ADD_FAILURE_MSG(message)`：失敗として記録するが、テストは継続する。
+* `ADD_FAILURE()` / `ADD_FAILURE(message)`：失敗として記録するが、テストは継続する。
 ```
-ADD_FAILURE_MSG('この時点で不整合を検出したが、後続の検証も継続する');
+ADD_FAILURE('この時点で不整合を検出したが、後続の検証も継続する');
 ```
 * `SKIP_TEST(reason)`：現在のテストをスキップとして報告し、テストを終了する（成功でも失敗でもない）。
 ```

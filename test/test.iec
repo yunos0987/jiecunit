@@ -25,6 +25,7 @@
 {#include "test_jiectest_validate_near.iec"}
 {#include "test_jiectest_validate_near_rel.iec"}
 {#include "test_jiectest.iec"}
+{#include "test_optional_message.iec"}
 
 // List test program names.
 DEFINE_CONFIGURATION(
@@ -68,6 +69,9 @@ DEFINE_CONFIGURATION(
 		test_jiectest_active_test_index,
 		test_jiectest_active_testname,
 		test_jiectest_testname,
-		test_jiectest_failure
+		test_jiectest_failure,
+		// optional message
+		test_optional_message,
+		test_deprecated_msg_aliases
 	)
 )
