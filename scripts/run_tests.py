@@ -12,6 +12,13 @@ deprecated *_MSG aliases.
 Note: jiecc's process exit code does not reflect test failures in --run
 mode, so this script parses stdout instead.
 
+jiecc can also exit 0 during -c/--run while still reporting a preprocessing
+error on stderr (for example a PP34 argument-count error), emitting an XML
+file that is missing the affected POUs, or an interpreted run whose
+UNDEFINED_SYMBOL error is only visible in the output text. To catch these,
+this script also treats any "error: " line in the compile/run output as a
+failure, independent of the process exit code.
+
 The macro-check phase runs by default; pass --skip-macro-check to disable it.
 --compile-only and --run-only both skip the macro-check phase as well, since
 it is neither a compile nor a run step.
@@ -40,6 +47,10 @@ _RE_PASSED = re.compile(r'^\[ PASSED \] (\d+) tests\.')
 _RE_SKIPPED = re.compile(r'^\[ SKIPPED\] (\d+) tests\.')
 _RE_FAILED_LINE = re.compile(r'\[ FAILED \]')
 _RE_ERROR_LINE = re.compile(r'\[  ERROR \]')
+# jiecc can exit 0 while still reporting an error on stderr (e.g. PP34 during
+# -c, or UNDEFINED_SYMBOL text during --run), so scan the output text for
+# "error: " lines regardless of the process exit code.
+_RE_ERROR_TEXT = re.compile(r'(?m)^\S.*: error: | error: ')
 
 
 def _repo_root():
@@ -104,8 +115,14 @@ def compile_suite(jiecc, root, suite, target, outdir, timeout):
     except subprocess.TimeoutExpired:
         return False, 'timed out after {}s'.format(timeout)
     output = proc.stdout.decode('utf-8', errors='replace') if proc.stdout else ''
+    error_lines = [line for line in output.splitlines() if _RE_ERROR_TEXT.search(line)]
     if proc.returncode != 0:
         return False, output.strip() or 'exit code {}'.format(proc.returncode)
+    if error_lines:
+        return False, (
+            'exit code 0 but output contains "error: " line(s) (jiecc can '
+            'emit an XML file despite a preprocessing error):\n'
+            + '\n'.join(error_lines))
     return True, ''
 
 
@@ -125,6 +142,10 @@ def run_suite(jiecc, root, suite, max_cycles, timeout):
         return False, 'timed out after {}s'.format(timeout)
     output = proc.stdout.decode('utf-8', errors='replace') if proc.stdout else ''
     lines = output.splitlines()
+
+    error_lines = [line for line in lines if _RE_ERROR_TEXT.search(line)]
+    if error_lines:
+        return False, 'output contains "error: " line(s):\n' + '\n'.join(error_lines)
 
     ran = None
     passed = None
@@ -180,7 +201,11 @@ def run_macro_check(jiecc, root, timeout):
 def main():
     # type: () -> int
     parser = argparse.ArgumentParser(
-        description='Compile and run the JiecUnit test suites with jiecc.')
+        description='Compile and run the JiecUnit test suites with jiecc. '
+                     'jiecc may exit 0 while still emitting an "error: " '
+                     'line on stderr (e.g. a PP34 preprocessing error), so '
+                     'this script fails the check when it finds one, '
+                     'regardless of the exit code.')
     parser.add_argument('suites', nargs='*', default=_DEFAULT_SUITES,
                         help='Test suite files, relative to the repository root '
                              '(default: {})'.format(', '.join(_DEFAULT_SUITES)))

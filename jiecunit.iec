@@ -7,25 +7,76 @@
 // ---------------------------------------------------------------------- //
 // Optional-message dispatchers (internal; do not use directly).
 //
-// Every public assertion macro takes an optional trailing message argument:
+// Every public assertion macro declares its required arguments by name and
+// takes an optional trailing message argument through a variadic tail:
 //   EXPECT_EQ_INT(expected, actual)            -> message is ''
 //   EXPECT_EQ_INT(expected, actual, message)   -> message is used
+//   EXPECT_EQ_INT(1)                           -> too few required args
+//   EXPECT_EQ_INT(1, 2, 3, 4)                  -> too many total args
 //
-// _JIECUNIT_OPTMSG<K>_N(n, base, ...) dispatches on the actual argument count n
-// to base @@ _MSG(...), appending '' when the message is omitted. K is the
-// number of value arguments the assertion takes (1: TRUE/FALSE,
-// 2: EQ/NE/LT/LE/GE/GT, 3: NEAR/NEAR_REL). _JIECUNIT_OPTFAIL_N is the K=0
-// counterpart used by FAIL/ADD_FAILURE, which take no value argument.
+// _JIECUNIT_OPTMSG<K>_N(n, base, ...) dispatches on n = __VA_ARGC__, the
+// number of arguments AFTER the required ones (0 when the message is
+// omitted, 1 when it is given), to base @@ _MSG(...), appending '' when the
+// message is omitted. K is the number of required value arguments the
+// assertion takes (1: TRUE/FALSE, 2: EQ/NE/LT/LE/GE/GT, 3: NEAR/NEAR_REL).
+// _JIECUNIT_OPTFAIL_N is the K=0 counterpart used by FAIL/ADD_FAILURE, which
+// take no value argument. _JIECUNIT_BAD_ARGC_(lo, hi) instead takes lo/hi as
+// the TOTAL argument count of the call (required args + message), which is
+// not the same quantity as n.
 //
-// A wrong argument count expands to a deliberate syntax error named
-// JIECUNIT_ASSERTION_TAKES_<lo>_OR_<hi>_ARGUMENTS, so both `jiecc -c` and
-// `jiecc --run` report it at the call site.
+// K=1 (TRUE/FALSE) additionally takes fixed_, a BOOL literal the public
+// macro itself bakes in (true for EXPECT_TRUE, false for EXPECT_FALSE) to
+// pick which value condition is compared against. fixed_ is not one of the
+// caller-supplied required arguments, so _JIECUNIT_OPTMSG1_*'s value
+// arguments are `fixed_, v1` (2 total), not just v1.
+// _JIECUNIT_OPTFAIL_N does not take a base at all: FAIL/ADD_FAILURE have
+// only one possible outcome, so its buckets expand straight to
+// _VALIDATE_FAILURE_(die, message) instead of base @@ _MSG(...).
 //
-// Each dispatcher only defines buckets for n = 0..16. A call with more than
-// 16 total arguments falls through to an undefined macro name instead of
+// Every public macro follows this template (square brackets mark the part
+// that is only present for K=1):
+//   {#define NAME(<required args>, ...)
+//       _JIECUNIT_OPTMSG<K>_N(__VA_ARGC__, <base>, <die>, [<fixed>,]
+//                              <required args>, __VA_ARGS__)}
+// Adding a new K (e.g. K=4 for a future 4-value assertion) means adding a
+// new _JIECUNIT_OPTMSG4_0.._16/_N family below that follows this template.
+//
+// Only bucket _1 receives the message as a named parameter; every other
+// bucket keeps a trailing `...` instead, for two different reasons. Bucket
+// _0 needs it because when the message is omitted, __VA_ARGS__ at the call
+// site expands to nothing and leaves one empty trailing argument that only
+// a variadic parameter can absorb. Buckets _2..16 need it because they each
+// receive n extra trailing arguments whose content is discarded (the call
+// is already wrong), so `...` absorbs however many of them arrived instead
+// of naming n separate parameters per bucket.
+//
+// A wrong TOTAL argument count is reported one of three ways, depending on
+// which side of the required arguments the mistake falls on:
+//   - Too many trailing arguments (n >= 2): expands to the deliberate syntax
+//     error JIECUNIT_ASSERTION_TAKES_<lo>_OR_<hi>_ARGUMENTS, which both
+//     `jiecc -c` and `jiecc --run` report at the call site.
+//   - Too few required arguments (e.g. EXPECT_EQ_INT(1)): the public macro's
+//     named required parameters make the preprocessor itself refuse the
+//     call, reporting `PP34: Argument count mismatch` at the call site
+//     before this dispatch layer ever runs. `jiecc -c` still exits 0 in
+//     this case and writes an XML file that contains no POUs at all, so the
+//     exit code alone does not reveal the failure; scripts/run_tests.py
+//     detects it by also scanning the output for `error:` lines.
+//   - No arguments at all (e.g. EXPECT_FALSE()): expands with one empty
+//     argument (`actual:=,`), which `jiecc -c` rejects as `','; INVALID_SYNTAX`
+//     at the call site.
+//
+// Each dispatcher only defines buckets for the 0..16 extra trailing
+// arguments beyond the required ones. A call with more extra arguments than
+// that falls through to an undefined macro name instead of
 // _JIECUNIT_BAD_ARGC_, so `jiecc -c` does not flag it (only `jiecc --run`
 // reports UNDEFINED_SYMBOL). If a future assertion needs more arguments,
-// raise this limit in all four dispatcher systems together.
+// raise this limit in all four dispatcher systems together, and update the
+// boundary probes in scripts/check_macro_expansion.py's _EXCESS_CASES to
+// match the new limit.
+//
+// FAIL/ADD_FAILURE take no required value argument, so their public macros
+// keep the plain `(...)` signature instead of a named parameter.
 //
 // scripts/check_macro_expansion.py verifies that every one of the 290
 // public assertion macros expands identically with and without this
@@ -33,62 +84,62 @@
 // ---------------------------------------------------------------------- //
 {#define _JIECUNIT_BAD_ARGC_(lo, hi)                                     end_var JIECUNIT_ASSERTION_TAKES_ @@ lo @@ _OR_ @@ hi @@ _ARGUMENTS}
 
-{#define _JIECUNIT_OPTMSG1_0(base, die, fixed_, ...)                     _JIECUNIT_BAD_ARGC_(1, 2)}
-{#define _JIECUNIT_OPTMSG1_1(base, die, fixed_, v1)                      base @@ _MSG(die, fixed_, v1, '')}
-{#define _JIECUNIT_OPTMSG1_2(base, die, fixed_, v1, m)                   base @@ _MSG(die, fixed_, v1, m)}
-{#define _JIECUNIT_OPTMSG1_3(base, die, fixed_, ...)                     _JIECUNIT_BAD_ARGC_(1, 2)}
-{#define _JIECUNIT_OPTMSG1_4(base, die, fixed_, ...)                     _JIECUNIT_BAD_ARGC_(1, 2)}
-{#define _JIECUNIT_OPTMSG1_5(base, die, fixed_, ...)                     _JIECUNIT_BAD_ARGC_(1, 2)}
-{#define _JIECUNIT_OPTMSG1_6(base, die, fixed_, ...)                     _JIECUNIT_BAD_ARGC_(1, 2)}
-{#define _JIECUNIT_OPTMSG1_7(base, die, fixed_, ...)                     _JIECUNIT_BAD_ARGC_(1, 2)}
-{#define _JIECUNIT_OPTMSG1_8(base, die, fixed_, ...)                     _JIECUNIT_BAD_ARGC_(1, 2)}
-{#define _JIECUNIT_OPTMSG1_9(base, die, fixed_, ...)                     _JIECUNIT_BAD_ARGC_(1, 2)}
-{#define _JIECUNIT_OPTMSG1_10(base, die, fixed_, ...)                    _JIECUNIT_BAD_ARGC_(1, 2)}
-{#define _JIECUNIT_OPTMSG1_11(base, die, fixed_, ...)                    _JIECUNIT_BAD_ARGC_(1, 2)}
-{#define _JIECUNIT_OPTMSG1_12(base, die, fixed_, ...)                    _JIECUNIT_BAD_ARGC_(1, 2)}
-{#define _JIECUNIT_OPTMSG1_13(base, die, fixed_, ...)                    _JIECUNIT_BAD_ARGC_(1, 2)}
-{#define _JIECUNIT_OPTMSG1_14(base, die, fixed_, ...)                    _JIECUNIT_BAD_ARGC_(1, 2)}
-{#define _JIECUNIT_OPTMSG1_15(base, die, fixed_, ...)                    _JIECUNIT_BAD_ARGC_(1, 2)}
-{#define _JIECUNIT_OPTMSG1_16(base, die, fixed_, ...)                    _JIECUNIT_BAD_ARGC_(1, 2)}
-{#define _JIECUNIT_OPTMSG1_N(n, base, die, fixed_, ...)                  _JIECUNIT_OPTMSG1_ @@ n(base, die, fixed_, __VA_ARGS__)}
+{#define _JIECUNIT_OPTMSG1_0(base, die, fixed_, v1, ...)                 base @@ _MSG(die, fixed_, v1, '')}
+{#define _JIECUNIT_OPTMSG1_1(base, die, fixed_, v1, m)                   base @@ _MSG(die, fixed_, v1, m)}
+{#define _JIECUNIT_OPTMSG1_2(base, die, fixed_, v1, ...)                 _JIECUNIT_BAD_ARGC_(1, 2)}
+{#define _JIECUNIT_OPTMSG1_3(base, die, fixed_, v1, ...)                 _JIECUNIT_BAD_ARGC_(1, 2)}
+{#define _JIECUNIT_OPTMSG1_4(base, die, fixed_, v1, ...)                 _JIECUNIT_BAD_ARGC_(1, 2)}
+{#define _JIECUNIT_OPTMSG1_5(base, die, fixed_, v1, ...)                 _JIECUNIT_BAD_ARGC_(1, 2)}
+{#define _JIECUNIT_OPTMSG1_6(base, die, fixed_, v1, ...)                 _JIECUNIT_BAD_ARGC_(1, 2)}
+{#define _JIECUNIT_OPTMSG1_7(base, die, fixed_, v1, ...)                 _JIECUNIT_BAD_ARGC_(1, 2)}
+{#define _JIECUNIT_OPTMSG1_8(base, die, fixed_, v1, ...)                 _JIECUNIT_BAD_ARGC_(1, 2)}
+{#define _JIECUNIT_OPTMSG1_9(base, die, fixed_, v1, ...)                 _JIECUNIT_BAD_ARGC_(1, 2)}
+{#define _JIECUNIT_OPTMSG1_10(base, die, fixed_, v1, ...)                _JIECUNIT_BAD_ARGC_(1, 2)}
+{#define _JIECUNIT_OPTMSG1_11(base, die, fixed_, v1, ...)                _JIECUNIT_BAD_ARGC_(1, 2)}
+{#define _JIECUNIT_OPTMSG1_12(base, die, fixed_, v1, ...)                _JIECUNIT_BAD_ARGC_(1, 2)}
+{#define _JIECUNIT_OPTMSG1_13(base, die, fixed_, v1, ...)                _JIECUNIT_BAD_ARGC_(1, 2)}
+{#define _JIECUNIT_OPTMSG1_14(base, die, fixed_, v1, ...)                _JIECUNIT_BAD_ARGC_(1, 2)}
+{#define _JIECUNIT_OPTMSG1_15(base, die, fixed_, v1, ...)                _JIECUNIT_BAD_ARGC_(1, 2)}
+{#define _JIECUNIT_OPTMSG1_16(base, die, fixed_, v1, ...)                _JIECUNIT_BAD_ARGC_(1, 2)}
+{#define _JIECUNIT_OPTMSG1_N(n, base, die, fixed_, v1, ...)              _JIECUNIT_OPTMSG1_ @@ n(base, die, fixed_, v1, __VA_ARGS__)}
 
-{#define _JIECUNIT_OPTMSG2_0(base, die, ...)                             _JIECUNIT_BAD_ARGC_(2, 3)}
-{#define _JIECUNIT_OPTMSG2_1(base, die, ...)                             _JIECUNIT_BAD_ARGC_(2, 3)}
-{#define _JIECUNIT_OPTMSG2_2(base, die, v1, v2)                          base @@ _MSG(die, v1, v2, '')}
-{#define _JIECUNIT_OPTMSG2_3(base, die, v1, v2, m)                       base @@ _MSG(die, v1, v2, m)}
-{#define _JIECUNIT_OPTMSG2_4(base, die, ...)                             _JIECUNIT_BAD_ARGC_(2, 3)}
-{#define _JIECUNIT_OPTMSG2_5(base, die, ...)                             _JIECUNIT_BAD_ARGC_(2, 3)}
-{#define _JIECUNIT_OPTMSG2_6(base, die, ...)                             _JIECUNIT_BAD_ARGC_(2, 3)}
-{#define _JIECUNIT_OPTMSG2_7(base, die, ...)                             _JIECUNIT_BAD_ARGC_(2, 3)}
-{#define _JIECUNIT_OPTMSG2_8(base, die, ...)                             _JIECUNIT_BAD_ARGC_(2, 3)}
-{#define _JIECUNIT_OPTMSG2_9(base, die, ...)                             _JIECUNIT_BAD_ARGC_(2, 3)}
-{#define _JIECUNIT_OPTMSG2_10(base, die, ...)                            _JIECUNIT_BAD_ARGC_(2, 3)}
-{#define _JIECUNIT_OPTMSG2_11(base, die, ...)                            _JIECUNIT_BAD_ARGC_(2, 3)}
-{#define _JIECUNIT_OPTMSG2_12(base, die, ...)                            _JIECUNIT_BAD_ARGC_(2, 3)}
-{#define _JIECUNIT_OPTMSG2_13(base, die, ...)                            _JIECUNIT_BAD_ARGC_(2, 3)}
-{#define _JIECUNIT_OPTMSG2_14(base, die, ...)                            _JIECUNIT_BAD_ARGC_(2, 3)}
-{#define _JIECUNIT_OPTMSG2_15(base, die, ...)                            _JIECUNIT_BAD_ARGC_(2, 3)}
-{#define _JIECUNIT_OPTMSG2_16(base, die, ...)                            _JIECUNIT_BAD_ARGC_(2, 3)}
-{#define _JIECUNIT_OPTMSG2_N(n, base, die, ...)                          _JIECUNIT_OPTMSG2_ @@ n(base, die, __VA_ARGS__)}
+{#define _JIECUNIT_OPTMSG2_0(base, die, v1, v2, ...)                     base @@ _MSG(die, v1, v2, '')}
+{#define _JIECUNIT_OPTMSG2_1(base, die, v1, v2, m)                       base @@ _MSG(die, v1, v2, m)}
+{#define _JIECUNIT_OPTMSG2_2(base, die, v1, v2, ...)                     _JIECUNIT_BAD_ARGC_(2, 3)}
+{#define _JIECUNIT_OPTMSG2_3(base, die, v1, v2, ...)                     _JIECUNIT_BAD_ARGC_(2, 3)}
+{#define _JIECUNIT_OPTMSG2_4(base, die, v1, v2, ...)                     _JIECUNIT_BAD_ARGC_(2, 3)}
+{#define _JIECUNIT_OPTMSG2_5(base, die, v1, v2, ...)                     _JIECUNIT_BAD_ARGC_(2, 3)}
+{#define _JIECUNIT_OPTMSG2_6(base, die, v1, v2, ...)                     _JIECUNIT_BAD_ARGC_(2, 3)}
+{#define _JIECUNIT_OPTMSG2_7(base, die, v1, v2, ...)                     _JIECUNIT_BAD_ARGC_(2, 3)}
+{#define _JIECUNIT_OPTMSG2_8(base, die, v1, v2, ...)                     _JIECUNIT_BAD_ARGC_(2, 3)}
+{#define _JIECUNIT_OPTMSG2_9(base, die, v1, v2, ...)                     _JIECUNIT_BAD_ARGC_(2, 3)}
+{#define _JIECUNIT_OPTMSG2_10(base, die, v1, v2, ...)                    _JIECUNIT_BAD_ARGC_(2, 3)}
+{#define _JIECUNIT_OPTMSG2_11(base, die, v1, v2, ...)                    _JIECUNIT_BAD_ARGC_(2, 3)}
+{#define _JIECUNIT_OPTMSG2_12(base, die, v1, v2, ...)                    _JIECUNIT_BAD_ARGC_(2, 3)}
+{#define _JIECUNIT_OPTMSG2_13(base, die, v1, v2, ...)                    _JIECUNIT_BAD_ARGC_(2, 3)}
+{#define _JIECUNIT_OPTMSG2_14(base, die, v1, v2, ...)                    _JIECUNIT_BAD_ARGC_(2, 3)}
+{#define _JIECUNIT_OPTMSG2_15(base, die, v1, v2, ...)                    _JIECUNIT_BAD_ARGC_(2, 3)}
+{#define _JIECUNIT_OPTMSG2_16(base, die, v1, v2, ...)                    _JIECUNIT_BAD_ARGC_(2, 3)}
+{#define _JIECUNIT_OPTMSG2_N(n, base, die, v1, v2, ...)                  _JIECUNIT_OPTMSG2_ @@ n(base, die, v1, v2, __VA_ARGS__)}
 
-{#define _JIECUNIT_OPTMSG3_0(base, die, ...)                             _JIECUNIT_BAD_ARGC_(3, 4)}
-{#define _JIECUNIT_OPTMSG3_1(base, die, ...)                             _JIECUNIT_BAD_ARGC_(3, 4)}
-{#define _JIECUNIT_OPTMSG3_2(base, die, ...)                             _JIECUNIT_BAD_ARGC_(3, 4)}
-{#define _JIECUNIT_OPTMSG3_3(base, die, v1, v2, v3)                      base @@ _MSG(die, v1, v2, v3, '')}
-{#define _JIECUNIT_OPTMSG3_4(base, die, v1, v2, v3, m)                   base @@ _MSG(die, v1, v2, v3, m)}
-{#define _JIECUNIT_OPTMSG3_5(base, die, ...)                             _JIECUNIT_BAD_ARGC_(3, 4)}
-{#define _JIECUNIT_OPTMSG3_6(base, die, ...)                             _JIECUNIT_BAD_ARGC_(3, 4)}
-{#define _JIECUNIT_OPTMSG3_7(base, die, ...)                             _JIECUNIT_BAD_ARGC_(3, 4)}
-{#define _JIECUNIT_OPTMSG3_8(base, die, ...)                             _JIECUNIT_BAD_ARGC_(3, 4)}
-{#define _JIECUNIT_OPTMSG3_9(base, die, ...)                             _JIECUNIT_BAD_ARGC_(3, 4)}
-{#define _JIECUNIT_OPTMSG3_10(base, die, ...)                            _JIECUNIT_BAD_ARGC_(3, 4)}
-{#define _JIECUNIT_OPTMSG3_11(base, die, ...)                            _JIECUNIT_BAD_ARGC_(3, 4)}
-{#define _JIECUNIT_OPTMSG3_12(base, die, ...)                            _JIECUNIT_BAD_ARGC_(3, 4)}
-{#define _JIECUNIT_OPTMSG3_13(base, die, ...)                            _JIECUNIT_BAD_ARGC_(3, 4)}
-{#define _JIECUNIT_OPTMSG3_14(base, die, ...)                            _JIECUNIT_BAD_ARGC_(3, 4)}
-{#define _JIECUNIT_OPTMSG3_15(base, die, ...)                            _JIECUNIT_BAD_ARGC_(3, 4)}
-{#define _JIECUNIT_OPTMSG3_16(base, die, ...)                            _JIECUNIT_BAD_ARGC_(3, 4)}
-{#define _JIECUNIT_OPTMSG3_N(n, base, die, ...)                          _JIECUNIT_OPTMSG3_ @@ n(base, die, __VA_ARGS__)}
+{#define _JIECUNIT_OPTMSG3_0(base, die, v1, v2, v3, ...)                 base @@ _MSG(die, v1, v2, v3, '')}
+{#define _JIECUNIT_OPTMSG3_1(base, die, v1, v2, v3, m)                   base @@ _MSG(die, v1, v2, v3, m)}
+{#define _JIECUNIT_OPTMSG3_2(base, die, v1, v2, v3, ...)                 _JIECUNIT_BAD_ARGC_(3, 4)}
+{#define _JIECUNIT_OPTMSG3_3(base, die, v1, v2, v3, ...)                 _JIECUNIT_BAD_ARGC_(3, 4)}
+{#define _JIECUNIT_OPTMSG3_4(base, die, v1, v2, v3, ...)                 _JIECUNIT_BAD_ARGC_(3, 4)}
+{#define _JIECUNIT_OPTMSG3_5(base, die, v1, v2, v3, ...)                 _JIECUNIT_BAD_ARGC_(3, 4)}
+{#define _JIECUNIT_OPTMSG3_6(base, die, v1, v2, v3, ...)                 _JIECUNIT_BAD_ARGC_(3, 4)}
+{#define _JIECUNIT_OPTMSG3_7(base, die, v1, v2, v3, ...)                 _JIECUNIT_BAD_ARGC_(3, 4)}
+{#define _JIECUNIT_OPTMSG3_8(base, die, v1, v2, v3, ...)                 _JIECUNIT_BAD_ARGC_(3, 4)}
+{#define _JIECUNIT_OPTMSG3_9(base, die, v1, v2, v3, ...)                 _JIECUNIT_BAD_ARGC_(3, 4)}
+{#define _JIECUNIT_OPTMSG3_10(base, die, v1, v2, v3, ...)                _JIECUNIT_BAD_ARGC_(3, 4)}
+{#define _JIECUNIT_OPTMSG3_11(base, die, v1, v2, v3, ...)                _JIECUNIT_BAD_ARGC_(3, 4)}
+{#define _JIECUNIT_OPTMSG3_12(base, die, v1, v2, v3, ...)                _JIECUNIT_BAD_ARGC_(3, 4)}
+{#define _JIECUNIT_OPTMSG3_13(base, die, v1, v2, v3, ...)                _JIECUNIT_BAD_ARGC_(3, 4)}
+{#define _JIECUNIT_OPTMSG3_14(base, die, v1, v2, v3, ...)                _JIECUNIT_BAD_ARGC_(3, 4)}
+{#define _JIECUNIT_OPTMSG3_15(base, die, v1, v2, v3, ...)                _JIECUNIT_BAD_ARGC_(3, 4)}
+{#define _JIECUNIT_OPTMSG3_16(base, die, v1, v2, v3, ...)                _JIECUNIT_BAD_ARGC_(3, 4)}
+{#define _JIECUNIT_OPTMSG3_N(n, base, die, v1, v2, v3, ...)              _JIECUNIT_OPTMSG3_ @@ n(base, die, v1, v2, v3, __VA_ARGS__)}
 
 {#define _JIECUNIT_OPTFAIL_0(die, ...)                                   _VALIDATE_FAILURE_(die, '')}
 {#define _JIECUNIT_OPTFAIL_1(die, m)                                     _VALIDATE_FAILURE_(die, m)}
@@ -306,197 +357,197 @@
 
 
 
-{#define EXPECT_FALSE(...)                      _JIECUNIT_OPTMSG1_N(__VA_ARGC__, _VALIDATE_EQ_BOOL, false, false, __VA_ARGS__)}
-{#define EXPECT_TRUE(...)                       _JIECUNIT_OPTMSG1_N(__VA_ARGC__, _VALIDATE_EQ_BOOL, false, true, __VA_ARGS__)}
+{#define EXPECT_FALSE(condition, ...)                   _JIECUNIT_OPTMSG1_N(__VA_ARGC__, _VALIDATE_EQ_BOOL, false, false, condition, __VA_ARGS__)}
+{#define EXPECT_TRUE(condition, ...)                    _JIECUNIT_OPTMSG1_N(__VA_ARGC__, _VALIDATE_EQ_BOOL, false, true, condition, __VA_ARGS__)}
 
 
 
-{#define EXPECT_EQ_SINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_INT32, false, __VA_ARGS__)}
-{#define EXPECT_EQ_INT(...)                     _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_INT32, false, __VA_ARGS__)}
-{#define EXPECT_EQ_DINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_INT32, false, __VA_ARGS__)}
-{#define EXPECT_EQ_LINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_INT64, false, __VA_ARGS__)}
-{#define EXPECT_EQ_INT32(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_INT32, false, __VA_ARGS__)}
-{#define EXPECT_EQ_INT64(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_INT64, false, __VA_ARGS__)}
+{#define EXPECT_EQ_SINT(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_INT32, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_EQ_INT(expected, actual, ...)           _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_INT32, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_EQ_DINT(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_INT32, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_EQ_LINT(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_INT64, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_EQ_INT32(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_INT32, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_EQ_INT64(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_INT64, false, expected, actual, __VA_ARGS__)}
 
-{#define EXPECT_EQ_USINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_UINT32, false, __VA_ARGS__)}
-{#define EXPECT_EQ_UINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_UINT32, false, __VA_ARGS__)}
-{#define EXPECT_EQ_UDINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_UINT32, false, __VA_ARGS__)}
-{#define EXPECT_EQ_ULINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_UINT64, false, __VA_ARGS__)}
-{#define EXPECT_EQ_UINT32(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_UINT32, false, __VA_ARGS__)}
-{#define EXPECT_EQ_UINT64(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_UINT64, false, __VA_ARGS__)}
+{#define EXPECT_EQ_USINT(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_UINT32, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_EQ_UINT(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_UINT32, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_EQ_UDINT(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_UINT32, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_EQ_ULINT(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_UINT64, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_EQ_UINT32(expected, actual, ...)        _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_UINT32, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_EQ_UINT64(expected, actual, ...)        _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_UINT64, false, expected, actual, __VA_ARGS__)}
 
-{#define EXPECT_EQ_REAL(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_DOUBLE, false, __VA_ARGS__)} (* Deprecated, use EXPECT_NEAR *)
-{#define EXPECT_EQ_LREAL(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_DOUBLE, false, __VA_ARGS__)} (* Deprecated, use EXPECT_NEAR *)
-{#define EXPECT_EQ_FLOAT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_DOUBLE, false, __VA_ARGS__)} (* Deprecated, use EXPECT_NEAR *)
-{#define EXPECT_EQ_DOUBLE(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_DOUBLE, false, __VA_ARGS__)} (* Deprecated, use EXPECT_NEAR *)
+{#define EXPECT_EQ_REAL(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_DOUBLE, false, expected, actual, __VA_ARGS__)} (* Deprecated, use EXPECT_NEAR *)
+{#define EXPECT_EQ_LREAL(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_DOUBLE, false, expected, actual, __VA_ARGS__)} (* Deprecated, use EXPECT_NEAR *)
+{#define EXPECT_EQ_FLOAT(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_DOUBLE, false, expected, actual, __VA_ARGS__)} (* Deprecated, use EXPECT_NEAR *)
+{#define EXPECT_EQ_DOUBLE(expected, actual, ...)        _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_DOUBLE, false, expected, actual, __VA_ARGS__)} (* Deprecated, use EXPECT_NEAR *)
 
-{#define EXPECT_EQ_BOOL(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_BOOL, false, __VA_ARGS__)}
+{#define EXPECT_EQ_BOOL(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_BOOL, false, expected, actual, __VA_ARGS__)}
 
-{#define EXPECT_EQ_BYTE(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_BIT32, false, __VA_ARGS__)}
-{#define EXPECT_EQ_WORD(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_BIT32, false, __VA_ARGS__)}
-{#define EXPECT_EQ_DWORD(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_BIT32, false, __VA_ARGS__)}
-{#define EXPECT_EQ_LWORD(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_BIT64, false, __VA_ARGS__)}
-{#define EXPECT_EQ_BIT32(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_BIT32, false, __VA_ARGS__)}
-{#define EXPECT_EQ_BIT64(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_BIT64, false, __VA_ARGS__)}
+{#define EXPECT_EQ_BYTE(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_BIT32, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_EQ_WORD(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_BIT32, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_EQ_DWORD(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_BIT32, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_EQ_LWORD(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_BIT64, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_EQ_BIT32(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_BIT32, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_EQ_BIT64(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_BIT64, false, expected, actual, __VA_ARGS__)}
 
-{#define EXPECT_EQ_TIME(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_TIME, false, __VA_ARGS__)}
+{#define EXPECT_EQ_TIME(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_TIME, false, expected, actual, __VA_ARGS__)}
 
-{#define EXPECT_EQ_DATE(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_DATE, false, __VA_ARGS__)}
-{#define EXPECT_EQ_TOD(...)                     _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_TOD, false, __VA_ARGS__)}
-{#define EXPECT_EQ_DT(...)                      _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_DT, false, __VA_ARGS__)}
+{#define EXPECT_EQ_DATE(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_DATE, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_EQ_TOD(expected, actual, ...)           _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_TOD, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_EQ_DT(expected, actual, ...)            _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_DT, false, expected, actual, __VA_ARGS__)}
 
-{#define EXPECT_EQ_STRING(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_STRING, false, __VA_ARGS__)}
-
-
-{#define EXPECT_NE_SINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_INT32, false, __VA_ARGS__)}
-{#define EXPECT_NE_INT(...)                     _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_INT32, false, __VA_ARGS__)}
-{#define EXPECT_NE_DINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_INT32, false, __VA_ARGS__)}
-{#define EXPECT_NE_LINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_INT64, false, __VA_ARGS__)}
-{#define EXPECT_NE_INT32(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_INT32, false, __VA_ARGS__)}
-{#define EXPECT_NE_INT64(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_INT64, false, __VA_ARGS__)}
-
-{#define EXPECT_NE_USINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_UINT32, false, __VA_ARGS__)}
-{#define EXPECT_NE_UINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_UINT32, false, __VA_ARGS__)}
-{#define EXPECT_NE_UDINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_UINT32, false, __VA_ARGS__)}
-{#define EXPECT_NE_ULINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_UINT64, false, __VA_ARGS__)}
-{#define EXPECT_NE_UINT32(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_UINT32, false, __VA_ARGS__)}
-{#define EXPECT_NE_UINT64(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_UINT64, false, __VA_ARGS__)}
-
-{#define EXPECT_NE_REAL(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_DOUBLE, false, __VA_ARGS__)}
-{#define EXPECT_NE_LREAL(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_DOUBLE, false, __VA_ARGS__)}
-{#define EXPECT_NE_FLOAT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_DOUBLE, false, __VA_ARGS__)}
-{#define EXPECT_NE_DOUBLE(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_DOUBLE, false, __VA_ARGS__)}
-
-{#define EXPECT_NE_BOOL(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_BOOL, false, __VA_ARGS__)}
-
-{#define EXPECT_NE_BYTE(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_BIT32, false, __VA_ARGS__)}
-{#define EXPECT_NE_WORD(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_BIT32, false, __VA_ARGS__)}
-{#define EXPECT_NE_DWORD(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_BIT32, false, __VA_ARGS__)}
-{#define EXPECT_NE_LWORD(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_BIT64, false, __VA_ARGS__)}
-{#define EXPECT_NE_BIT32(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_BIT32, false, __VA_ARGS__)}
-{#define EXPECT_NE_BIT64(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_BIT64, false, __VA_ARGS__)}
-
-{#define EXPECT_NE_TIME(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_TIME, false, __VA_ARGS__)}
-
-{#define EXPECT_NE_DATE(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_DATE, false, __VA_ARGS__)}
-{#define EXPECT_NE_TOD(...)                     _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_TOD, false, __VA_ARGS__)}
-{#define EXPECT_NE_DT(...)                      _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_DT, false, __VA_ARGS__)}
-
-{#define EXPECT_NE_STRING(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_STRING, false, __VA_ARGS__)}
+{#define EXPECT_EQ_STRING(expected, actual, ...)        _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_STRING, false, expected, actual, __VA_ARGS__)}
 
 
-{#define EXPECT_LT_SINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_INT32, false, __VA_ARGS__)}
-{#define EXPECT_LT_INT(...)                     _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_INT32, false, __VA_ARGS__)}
-{#define EXPECT_LT_DINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_INT32, false, __VA_ARGS__)}
-{#define EXPECT_LT_LINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_INT64, false, __VA_ARGS__)}
-{#define EXPECT_LT_INT32(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_INT32, false, __VA_ARGS__)}
-{#define EXPECT_LT_INT64(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_INT64, false, __VA_ARGS__)}
+{#define EXPECT_NE_SINT(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_INT32, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_NE_INT(expected, actual, ...)           _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_INT32, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_NE_DINT(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_INT32, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_NE_LINT(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_INT64, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_NE_INT32(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_INT32, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_NE_INT64(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_INT64, false, expected, actual, __VA_ARGS__)}
 
-{#define EXPECT_LT_USINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_UINT32, false, __VA_ARGS__)}
-{#define EXPECT_LT_UINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_UINT32, false, __VA_ARGS__)}
-{#define EXPECT_LT_UDINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_UINT32, false, __VA_ARGS__)}
-{#define EXPECT_LT_ULINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_UINT64, false, __VA_ARGS__)}
-{#define EXPECT_LT_UINT32(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_UINT32, false, __VA_ARGS__)}
-{#define EXPECT_LT_UINT64(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_UINT64, false, __VA_ARGS__)}
+{#define EXPECT_NE_USINT(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_UINT32, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_NE_UINT(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_UINT32, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_NE_UDINT(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_UINT32, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_NE_ULINT(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_UINT64, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_NE_UINT32(expected, actual, ...)        _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_UINT32, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_NE_UINT64(expected, actual, ...)        _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_UINT64, false, expected, actual, __VA_ARGS__)}
 
-{#define EXPECT_LT_REAL(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_DOUBLE, false, __VA_ARGS__)}
-{#define EXPECT_LT_LREAL(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_DOUBLE, false, __VA_ARGS__)}
-{#define EXPECT_LT_FLOAT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_DOUBLE, false, __VA_ARGS__)}
-{#define EXPECT_LT_DOUBLE(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_DOUBLE, false, __VA_ARGS__)}
+{#define EXPECT_NE_REAL(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_DOUBLE, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_NE_LREAL(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_DOUBLE, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_NE_FLOAT(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_DOUBLE, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_NE_DOUBLE(expected, actual, ...)        _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_DOUBLE, false, expected, actual, __VA_ARGS__)}
 
-{#define EXPECT_LT_TIME(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_TIME, false, __VA_ARGS__)}
+{#define EXPECT_NE_BOOL(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_BOOL, false, expected, actual, __VA_ARGS__)}
 
-{#define EXPECT_LT_DATE(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_DATE, false, __VA_ARGS__)}
-{#define EXPECT_LT_TOD(...)                     _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_TOD, false, __VA_ARGS__)}
-{#define EXPECT_LT_DT(...)                      _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_DT, false, __VA_ARGS__)}
+{#define EXPECT_NE_BYTE(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_BIT32, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_NE_WORD(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_BIT32, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_NE_DWORD(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_BIT32, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_NE_LWORD(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_BIT64, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_NE_BIT32(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_BIT32, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_NE_BIT64(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_BIT64, false, expected, actual, __VA_ARGS__)}
 
-{#define EXPECT_LT_STRING(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_STRING, false, __VA_ARGS__)}
+{#define EXPECT_NE_TIME(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_TIME, false, expected, actual, __VA_ARGS__)}
 
-{#define EXPECT_LE_SINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_INT32, false, __VA_ARGS__)}
-{#define EXPECT_LE_INT(...)                     _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_INT32, false, __VA_ARGS__)}
-{#define EXPECT_LE_DINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_INT32, false, __VA_ARGS__)}
-{#define EXPECT_LE_LINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_INT64, false, __VA_ARGS__)}
-{#define EXPECT_LE_INT32(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_INT32, false, __VA_ARGS__)}
-{#define EXPECT_LE_INT64(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_INT64, false, __VA_ARGS__)}
+{#define EXPECT_NE_DATE(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_DATE, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_NE_TOD(expected, actual, ...)           _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_TOD, false, expected, actual, __VA_ARGS__)}
+{#define EXPECT_NE_DT(expected, actual, ...)            _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_DT, false, expected, actual, __VA_ARGS__)}
 
-{#define EXPECT_LE_USINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_UINT32, false, __VA_ARGS__)}
-{#define EXPECT_LE_UINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_UINT32, false, __VA_ARGS__)}
-{#define EXPECT_LE_UDINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_UINT32, false, __VA_ARGS__)}
-{#define EXPECT_LE_ULINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_UINT64, false, __VA_ARGS__)}
-{#define EXPECT_LE_UINT32(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_UINT32, false, __VA_ARGS__)}
-{#define EXPECT_LE_UINT64(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_UINT64, false, __VA_ARGS__)}
-
-{#define EXPECT_LE_REAL(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_DOUBLE, false, __VA_ARGS__)}
-{#define EXPECT_LE_LREAL(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_DOUBLE, false, __VA_ARGS__)}
-{#define EXPECT_LE_FLOAT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_DOUBLE, false, __VA_ARGS__)}
-{#define EXPECT_LE_DOUBLE(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_DOUBLE, false, __VA_ARGS__)}
-
-{#define EXPECT_LE_TIME(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_TIME, false, __VA_ARGS__)}
-
-{#define EXPECT_LE_DATE(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_DATE, false, __VA_ARGS__)}
-{#define EXPECT_LE_TOD(...)                     _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_TOD, false, __VA_ARGS__)}
-{#define EXPECT_LE_DT(...)                      _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_DT, false, __VA_ARGS__)}
-
-{#define EXPECT_LE_STRING(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_STRING, false, __VA_ARGS__)}
+{#define EXPECT_NE_STRING(expected, actual, ...)        _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_STRING, false, expected, actual, __VA_ARGS__)}
 
 
-{#define EXPECT_GE_SINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_INT32, false, __VA_ARGS__)}
-{#define EXPECT_GE_INT(...)                     _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_INT32, false, __VA_ARGS__)}
-{#define EXPECT_GE_DINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_INT32, false, __VA_ARGS__)}
-{#define EXPECT_GE_LINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_INT64, false, __VA_ARGS__)}
-{#define EXPECT_GE_INT32(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_INT32, false, __VA_ARGS__)}
-{#define EXPECT_GE_INT64(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_INT64, false, __VA_ARGS__)}
+{#define EXPECT_LT_SINT(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_INT32, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_LT_INT(lval, rval, ...)                 _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_INT32, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_LT_DINT(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_INT32, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_LT_LINT(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_INT64, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_LT_INT32(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_INT32, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_LT_INT64(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_INT64, false, lval, rval, __VA_ARGS__)}
 
-{#define EXPECT_GE_USINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_UINT32, false, __VA_ARGS__)}
-{#define EXPECT_GE_UINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_UINT32, false, __VA_ARGS__)}
-{#define EXPECT_GE_UDINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_UINT32, false, __VA_ARGS__)}
-{#define EXPECT_GE_ULINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_UINT64, false, __VA_ARGS__)}
-{#define EXPECT_GE_UINT32(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_UINT32, false, __VA_ARGS__)}
-{#define EXPECT_GE_UINT64(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_UINT64, false, __VA_ARGS__)}
+{#define EXPECT_LT_USINT(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_UINT32, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_LT_UINT(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_UINT32, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_LT_UDINT(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_UINT32, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_LT_ULINT(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_UINT64, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_LT_UINT32(lval, rval, ...)              _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_UINT32, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_LT_UINT64(lval, rval, ...)              _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_UINT64, false, lval, rval, __VA_ARGS__)}
 
-{#define EXPECT_GE_REAL(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_DOUBLE, false, __VA_ARGS__)}
-{#define EXPECT_GE_LREAL(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_DOUBLE, false, __VA_ARGS__)}
-{#define EXPECT_GE_FLOAT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_DOUBLE, false, __VA_ARGS__)}
-{#define EXPECT_GE_DOUBLE(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_DOUBLE, false, __VA_ARGS__)}
+{#define EXPECT_LT_REAL(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_DOUBLE, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_LT_LREAL(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_DOUBLE, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_LT_FLOAT(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_DOUBLE, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_LT_DOUBLE(lval, rval, ...)              _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_DOUBLE, false, lval, rval, __VA_ARGS__)}
 
-{#define EXPECT_GE_TIME(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_TIME, false, __VA_ARGS__)}
+{#define EXPECT_LT_TIME(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_TIME, false, lval, rval, __VA_ARGS__)}
 
-{#define EXPECT_GE_DATE(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_DATE, false, __VA_ARGS__)}
-{#define EXPECT_GE_TOD(...)                     _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_TOD, false, __VA_ARGS__)}
-{#define EXPECT_GE_DT(...)                      _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_DT, false, __VA_ARGS__)}
+{#define EXPECT_LT_DATE(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_DATE, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_LT_TOD(lval, rval, ...)                 _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_TOD, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_LT_DT(lval, rval, ...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_DT, false, lval, rval, __VA_ARGS__)}
 
-{#define EXPECT_GE_STRING(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_STRING, false, __VA_ARGS__)}
+{#define EXPECT_LT_STRING(lval, rval, ...)              _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_STRING, false, lval, rval, __VA_ARGS__)}
+
+{#define EXPECT_LE_SINT(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_INT32, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_LE_INT(lval, rval, ...)                 _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_INT32, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_LE_DINT(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_INT32, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_LE_LINT(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_INT64, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_LE_INT32(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_INT32, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_LE_INT64(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_INT64, false, lval, rval, __VA_ARGS__)}
+
+{#define EXPECT_LE_USINT(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_UINT32, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_LE_UINT(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_UINT32, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_LE_UDINT(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_UINT32, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_LE_ULINT(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_UINT64, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_LE_UINT32(lval, rval, ...)              _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_UINT32, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_LE_UINT64(lval, rval, ...)              _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_UINT64, false, lval, rval, __VA_ARGS__)}
+
+{#define EXPECT_LE_REAL(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_DOUBLE, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_LE_LREAL(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_DOUBLE, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_LE_FLOAT(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_DOUBLE, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_LE_DOUBLE(lval, rval, ...)              _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_DOUBLE, false, lval, rval, __VA_ARGS__)}
+
+{#define EXPECT_LE_TIME(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_TIME, false, lval, rval, __VA_ARGS__)}
+
+{#define EXPECT_LE_DATE(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_DATE, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_LE_TOD(lval, rval, ...)                 _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_TOD, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_LE_DT(lval, rval, ...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_DT, false, lval, rval, __VA_ARGS__)}
+
+{#define EXPECT_LE_STRING(lval, rval, ...)              _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_STRING, false, lval, rval, __VA_ARGS__)}
 
 
-{#define EXPECT_GT_SINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_INT32, false, __VA_ARGS__)}
-{#define EXPECT_GT_INT(...)                     _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_INT32, false, __VA_ARGS__)}
-{#define EXPECT_GT_DINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_INT32, false, __VA_ARGS__)}
-{#define EXPECT_GT_LINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_INT64, false, __VA_ARGS__)}
-{#define EXPECT_GT_INT32(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_INT32, false, __VA_ARGS__)}
-{#define EXPECT_GT_INT64(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_INT64, false, __VA_ARGS__)}
+{#define EXPECT_GE_SINT(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_INT32, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_GE_INT(lval, rval, ...)                 _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_INT32, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_GE_DINT(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_INT32, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_GE_LINT(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_INT64, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_GE_INT32(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_INT32, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_GE_INT64(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_INT64, false, lval, rval, __VA_ARGS__)}
 
-{#define EXPECT_GT_USINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_UINT32, false, __VA_ARGS__)}
-{#define EXPECT_GT_UINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_UINT32, false, __VA_ARGS__)}
-{#define EXPECT_GT_UDINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_UINT32, false, __VA_ARGS__)}
-{#define EXPECT_GT_ULINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_UINT64, false, __VA_ARGS__)}
-{#define EXPECT_GT_UINT32(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_UINT32, false, __VA_ARGS__)}
-{#define EXPECT_GT_UINT64(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_UINT64, false, __VA_ARGS__)}
+{#define EXPECT_GE_USINT(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_UINT32, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_GE_UINT(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_UINT32, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_GE_UDINT(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_UINT32, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_GE_ULINT(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_UINT64, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_GE_UINT32(lval, rval, ...)              _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_UINT32, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_GE_UINT64(lval, rval, ...)              _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_UINT64, false, lval, rval, __VA_ARGS__)}
 
-{#define EXPECT_GT_REAL(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_DOUBLE, false, __VA_ARGS__)}
-{#define EXPECT_GT_LREAL(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_DOUBLE, false, __VA_ARGS__)}
-{#define EXPECT_GT_FLOAT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_DOUBLE, false, __VA_ARGS__)}
-{#define EXPECT_GT_DOUBLE(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_DOUBLE, false, __VA_ARGS__)}
+{#define EXPECT_GE_REAL(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_DOUBLE, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_GE_LREAL(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_DOUBLE, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_GE_FLOAT(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_DOUBLE, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_GE_DOUBLE(lval, rval, ...)              _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_DOUBLE, false, lval, rval, __VA_ARGS__)}
 
-{#define EXPECT_GT_TIME(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_TIME, false, __VA_ARGS__)}
+{#define EXPECT_GE_TIME(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_TIME, false, lval, rval, __VA_ARGS__)}
 
-{#define EXPECT_GT_DATE(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_DATE, false, __VA_ARGS__)}
-{#define EXPECT_GT_TOD(...)                     _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_TOD, false, __VA_ARGS__)}
-{#define EXPECT_GT_DT(...)                      _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_DT, false, __VA_ARGS__)}
+{#define EXPECT_GE_DATE(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_DATE, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_GE_TOD(lval, rval, ...)                 _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_TOD, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_GE_DT(lval, rval, ...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_DT, false, lval, rval, __VA_ARGS__)}
 
-{#define EXPECT_GT_STRING(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_STRING, false, __VA_ARGS__)}
+{#define EXPECT_GE_STRING(lval, rval, ...)              _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_STRING, false, lval, rval, __VA_ARGS__)}
 
-{#define EXPECT_NEAR(...)                       _JIECUNIT_OPTMSG3_N(__VA_ARGC__, _VALIDATE_NEAR, false, __VA_ARGS__)}
-{#define EXPECT_NEAR_REL(...)                   _JIECUNIT_OPTMSG3_N(__VA_ARGC__, _VALIDATE_NEAR_REL, false, __VA_ARGS__)}
+
+{#define EXPECT_GT_SINT(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_INT32, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_GT_INT(lval, rval, ...)                 _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_INT32, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_GT_DINT(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_INT32, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_GT_LINT(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_INT64, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_GT_INT32(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_INT32, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_GT_INT64(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_INT64, false, lval, rval, __VA_ARGS__)}
+
+{#define EXPECT_GT_USINT(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_UINT32, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_GT_UINT(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_UINT32, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_GT_UDINT(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_UINT32, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_GT_ULINT(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_UINT64, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_GT_UINT32(lval, rval, ...)              _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_UINT32, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_GT_UINT64(lval, rval, ...)              _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_UINT64, false, lval, rval, __VA_ARGS__)}
+
+{#define EXPECT_GT_REAL(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_DOUBLE, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_GT_LREAL(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_DOUBLE, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_GT_FLOAT(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_DOUBLE, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_GT_DOUBLE(lval, rval, ...)              _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_DOUBLE, false, lval, rval, __VA_ARGS__)}
+
+{#define EXPECT_GT_TIME(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_TIME, false, lval, rval, __VA_ARGS__)}
+
+{#define EXPECT_GT_DATE(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_DATE, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_GT_TOD(lval, rval, ...)                 _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_TOD, false, lval, rval, __VA_ARGS__)}
+{#define EXPECT_GT_DT(lval, rval, ...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_DT, false, lval, rval, __VA_ARGS__)}
+
+{#define EXPECT_GT_STRING(lval, rval, ...)              _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_STRING, false, lval, rval, __VA_ARGS__)}
+
+{#define EXPECT_NEAR(val1, val2, abs_error, ...)        _JIECUNIT_OPTMSG3_N(__VA_ARGC__, _VALIDATE_NEAR, false, val1, val2, abs_error, __VA_ARGS__)}
+{#define EXPECT_NEAR_REL(val1, val2, rel_error, ...)    _JIECUNIT_OPTMSG3_N(__VA_ARGC__, _VALIDATE_NEAR_REL, false, val1, val2, rel_error, __VA_ARGS__)}
 
 
 
@@ -697,196 +748,196 @@
 
 
 
-{#define ASSERT_FALSE(...)                      _JIECUNIT_OPTMSG1_N(__VA_ARGC__, _VALIDATE_EQ_BOOL, true, false, __VA_ARGS__)}
-{#define ASSERT_TRUE(...)                       _JIECUNIT_OPTMSG1_N(__VA_ARGC__, _VALIDATE_EQ_BOOL, true, true, __VA_ARGS__)}
+{#define ASSERT_FALSE(condition, ...)                   _JIECUNIT_OPTMSG1_N(__VA_ARGC__, _VALIDATE_EQ_BOOL, true, false, condition, __VA_ARGS__)}
+{#define ASSERT_TRUE(condition, ...)                    _JIECUNIT_OPTMSG1_N(__VA_ARGC__, _VALIDATE_EQ_BOOL, true, true, condition, __VA_ARGS__)}
 
-{#define ASSERT_EQ_SINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_INT32, true, __VA_ARGS__)}
-{#define ASSERT_EQ_INT(...)                     _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_INT32, true, __VA_ARGS__)}
-{#define ASSERT_EQ_DINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_INT32, true, __VA_ARGS__)}
-{#define ASSERT_EQ_LINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_INT64, true, __VA_ARGS__)}
-{#define ASSERT_EQ_INT32(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_INT32, true, __VA_ARGS__)}
-{#define ASSERT_EQ_INT64(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_INT64, true, __VA_ARGS__)}
+{#define ASSERT_EQ_SINT(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_INT32, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_EQ_INT(expected, actual, ...)           _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_INT32, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_EQ_DINT(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_INT32, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_EQ_LINT(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_INT64, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_EQ_INT32(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_INT32, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_EQ_INT64(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_INT64, true, expected, actual, __VA_ARGS__)}
 
-{#define ASSERT_EQ_USINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_UINT32, true, __VA_ARGS__)}
-{#define ASSERT_EQ_UINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_UINT32, true, __VA_ARGS__)}
-{#define ASSERT_EQ_UDINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_UINT32, true, __VA_ARGS__)}
-{#define ASSERT_EQ_ULINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_UINT64, true, __VA_ARGS__)}
-{#define ASSERT_EQ_UINT32(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_UINT32, true, __VA_ARGS__)}
-{#define ASSERT_EQ_UINT64(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_UINT64, true, __VA_ARGS__)}
+{#define ASSERT_EQ_USINT(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_UINT32, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_EQ_UINT(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_UINT32, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_EQ_UDINT(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_UINT32, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_EQ_ULINT(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_UINT64, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_EQ_UINT32(expected, actual, ...)        _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_UINT32, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_EQ_UINT64(expected, actual, ...)        _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_UINT64, true, expected, actual, __VA_ARGS__)}
 
-{#define ASSERT_EQ_REAL(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_DOUBLE, true, __VA_ARGS__)} (* Deprecated, use ASSERT_NEAR *)
-{#define ASSERT_EQ_LREAL(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_DOUBLE, true, __VA_ARGS__)} (* Deprecated, use ASSERT_NEAR *)
-{#define ASSERT_EQ_FLOAT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_DOUBLE, true, __VA_ARGS__)} (* Deprecated, use ASSERT_NEAR *)
-{#define ASSERT_EQ_DOUBLE(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_DOUBLE, true, __VA_ARGS__)} (* Deprecated, use ASSERT_NEAR *)
+{#define ASSERT_EQ_REAL(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_DOUBLE, true, expected, actual, __VA_ARGS__)} (* Deprecated, use ASSERT_NEAR *)
+{#define ASSERT_EQ_LREAL(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_DOUBLE, true, expected, actual, __VA_ARGS__)} (* Deprecated, use ASSERT_NEAR *)
+{#define ASSERT_EQ_FLOAT(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_DOUBLE, true, expected, actual, __VA_ARGS__)} (* Deprecated, use ASSERT_NEAR *)
+{#define ASSERT_EQ_DOUBLE(expected, actual, ...)        _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_DOUBLE, true, expected, actual, __VA_ARGS__)} (* Deprecated, use ASSERT_NEAR *)
 
-{#define ASSERT_EQ_BOOL(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_BOOL, true, __VA_ARGS__)}
+{#define ASSERT_EQ_BOOL(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_BOOL, true, expected, actual, __VA_ARGS__)}
 
-{#define ASSERT_EQ_BYTE(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_BIT32, true, __VA_ARGS__)}
-{#define ASSERT_EQ_WORD(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_BIT32, true, __VA_ARGS__)}
-{#define ASSERT_EQ_DWORD(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_BIT32, true, __VA_ARGS__)}
-{#define ASSERT_EQ_LWORD(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_BIT64, true, __VA_ARGS__)}
-{#define ASSERT_EQ_BIT32(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_BIT32, true, __VA_ARGS__)}
-{#define ASSERT_EQ_BIT64(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_BIT64, true, __VA_ARGS__)}
+{#define ASSERT_EQ_BYTE(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_BIT32, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_EQ_WORD(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_BIT32, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_EQ_DWORD(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_BIT32, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_EQ_LWORD(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_BIT64, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_EQ_BIT32(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_BIT32, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_EQ_BIT64(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_BIT64, true, expected, actual, __VA_ARGS__)}
 
-{#define ASSERT_EQ_TIME(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_TIME, true, __VA_ARGS__)}
+{#define ASSERT_EQ_TIME(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_TIME, true, expected, actual, __VA_ARGS__)}
 
-{#define ASSERT_EQ_DATE(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_DATE, true, __VA_ARGS__)}
-{#define ASSERT_EQ_TOD(...)                     _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_TOD, true, __VA_ARGS__)}
-{#define ASSERT_EQ_DT(...)                      _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_DT, true, __VA_ARGS__)}
+{#define ASSERT_EQ_DATE(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_DATE, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_EQ_TOD(expected, actual, ...)           _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_TOD, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_EQ_DT(expected, actual, ...)            _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_DT, true, expected, actual, __VA_ARGS__)}
 
-{#define ASSERT_EQ_STRING(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_STRING, true, __VA_ARGS__)}
-
-
-{#define ASSERT_NE_SINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_INT32, true, __VA_ARGS__)}
-{#define ASSERT_NE_INT(...)                     _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_INT32, true, __VA_ARGS__)}
-{#define ASSERT_NE_DINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_INT32, true, __VA_ARGS__)}
-{#define ASSERT_NE_LINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_INT64, true, __VA_ARGS__)}
-{#define ASSERT_NE_INT32(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_INT32, true, __VA_ARGS__)}
-{#define ASSERT_NE_INT64(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_INT64, true, __VA_ARGS__)}
-
-{#define ASSERT_NE_USINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_UINT32, true, __VA_ARGS__)}
-{#define ASSERT_NE_UINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_UINT32, true, __VA_ARGS__)}
-{#define ASSERT_NE_UDINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_UINT32, true, __VA_ARGS__)}
-{#define ASSERT_NE_ULINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_UINT64, true, __VA_ARGS__)}
-{#define ASSERT_NE_UINT32(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_UINT32, true, __VA_ARGS__)}
-{#define ASSERT_NE_UINT64(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_UINT64, true, __VA_ARGS__)}
-
-{#define ASSERT_NE_REAL(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_DOUBLE, true, __VA_ARGS__)}
-{#define ASSERT_NE_LREAL(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_DOUBLE, true, __VA_ARGS__)}
-{#define ASSERT_NE_FLOAT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_DOUBLE, true, __VA_ARGS__)}
-{#define ASSERT_NE_DOUBLE(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_DOUBLE, true, __VA_ARGS__)}
-
-{#define ASSERT_NE_BOOL(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_BOOL, true, __VA_ARGS__)}
-
-{#define ASSERT_NE_BYTE(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_BIT32, true, __VA_ARGS__)}
-{#define ASSERT_NE_WORD(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_BIT32, true, __VA_ARGS__)}
-{#define ASSERT_NE_DWORD(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_BIT32, true, __VA_ARGS__)}
-{#define ASSERT_NE_LWORD(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_BIT64, true, __VA_ARGS__)}
-{#define ASSERT_NE_BIT32(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_BIT32, true, __VA_ARGS__)}
-{#define ASSERT_NE_BIT64(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_BIT64, true, __VA_ARGS__)}
-
-{#define ASSERT_NE_TIME(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_TIME, true, __VA_ARGS__)}
-
-{#define ASSERT_NE_DATE(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_DATE, true, __VA_ARGS__)}
-{#define ASSERT_NE_TOD(...)                     _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_TOD, true, __VA_ARGS__)}
-{#define ASSERT_NE_DT(...)                      _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_DT, true, __VA_ARGS__)}
-
-{#define ASSERT_NE_STRING(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_STRING, true, __VA_ARGS__)}
+{#define ASSERT_EQ_STRING(expected, actual, ...)        _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_EQ_STRING, true, expected, actual, __VA_ARGS__)}
 
 
-{#define ASSERT_LT_SINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_INT32, true, __VA_ARGS__)}
-{#define ASSERT_LT_INT(...)                     _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_INT32, true, __VA_ARGS__)}
-{#define ASSERT_LT_DINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_INT32, true, __VA_ARGS__)}
-{#define ASSERT_LT_LINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_INT64, true, __VA_ARGS__)}
-{#define ASSERT_LT_INT32(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_INT32, true, __VA_ARGS__)}
-{#define ASSERT_LT_INT64(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_INT64, true, __VA_ARGS__)}
+{#define ASSERT_NE_SINT(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_INT32, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_NE_INT(expected, actual, ...)           _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_INT32, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_NE_DINT(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_INT32, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_NE_LINT(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_INT64, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_NE_INT32(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_INT32, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_NE_INT64(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_INT64, true, expected, actual, __VA_ARGS__)}
 
-{#define ASSERT_LT_USINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_UINT32, true, __VA_ARGS__)}
-{#define ASSERT_LT_UINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_UINT32, true, __VA_ARGS__)}
-{#define ASSERT_LT_UDINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_UINT32, true, __VA_ARGS__)}
-{#define ASSERT_LT_ULINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_UINT64, true, __VA_ARGS__)}
-{#define ASSERT_LT_UINT32(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_UINT32, true, __VA_ARGS__)}
-{#define ASSERT_LT_UINT64(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_UINT64, true, __VA_ARGS__)}
+{#define ASSERT_NE_USINT(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_UINT32, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_NE_UINT(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_UINT32, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_NE_UDINT(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_UINT32, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_NE_ULINT(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_UINT64, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_NE_UINT32(expected, actual, ...)        _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_UINT32, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_NE_UINT64(expected, actual, ...)        _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_UINT64, true, expected, actual, __VA_ARGS__)}
 
-{#define ASSERT_LT_REAL(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_DOUBLE, true, __VA_ARGS__)}
-{#define ASSERT_LT_LREAL(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_DOUBLE, true, __VA_ARGS__)}
-{#define ASSERT_LT_FLOAT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_DOUBLE, true, __VA_ARGS__)}
-{#define ASSERT_LT_DOUBLE(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_DOUBLE, true, __VA_ARGS__)}
+{#define ASSERT_NE_REAL(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_DOUBLE, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_NE_LREAL(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_DOUBLE, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_NE_FLOAT(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_DOUBLE, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_NE_DOUBLE(expected, actual, ...)        _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_DOUBLE, true, expected, actual, __VA_ARGS__)}
 
-{#define ASSERT_LT_TIME(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_TIME, true, __VA_ARGS__)}
+{#define ASSERT_NE_BOOL(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_BOOL, true, expected, actual, __VA_ARGS__)}
 
-{#define ASSERT_LT_DATE(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_DATE, true, __VA_ARGS__)}
-{#define ASSERT_LT_TOD(...)                     _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_TOD, true, __VA_ARGS__)}
-{#define ASSERT_LT_DT(...)                      _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_DT, true, __VA_ARGS__)}
+{#define ASSERT_NE_BYTE(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_BIT32, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_NE_WORD(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_BIT32, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_NE_DWORD(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_BIT32, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_NE_LWORD(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_BIT64, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_NE_BIT32(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_BIT32, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_NE_BIT64(expected, actual, ...)         _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_BIT64, true, expected, actual, __VA_ARGS__)}
 
-{#define ASSERT_LT_STRING(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_STRING, true, __VA_ARGS__)}
+{#define ASSERT_NE_TIME(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_TIME, true, expected, actual, __VA_ARGS__)}
 
+{#define ASSERT_NE_DATE(expected, actual, ...)          _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_DATE, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_NE_TOD(expected, actual, ...)           _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_TOD, true, expected, actual, __VA_ARGS__)}
+{#define ASSERT_NE_DT(expected, actual, ...)            _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_DT, true, expected, actual, __VA_ARGS__)}
 
-{#define ASSERT_LE_SINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_INT32, true, __VA_ARGS__)}
-{#define ASSERT_LE_INT(...)                     _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_INT32, true, __VA_ARGS__)}
-{#define ASSERT_LE_DINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_INT32, true, __VA_ARGS__)}
-{#define ASSERT_LE_LINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_INT64, true, __VA_ARGS__)}
-{#define ASSERT_LE_INT32(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_INT32, true, __VA_ARGS__)}
-{#define ASSERT_LE_INT64(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_INT64, true, __VA_ARGS__)}
-
-{#define ASSERT_LE_USINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_UINT32, true, __VA_ARGS__)}
-{#define ASSERT_LE_UINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_UINT32, true, __VA_ARGS__)}
-{#define ASSERT_LE_UDINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_UINT32, true, __VA_ARGS__)}
-{#define ASSERT_LE_ULINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_UINT64, true, __VA_ARGS__)}
-{#define ASSERT_LE_UINT32(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_UINT32, true, __VA_ARGS__)}
-{#define ASSERT_LE_UINT64(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_UINT64, true, __VA_ARGS__)}
-
-{#define ASSERT_LE_REAL(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_DOUBLE, true, __VA_ARGS__)}
-{#define ASSERT_LE_LREAL(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_DOUBLE, true, __VA_ARGS__)}
-{#define ASSERT_LE_FLOAT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_DOUBLE, true, __VA_ARGS__)}
-{#define ASSERT_LE_DOUBLE(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_DOUBLE, true, __VA_ARGS__)}
-
-{#define ASSERT_LE_TIME(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_TIME, true, __VA_ARGS__)}
-
-{#define ASSERT_LE_DATE(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_DATE, true, __VA_ARGS__)}
-{#define ASSERT_LE_TOD(...)                     _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_TOD, true, __VA_ARGS__)}
-{#define ASSERT_LE_DT(...)                      _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_DT, true, __VA_ARGS__)}
-
-{#define ASSERT_LE_STRING(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_STRING, true, __VA_ARGS__)}
+{#define ASSERT_NE_STRING(expected, actual, ...)        _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_NE_STRING, true, expected, actual, __VA_ARGS__)}
 
 
-{#define ASSERT_GE_SINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_INT32, true, __VA_ARGS__)}
-{#define ASSERT_GE_INT(...)                     _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_INT32, true, __VA_ARGS__)}
-{#define ASSERT_GE_DINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_INT32, true, __VA_ARGS__)}
-{#define ASSERT_GE_LINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_INT64, true, __VA_ARGS__)}
-{#define ASSERT_GE_INT32(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_INT32, true, __VA_ARGS__)}
-{#define ASSERT_GE_INT64(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_INT64, true, __VA_ARGS__)}
+{#define ASSERT_LT_SINT(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_INT32, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_LT_INT(lval, rval, ...)                 _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_INT32, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_LT_DINT(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_INT32, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_LT_LINT(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_INT64, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_LT_INT32(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_INT32, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_LT_INT64(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_INT64, true, lval, rval, __VA_ARGS__)}
 
-{#define ASSERT_GE_USINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_UINT32, true, __VA_ARGS__)}
-{#define ASSERT_GE_UINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_UINT32, true, __VA_ARGS__)}
-{#define ASSERT_GE_UDINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_UINT32, true, __VA_ARGS__)}
-{#define ASSERT_GE_ULINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_UINT64, true, __VA_ARGS__)}
-{#define ASSERT_GE_UINT32(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_UINT32, true, __VA_ARGS__)}
-{#define ASSERT_GE_UINT64(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_UINT64, true, __VA_ARGS__)}
+{#define ASSERT_LT_USINT(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_UINT32, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_LT_UINT(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_UINT32, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_LT_UDINT(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_UINT32, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_LT_ULINT(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_UINT64, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_LT_UINT32(lval, rval, ...)              _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_UINT32, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_LT_UINT64(lval, rval, ...)              _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_UINT64, true, lval, rval, __VA_ARGS__)}
 
-{#define ASSERT_GE_REAL(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_DOUBLE, true, __VA_ARGS__)}
-{#define ASSERT_GE_LREAL(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_DOUBLE, true, __VA_ARGS__)}
-{#define ASSERT_GE_FLOAT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_DOUBLE, true, __VA_ARGS__)}
-{#define ASSERT_GE_DOUBLE(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_DOUBLE, true, __VA_ARGS__)}
+{#define ASSERT_LT_REAL(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_DOUBLE, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_LT_LREAL(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_DOUBLE, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_LT_FLOAT(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_DOUBLE, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_LT_DOUBLE(lval, rval, ...)              _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_DOUBLE, true, lval, rval, __VA_ARGS__)}
 
-{#define ASSERT_GE_TIME(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_TIME, true, __VA_ARGS__)}
+{#define ASSERT_LT_TIME(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_TIME, true, lval, rval, __VA_ARGS__)}
 
-{#define ASSERT_GE_DATE(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_DATE, true, __VA_ARGS__)}
-{#define ASSERT_GE_TOD(...)                     _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_TOD, true, __VA_ARGS__)}
-{#define ASSERT_GE_DT(...)                      _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_DT, true, __VA_ARGS__)}
+{#define ASSERT_LT_DATE(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_DATE, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_LT_TOD(lval, rval, ...)                 _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_TOD, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_LT_DT(lval, rval, ...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_DT, true, lval, rval, __VA_ARGS__)}
 
-{#define ASSERT_GE_STRING(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_STRING, true, __VA_ARGS__)}
+{#define ASSERT_LT_STRING(lval, rval, ...)              _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LT_STRING, true, lval, rval, __VA_ARGS__)}
 
 
-{#define ASSERT_GT_SINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_INT32, true, __VA_ARGS__)}
-{#define ASSERT_GT_INT(...)                     _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_INT32, true, __VA_ARGS__)}
-{#define ASSERT_GT_DINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_INT32, true, __VA_ARGS__)}
-{#define ASSERT_GT_LINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_INT64, true, __VA_ARGS__)}
-{#define ASSERT_GT_INT32(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_INT32, true, __VA_ARGS__)}
-{#define ASSERT_GT_INT64(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_INT64, true, __VA_ARGS__)}
+{#define ASSERT_LE_SINT(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_INT32, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_LE_INT(lval, rval, ...)                 _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_INT32, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_LE_DINT(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_INT32, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_LE_LINT(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_INT64, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_LE_INT32(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_INT32, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_LE_INT64(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_INT64, true, lval, rval, __VA_ARGS__)}
 
-{#define ASSERT_GT_USINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_UINT32, true, __VA_ARGS__)}
-{#define ASSERT_GT_UINT(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_UINT32, true, __VA_ARGS__)}
-{#define ASSERT_GT_UDINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_UINT32, true, __VA_ARGS__)}
-{#define ASSERT_GT_ULINT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_UINT64, true, __VA_ARGS__)}
-{#define ASSERT_GT_UINT32(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_UINT32, true, __VA_ARGS__)}
-{#define ASSERT_GT_UINT64(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_UINT64, true, __VA_ARGS__)}
+{#define ASSERT_LE_USINT(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_UINT32, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_LE_UINT(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_UINT32, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_LE_UDINT(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_UINT32, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_LE_ULINT(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_UINT64, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_LE_UINT32(lval, rval, ...)              _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_UINT32, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_LE_UINT64(lval, rval, ...)              _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_UINT64, true, lval, rval, __VA_ARGS__)}
 
-{#define ASSERT_GT_REAL(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_DOUBLE, true, __VA_ARGS__)}
-{#define ASSERT_GT_LREAL(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_DOUBLE, true, __VA_ARGS__)}
-{#define ASSERT_GT_FLOAT(...)                   _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_DOUBLE, true, __VA_ARGS__)}
-{#define ASSERT_GT_DOUBLE(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_DOUBLE, true, __VA_ARGS__)}
+{#define ASSERT_LE_REAL(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_DOUBLE, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_LE_LREAL(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_DOUBLE, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_LE_FLOAT(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_DOUBLE, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_LE_DOUBLE(lval, rval, ...)              _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_DOUBLE, true, lval, rval, __VA_ARGS__)}
 
-{#define ASSERT_GT_TIME(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_TIME, true, __VA_ARGS__)}
+{#define ASSERT_LE_TIME(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_TIME, true, lval, rval, __VA_ARGS__)}
 
-{#define ASSERT_GT_DATE(...)                    _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_DATE, true, __VA_ARGS__)}
-{#define ASSERT_GT_TOD(...)                     _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_TOD, true, __VA_ARGS__)}
-{#define ASSERT_GT_DT(...)                      _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_DT, true, __VA_ARGS__)}
+{#define ASSERT_LE_DATE(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_DATE, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_LE_TOD(lval, rval, ...)                 _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_TOD, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_LE_DT(lval, rval, ...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_DT, true, lval, rval, __VA_ARGS__)}
 
-{#define ASSERT_GT_STRING(...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_STRING, true, __VA_ARGS__)}
+{#define ASSERT_LE_STRING(lval, rval, ...)              _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_LE_STRING, true, lval, rval, __VA_ARGS__)}
 
-{#define ASSERT_NEAR(...)                       _JIECUNIT_OPTMSG3_N(__VA_ARGC__, _VALIDATE_NEAR, true, __VA_ARGS__)}
-{#define ASSERT_NEAR_REL(...)                   _JIECUNIT_OPTMSG3_N(__VA_ARGC__, _VALIDATE_NEAR_REL, true, __VA_ARGS__)}
+
+{#define ASSERT_GE_SINT(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_INT32, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_GE_INT(lval, rval, ...)                 _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_INT32, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_GE_DINT(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_INT32, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_GE_LINT(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_INT64, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_GE_INT32(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_INT32, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_GE_INT64(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_INT64, true, lval, rval, __VA_ARGS__)}
+
+{#define ASSERT_GE_USINT(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_UINT32, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_GE_UINT(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_UINT32, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_GE_UDINT(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_UINT32, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_GE_ULINT(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_UINT64, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_GE_UINT32(lval, rval, ...)              _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_UINT32, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_GE_UINT64(lval, rval, ...)              _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_UINT64, true, lval, rval, __VA_ARGS__)}
+
+{#define ASSERT_GE_REAL(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_DOUBLE, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_GE_LREAL(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_DOUBLE, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_GE_FLOAT(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_DOUBLE, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_GE_DOUBLE(lval, rval, ...)              _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_DOUBLE, true, lval, rval, __VA_ARGS__)}
+
+{#define ASSERT_GE_TIME(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_TIME, true, lval, rval, __VA_ARGS__)}
+
+{#define ASSERT_GE_DATE(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_DATE, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_GE_TOD(lval, rval, ...)                 _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_TOD, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_GE_DT(lval, rval, ...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_DT, true, lval, rval, __VA_ARGS__)}
+
+{#define ASSERT_GE_STRING(lval, rval, ...)              _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GE_STRING, true, lval, rval, __VA_ARGS__)}
+
+
+{#define ASSERT_GT_SINT(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_INT32, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_GT_INT(lval, rval, ...)                 _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_INT32, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_GT_DINT(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_INT32, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_GT_LINT(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_INT64, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_GT_INT32(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_INT32, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_GT_INT64(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_INT64, true, lval, rval, __VA_ARGS__)}
+
+{#define ASSERT_GT_USINT(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_UINT32, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_GT_UINT(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_UINT32, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_GT_UDINT(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_UINT32, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_GT_ULINT(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_UINT64, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_GT_UINT32(lval, rval, ...)              _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_UINT32, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_GT_UINT64(lval, rval, ...)              _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_UINT64, true, lval, rval, __VA_ARGS__)}
+
+{#define ASSERT_GT_REAL(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_DOUBLE, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_GT_LREAL(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_DOUBLE, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_GT_FLOAT(lval, rval, ...)               _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_DOUBLE, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_GT_DOUBLE(lval, rval, ...)              _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_DOUBLE, true, lval, rval, __VA_ARGS__)}
+
+{#define ASSERT_GT_TIME(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_TIME, true, lval, rval, __VA_ARGS__)}
+
+{#define ASSERT_GT_DATE(lval, rval, ...)                _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_DATE, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_GT_TOD(lval, rval, ...)                 _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_TOD, true, lval, rval, __VA_ARGS__)}
+{#define ASSERT_GT_DT(lval, rval, ...)                  _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_DT, true, lval, rval, __VA_ARGS__)}
+
+{#define ASSERT_GT_STRING(lval, rval, ...)              _JIECUNIT_OPTMSG2_N(__VA_ARGC__, _VALIDATE_GT_STRING, true, lval, rval, __VA_ARGS__)}
+
+{#define ASSERT_NEAR(val1, val2, abs_error, ...)        _JIECUNIT_OPTMSG3_N(__VA_ARGC__, _VALIDATE_NEAR, true, val1, val2, abs_error, __VA_ARGS__)}
+{#define ASSERT_NEAR_REL(val1, val2, rel_error, ...)    _JIECUNIT_OPTMSG3_N(__VA_ARGC__, _VALIDATE_NEAR_REL, true, val1, val2, rel_error, __VA_ARGS__)}
 
 
 

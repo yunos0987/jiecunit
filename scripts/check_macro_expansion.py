@@ -11,14 +11,22 @@ checks with the jiecc preprocessor (`jiecc -E`) that:
 so the deprecated _MSG form and the new optional-message form stay equivalent.
 It also verifies that:
 
-  * a wrong argument count on any of these macros (and on FAIL/ADD_FAILURE)
-    expands to the deliberate JIECUNIT_ASSERTION_TAKES_<lo>_OR_<hi>_ARGUMENTS
-    syntax error, and
   * the expansion reports the call site's own source line (via __LINE__),
-    not some other line.
-
-Usage:
-  python scripts/check_macro_expansion.py [--jiecc /path/to/jiecc]
+    not some other line, and
+  * a wrong argument count is rejected, through one of three negative-case
+    groups, guarded by a fourth positive-control group that is not itself
+    counted among the negative cases verified:
+      - _EXCESS_CASES: too many trailing arguments expands to the deliberate
+        JIECUNIT_ASSERTION_TAKES_<lo>_OR_<hi>_ARGUMENTS syntax error.
+      - _MISSING_CASES: too few required arguments is rejected by the
+        preprocessor itself with a `PP34: Argument count mismatch` error.
+      - _EMPTY_CASES: no arguments at all is accepted by the preprocessor
+        but fails to compile with `jiecc -c`, reporting `INVALID_SYNTAX`.
+      - _COMPILE_CONTROL: a positive control (a valid call using the same
+        wrapper as _EMPTY_CASES) that must compile successfully; if it does
+        not, every _EMPTY_CASES probe is skipped rather than verified,
+        since a broken wrapper could otherwise make _EMPTY_CASES pass for
+        the wrong reason.
 """
 import argparse
 import os
@@ -32,23 +40,42 @@ _DEF_RE = re.compile(r'^\{#define\s+([A-Za-z_][A-Za-z0-9_]*)_MSG\(([^)]*)\)')
 _MESSAGE = "'a, b (c)'"
 _VALUES = ['v1', 'v2', 'v3', 'v4']
 
-# [M5] Wrong-argument-count probes: (expression, lo, hi).
-# lo/hi are the correct min/max argument counts for the macro under test, and
-# must match the (lo, hi) pair the macro's _JIECUNIT_BAD_ARGC_ call reports.
-_NEGATIVE_CASES = [
-    ("EXPECT_TRUE()", 1, 2),
+# [M5] Too-many-argument probes: (expression, lo, hi).
+# lo/hi are the correct min/max *total* argument counts for the macro under
+# test, and must match the (lo, hi) pair the macro's _JIECUNIT_BAD_ARGC_ call
+# reports. These all preprocess successfully and expand to the sentinel.
+_EXCESS_CASES = [
     ("EXPECT_TRUE(a, b, c)", 1, 2),
-    ("EXPECT_EQ_INT(1)", 2, 3),
     ("EXPECT_EQ_INT(1, 2, 3, 4)", 2, 3),
     ("EXPECT_EQ_INT(1, 1, 2, 3, 4, 5)", 2, 3),
     ("EXPECT_EQ_INT(1, 2, 3, 4, 5, 6, 7, 8, 9)", 2, 3),
     ("EXPECT_EQ_INT(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)", 2, 3),
-    ("EXPECT_NEAR(1.0, 2.0)", 3, 4),
+    ("EXPECT_EQ_INT(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18)", 2, 3),
     ("EXPECT_NEAR(1.0, 2.0, 0.1, 'm', 9)", 3, 4),
     ("FAIL('a', 'b')", 0, 1),
     ("FAIL('a', 'b', 'c', 'd')", 0, 1),
     ("ADD_FAILURE('a', 'b')", 0, 1),
 ]
+
+# [M7] Too-few-argument probes. The public macros declare their required
+# parameters by name, so jiecc rejects these in the preprocessor itself (PP34)
+# and each one needs its own `jiecc -E` run that is expected to fail.
+_MISSING_CASES = [
+    "EXPECT_EQ_INT(1)",
+    "EXPECT_NEAR(1.0, 2.0)",
+]
+
+# [M8] Empty-argument probes. `EXPECT_TRUE()` passes one empty argument, which
+# satisfies the preprocessor but expands to `actual:=,`, so it is caught by
+# `jiecc -c` at the call site instead.
+_EMPTY_CASES = [
+    "EXPECT_TRUE()",
+    "EXPECT_FALSE()",
+]
+
+# [M8] Positive control: the same wrapper with a valid call must compile, so a
+# broken wrapper cannot make _EMPTY_CASES pass for the wrong reason.
+_COMPILE_CONTROL = "EXPECT_FALSE(b)"
 
 
 def _repo_root():
@@ -158,8 +185,93 @@ def _run_jiecc_preprocess(jiecc, root, probe_path):
     return proc
 
 
+def _write(path, text):
+    with open(path, 'w', encoding='utf-8', newline='\n') as f:
+        f.write(text)
+
+
+def _run_jiecc_compile(jiecc, root, path, out_xml):
+    return subprocess.run(
+        [jiecc, '-c', path, '-I', root, '-I', os.path.join(root, 'sys'),
+         '-o', out_xml],
+        capture_output=True, text=True)
+
+
+# Line number the probed expression sits on in each generated probe file.
+_MISSING_PROBE_LINE = 2
+_EMPTY_PROBE_LINE = 4
+
+
+def _compile_probe(expr):
+    """A minimal compilable test whose assertion sits on _EMPTY_PROBE_LINE."""
+    return ('{#include <jiecunit.iec>}\n'
+            'TEST_S(t)\n'
+            '{st}\n'
+            '%s;\n'
+            'EOT();\n'
+            '{end}\n'
+            'END_TEST_S\n' % expr)
+
+
+def _check_missing_cases(jiecc, root, tmpdir):
+    """[M7] Too few arguments must be rejected by the preprocessor (PP34)."""
+    out = []
+    for j, expr in enumerate(_MISSING_CASES):
+        path = os.path.join(tmpdir, 'missing_{}.iec'.format(j))
+        _write(path, '{#include <jiecunit.iec>}\n%s\n' % expr)
+        proc = _run_jiecc_preprocess(jiecc, root, path)
+        where = ':{}.'.format(_MISSING_PROBE_LINE)
+        if proc.returncode == 0:
+            out.append('{}: expected `jiecc -E` to fail, but it succeeded'.format(expr))
+        elif 'PP34' not in proc.stderr:
+            out.append('{}: expected PP34 in stderr, got: {}'.format(
+                expr, proc.stderr.strip()[:200]))
+        elif where not in proc.stderr:
+            out.append('{}: expected the error to point at line {}, got: {}'.format(
+                expr, _MISSING_PROBE_LINE, proc.stderr.strip()[:200]))
+    return out
+
+
+def _check_empty_cases(jiecc, root, tmpdir):
+    """[M8] An empty argument list must still fail at the call site.
+
+    Returns (control_error, failures). control_error is None when the
+    _COMPILE_CONTROL call compiled successfully; otherwise it is a
+    description of why it did not, and failures is empty because every
+    _EMPTY_CASES probe is skipped (not verified) rather than risking a
+    false pass caused by a broken wrapper.
+    """
+    control = os.path.join(tmpdir, 'control.iec')
+    _write(control, _compile_probe(_COMPILE_CONTROL))
+    proc = _run_jiecc_compile(jiecc, root, control,
+                              os.path.join(tmpdir, 'control.xml'))
+    if proc.returncode != 0:
+        control_error = 'control {}: expected `jiecc -c` to succeed, got: {}'.format(
+            _COMPILE_CONTROL, proc.stderr.strip()[:200])
+        return control_error, []
+
+    out = []
+    where = ':{}.'.format(_EMPTY_PROBE_LINE)
+    for j, expr in enumerate(_EMPTY_CASES):
+        path = os.path.join(tmpdir, 'empty_{}.iec'.format(j))
+        _write(path, _compile_probe(expr))
+        proc = _run_jiecc_compile(jiecc, root, path,
+                                  os.path.join(tmpdir, 'empty_{}.xml'.format(j)))
+        if proc.returncode == 0:
+            out.append('{}: expected `jiecc -c` to fail, but it succeeded'.format(expr))
+        elif 'INVALID_SYNTAX' not in proc.stderr:
+            out.append('{}: expected INVALID_SYNTAX in stderr, got: {}'.format(
+                expr, proc.stderr.strip()[:200]))
+        elif where not in proc.stderr:
+            out.append('{}: expected the error to point at line {}, got: {}'.format(
+                expr, _EMPTY_PROBE_LINE, proc.stderr.strip()[:200]))
+    return None, out
+
+
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--jiecc', default=None,
                         help='Path to the jiecc executable. '
                              'Falls back to the JIECC environment variable, '
@@ -174,7 +286,7 @@ def main():
         print('error: no NAME_MSG macro pairs found in jiecunit.iec', file=sys.stderr)
         return 2
 
-    probe_text, expr_line_of_key = _probe_source(pairs, _NEGATIVE_CASES)
+    probe_text, expr_line_of_key = _probe_source(pairs, _EXCESS_CASES)
 
     tmpdir = tempfile.mkdtemp(prefix='jiecunit_check_macros_')
     probe = os.path.join(tmpdir, 'probe.iec')
@@ -188,6 +300,8 @@ def main():
             print('error: jiecc -E failed.', file=sys.stderr)
             return 1
         blocks, out_lineno = _split_blocks(proc.stdout)
+        missing_failures = _check_missing_cases(jiecc, root, tmpdir)
+        control_error, empty_failures = _check_empty_cases(jiecc, root, tmpdir)
     finally:
         shutil.rmtree(tmpdir, ignore_errors=True)
 
@@ -244,7 +358,7 @@ def main():
 
     # [M5] Negative (wrong-argument-count) cases.
     negative_failures = []
-    for j, (expr, lo, hi) in enumerate(_NEGATIVE_CASES):
+    for j, (expr, lo, hi) in enumerate(_EXCESS_CASES):
         key = 'neg_{}'.format(j)
         body = blocks.get(key)
         if body is None:
@@ -256,23 +370,38 @@ def main():
                 '{}: expected {!r} in expansion, got: {}'.format(
                     expr, expected_marker, body.replace('\n', ' ')))
 
-    if failures or line_check_failures or negative_failures:
+    negative_failures.extend(missing_failures)
+    negative_failures.extend(empty_failures)
+
+    total_neg = len(_EXCESS_CASES) + len(_MISSING_CASES) + len(_EMPTY_CASES)
+    skipped = len(_EMPTY_CASES) if control_error else 0
+    verified = total_neg - skipped
+
+    if failures or line_check_failures or negative_failures or control_error:
         for f in failures:
             print('FAIL (equivalence) ' + f)
         for f in line_check_failures:
             print('FAIL (__LINE__) ' + f)
+        if control_error:
+            print('FAIL (control) ' + control_error)
         for f in negative_failures:
             print('FAIL (negative case) ' + f)
         print('{} of {} macros mismatched; {} __LINE__ mismatches; '
               '{} of {} negative cases failed.'.format(
                   len(failures), len(pairs), len(line_check_failures),
-                  len(negative_failures), len(_NEGATIVE_CASES)))
+                  len(negative_failures), total_neg))
+        if control_error:
+            print('control failed; {} of {} negative cases verified, '
+                  '{} skipped.'.format(verified, total_neg, skipped))
         return 1
 
     print('OK: {} macro pairs verified (optional message == _MSG form).'.format(len(pairs)))
     print('OK: {} __LINE__ call sites verified.'.format(line_checked))
-    print('OK: {} of {} negative (wrong argument count) cases verified.'.format(
-        len(_NEGATIVE_CASES), len(_NEGATIVE_CASES)))
+    print('OK: {} of {} negative (wrong argument count) cases verified '
+          '({} too many -> sentinel, {} too few -> PP34, {} empty -> '
+          'compile error).'.format(
+              total_neg, total_neg, len(_EXCESS_CASES), len(_MISSING_CASES),
+              len(_EMPTY_CASES)))
     return 0
 
 
