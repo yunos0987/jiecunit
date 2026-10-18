@@ -2,9 +2,9 @@
 {#define __JIECUNIT_CONFIG_IEC__}
 
 {#define _JIECUNIT          true}
-{#define _JIECUNIT_FULL_VER 40200}
-{#define _JIECUNIT_VER      402}
-{#define _JIECUNIT_VERSION  "4.2.0"}
+{#define _JIECUNIT_FULL_VER 50000}
+{#define _JIECUNIT_VER      500}
+{#define _JIECUNIT_VERSION  "5.0.0"}
 
 {#define MAX_TESTS 512}
 
