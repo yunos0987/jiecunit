@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # Tracked text files must be UTF-8 without BOM and use LF line endings.
+      # Binary files (images) are detected by a NUL byte and skipped.
+      - name: Check encoding and line endings
+        shell: python
+        run: |
+          import subprocess
+          import sys
+
+          names = subprocess.check_output(["git", "ls-files", "-z"]).decode("utf-8").split("\0")
+          bad = []
+          for name in filter(None, names):
+              with open(name, "rb") as f:
+                  data = f.read()
+              if b"\0" in data:
+                  continue
+              if data.startswith(b"\xef\xbb\xbf"):
+                  bad.append(name + ": has a UTF-8 BOM")
+              if b"\r" in data:
+                  bad.append(name + ": contains CR (must be LF only)")
+          for line in bad:
+              print("error: " + line)
+          sys.exit(1 if bad else 0)
+
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.x"
+
+      # The latest Windows build of Jiecc is published only as an unversioned
+      # URL, so the Jiecc version used by CI follows the latest release.
+      # Any failure to download or extract stops the job (no fallback).
+      - name: Download Jiecc
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $zip = Join-Path $env:RUNNER_TEMP 'jiecc.zip'
+          $dir = Join-Path $env:RUNNER_TEMP 'jiecc'
+          Invoke-WebRequest -Uri 'https://www.graviness.com/iec_61131-3/jiecc.zip' -OutFile $zip
+          Expand-Archive -LiteralPath $zip -DestinationPath $dir -Force
+          $exe = Get-ChildItem -LiteralPath $dir -Recurse -Filter 'jiecc.exe' | Select-Object -First 1
+          if (-not $exe) { throw 'jiecc.exe was not found in the downloaded archive.' }
+          "JIECC_EXE=$($exe.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Show Jiecc version
+        shell: pwsh
+        run: |
+          & $env:JIECC_EXE --version
+          if ($LASTEXITCODE -ne 0) { throw "jiecc --version failed with exit code $LASTEXITCODE" }
+
+      - name: Run tests
+        shell: pwsh
+        run: |
+          python scripts/run_tests.py --jiecc $env:JIECC_EXE
+          if ($LASTEXITCODE -ne 0) { throw "run_tests.py failed with exit code $LASTEXITCODE" }

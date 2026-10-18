@@ -239,10 +239,13 @@ Standardライブラリが追加されます。
 * [scriptsディレクトリ](./scripts/)：開発補助スクリプト。マクロ生成（generate_macros.py）、テスト一括実行（run_tests.py）、およびメッセージ引数省略形と`_MSG`形の展開結果一致検証（check_macro_expansion.py）を含む。
 * [checkディレクトリ](./check/)：テスト結果（XMLファイル等）の出力先。テスト実行時に生成される成果物を格納。
 * [README.md](./README.md)：本ドキュメント。使い方・構成・サポート状況などを記載。
-* [CODING_RULES.md](./CODING_RULES.md)：コーディング規約。命名規則・フォーマット・テストの書き方などを記載。
+* [AGENTS.md](./AGENTS.md)：生成AI（AIエージェント）向けのリポジトリ運用ルール。CLAUDE.mdは、これを取り込むだけのファイル。
+* [CONTRIBUTING.md](./CONTRIBUTING.md)：貢献の流れ、コーディング規約（命名規則・フォーマット・テストの書き方など）、バージョン管理の運用ルール。
+* [CHANGELOG.md](./CHANGELOG.md)：変更履歴。
+* [SECURITY.md](./SECURITY.md)：セキュリティポリシー。脆弱性の報告方法。
+* [.githubディレクトリ](./.github/)：GitHub Actionsの設定（workflows/ci.yml）とDependabotの設定。
 * [LICENSE](./LICENSE)：ライセンス情報。
 * [VERSION](./VERSION)：バージョン管理用ファイル。
-* [VERSION_MANAGEMENT.md](./VERSION_MANAGEMENT.md)：バージョン管理の運用ルールや履歴。
 
 ### JiecUnitのテスト方法
 
