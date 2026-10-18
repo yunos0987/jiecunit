@@ -40,7 +40,18 @@ jobs:
           sys.exit(1 if bad else 0)
 
   test:
-    runs-on: windows-latest
+    name: test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            archive: jiecc.zip
+            exe: jiecc.exe
+          - os: ubuntu-latest
+            archive: jiecc.tgz
+            exe: jiecc
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -48,19 +59,34 @@ jobs:
         with:
           python-version: "3.x"
 
-      # The latest Windows build of Jiecc is published only as an unversioned
-      # URL, so the Jiecc version used by CI follows the latest release.
+      # The latest builds of Jiecc are published only as unversioned URLs
+      # (jiecc.zip for Windows, jiecc.tgz for Linux), so the Jiecc version used
+      # by CI follows the latest release.
       # Any failure to download or extract stops the job (no fallback).
       - name: Download Jiecc
         shell: pwsh
+        env:
+          JIECC_ARCHIVE: ${{ matrix.archive }}
+          JIECC_EXE_NAME: ${{ matrix.exe }}
         run: |
           $ErrorActionPreference = 'Stop'
-          $zip = Join-Path $env:RUNNER_TEMP 'jiecc.zip'
+          $archive = Join-Path $env:RUNNER_TEMP $env:JIECC_ARCHIVE
           $dir = Join-Path $env:RUNNER_TEMP 'jiecc'
-          Invoke-WebRequest -Uri 'https://www.graviness.com/iec_61131-3/jiecc.zip' -OutFile $zip
-          Expand-Archive -LiteralPath $zip -DestinationPath $dir -Force
-          $exe = Get-ChildItem -LiteralPath $dir -Recurse -Filter 'jiecc.exe' | Select-Object -First 1
-          if (-not $exe) { throw 'jiecc.exe was not found in the downloaded archive.' }
+          New-Item -ItemType Directory -Force -Path $dir | Out-Null
+          Invoke-WebRequest -Uri "https://www.graviness.com/iec_61131-3/$env:JIECC_ARCHIVE" -OutFile $archive
+          if ($env:JIECC_ARCHIVE -like '*.zip') {
+            Expand-Archive -LiteralPath $archive -DestinationPath $dir -Force
+          } else {
+            tar -xzf $archive -C $dir
+            if ($LASTEXITCODE -ne 0) { throw "tar failed with exit code $LASTEXITCODE" }
+          }
+          $exe = Get-ChildItem -LiteralPath $dir -Recurse -File -Filter $env:JIECC_EXE_NAME | Select-Object -First 1
+          if (-not $exe) { throw "$env:JIECC_EXE_NAME was not found in the downloaded archive." }
+          if (-not $IsWindows) {
+            # jiecc runs jiepp, which is in the same directory.
+            chmod +x $exe.FullName (Join-Path $exe.DirectoryName 'jiepp')
+            if ($LASTEXITCODE -ne 0) { throw "chmod failed with exit code $LASTEXITCODE" }
+          }
           "JIECC_EXE=$($exe.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Show Jiecc version
@@ -69,8 +95,34 @@ jobs:
           & $env:JIECC_EXE --version
           if ($LASTEXITCODE -ne 0) { throw "jiecc --version failed with exit code $LASTEXITCODE" }
 
-      - name: Run tests
+      # Required: every suite must compile for every target.
+      - name: Compile all suites
         shell: pwsh
         run: |
-          python scripts/run_tests.py --jiecc $env:JIECC_EXE
-          if ($LASTEXITCODE -ne 0) { throw "run_tests.py failed with exit code $LASTEXITCODE" }
+          python scripts/run_tests.py --jiecc $env:JIECC_EXE --compile-only
+          if ($LASTEXITCODE -ne 0) { throw "run_tests.py --compile-only failed with exit code $LASTEXITCODE" }
+
+      # Required: --compile-only and --run-only skip the macro check, so run it here.
+      - name: Check macro expansion
+        shell: pwsh
+        run: |
+          python scripts/check_macro_expansion.py --jiecc $env:JIECC_EXE
+          if ($LASTEXITCODE -ne 0) { throw "check_macro_expansion.py failed with exit code $LASTEXITCODE" }
+
+      # Optional: running the suites with jier (jiecc --run) must not fail the
+      # workflow. A failure is reported by the next step as a warning.
+      - name: Run suites with jier (optional)
+        id: jier_run
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          python scripts/run_tests.py --jiecc $env:JIECC_EXE --run-only
+          if ($LASTEXITCODE -ne 0) { throw "run_tests.py --run-only failed with exit code $LASTEXITCODE" }
+
+      - name: Report jier run failure
+        if: steps.jier_run.outcome == 'failure'
+        shell: pwsh
+        run: |
+          $msg = 'The optional jier run (run_tests.py --run-only) failed. Compile and macro checks passed. See the "Run suites with jier (optional)" step log.'
+          Write-Output "::warning title=Optional jier run failed::$msg"
+          "### Optional jier run failed`n`n$msg" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append

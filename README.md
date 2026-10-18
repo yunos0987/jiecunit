@@ -243,7 +243,7 @@ Standardライブラリが追加されます。
 * [CONTRIBUTING.md](./CONTRIBUTING.md)：貢献の流れ、コーディング規約（命名規則・フォーマット・テストの書き方など）、バージョン管理の運用ルール。
 * [CHANGELOG.md](./CHANGELOG.md)：変更履歴。
 * [SECURITY.md](./SECURITY.md)：セキュリティポリシー。脆弱性の報告方法。
-* [.githubディレクトリ](./.github/)：GitHub Actionsの設定（workflows/ci.yml）とDependabotの設定。
+* [.githubディレクトリ](./.github/)：GitHub Actionsの設定（workflows/ci.yml）とDependabotの設定。CIのテストジョブはWindows（jiecc.zip）とLinux（jiecc.tgz）の両方で実行し、それぞれ、全スイートのコンパイル（`run_tests.py --compile-only`）とマクロ展開の一致検証（`check_macro_expansion.py`）を必須とし、jier（`jiecc --run`）によるテスト実行は任意とする（失敗しても警告として表示し、ワークフローは失敗させない）。
 * [LICENSE](./LICENSE)：ライセンス情報。
 * [VERSION](./VERSION)：バージョン管理用ファイル。
 
