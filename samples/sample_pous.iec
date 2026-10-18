@@ -15,7 +15,7 @@ mean_value := mean(dats, 3); // 5.0; (2.0 + 4.0 + 9.0) / 3.
 
 @inout sample_buffer The array containing sample data.
 @input sample_size The number of elements to use in the mean calculation.
-@return The mean value of the samples.}*)
+@return The mean value of the samples. Returns 0.0 if sample_size <= 0.}*)
 function mean: lreal
 	var_in_out
 		sample_buffer: array[BUFFER_SIZE] of lreal;
@@ -28,6 +28,11 @@ function mean: lreal
 		sum_value: lreal;
 	end
 	{st}
+	if sample_size <= 0 then
+		mean := 0.0;
+		return;
+	end_if;
+
 	sum_value := 0.0;
 	for sample_index := 0 to sample_size - 1 do
 		sum_value := sum_value + sample_buffer[sample_index];

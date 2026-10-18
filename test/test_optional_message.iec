@@ -1,0 +1,59 @@
+// This suite only exercises passing assertions: it confirms the optional
+// message argument compiles and runs, not that the message text reaches the
+// failure output. That equivalence with the deprecated _MSG macros is
+// verified separately by scripts/check_macro_expansion.py.
+{#include <jiecunit.iec>}
+
+(*{doc Test that every assertion macro accepts an optional trailing message argument.}*)
+TEST_S(test_optional_message)
+	{st}
+	// Fact: A comparison assertion works without a message.
+		// Arrange/Act/Assert
+	EXPECT_EQ_INT(1, 1);
+
+	// Fact: The same assertion accepts a trailing message without the _MSG suffix.
+		// Arrange/Act/Assert
+	EXPECT_EQ_INT(1, 1, 'values must be equal');
+
+	// Fact: A message containing commas and parentheses stays a single argument.
+		// Arrange/Act/Assert
+	EXPECT_EQ_INT(1, 1, 'a, b (c), d');
+
+	// Fact: Value arguments containing commas and parentheses stay single arguments.
+		// Arrange/Act/Assert
+	EXPECT_EQ_STRING(jiec_concat('a', 'b'), 'ab', jiec_concat('concat, ', 'failed (ab)'));
+
+	// Fact: The boolean assertions accept an optional message.
+		// Arrange/Act/Assert
+	EXPECT_TRUE(true);
+	EXPECT_TRUE(true, 'condition must hold');
+	EXPECT_FALSE(false);
+	EXPECT_FALSE(false, 'condition must not hold');
+
+	// Fact: The near assertions accept an optional message.
+		// Arrange/Act/Assert
+	EXPECT_NEAR(1.0, 1.001, 0.01);
+	EXPECT_NEAR(1.0, 1.001, 0.01, 'absolute tolerance');
+	EXPECT_NEAR_REL(100.0, 101.0, 0.02);
+	EXPECT_NEAR_REL(100.0, 101.0, 0.02, 'relative tolerance');
+
+	// Fact: The ASSERT variants accept an optional message too.
+		// Arrange/Act/Assert
+	ASSERT_EQ_INT(2, 2);
+	ASSERT_EQ_INT(2, 2, 'assert with message');
+	ASSERT_TRUE(true, 'assert true with message');
+	{end}
+END_TEST_S
+
+(*{doc Test that the deprecated _MSG macros still behave like the optional-message form.}*)
+TEST_S(test_deprecated_msg_aliases)
+	{st}
+	// Fact: The deprecated _MSG form still compiles and passes.
+		// Arrange/Act/Assert
+	EXPECT_EQ_INT_MSG(1, 1, 'legacy form');
+	EXPECT_TRUE_MSG(true, 'legacy form');
+	EXPECT_NEAR_MSG(1.0, 1.001, 0.01, 'legacy form');
+	EXPECT_NEAR_REL_MSG(100.0, 101.0, 0.02, 'legacy form');
+	ASSERT_EQ_STRING_MSG('a', 'a', 'legacy form');
+	{end}
+END_TEST_S

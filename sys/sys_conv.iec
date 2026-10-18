@@ -81,6 +81,7 @@ function bool_to_string: string[8]
 end
 {#endif}
 
+// note: _JIER provides time_to_usec_dint natively as a stdpou foreign function. Do not add an 'Unsupported' stub here.
 {#if _OMRON}
 	{#define time_to_usec_dint(...) lint_to_dint(TimeToNanoSec(__VA_ARGS__) / lint#1000)}
 {#elif _KEYENCE}
@@ -144,6 +145,8 @@ end
 	// TODO:
 {#endif}
 
+// note: _JIER provides date_to_string / tod_to_string / dt_to_string natively as stdpou foreign functions;
+// _CODESYS provides DATE_TO_STRING etc. natively. Do not add 'Unsupported' stubs here.
 {#if _OMRON}
 	{#define date_to_string(...) DateToString(__VA_ARGS__)}
 	{#define tod_to_string(...) TodToString(__VA_ARGS__)}

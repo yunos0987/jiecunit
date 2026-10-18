@@ -1,6 +1,8 @@
 # General
 /build/
 /check/
+__pycache__/
+*.pyc
 # Visual Studio Code
 /.vscode/
 

@@ -1,0 +1,79 @@
+{#include <jiecunit.iec>}
+
+(*{doc Test for JiecTest_validateNEARREL functionality with comprehensive test cases.}*)
+TEST_S(test_jiectest_validate_near_rel)
+	var
+		jt: JiecTest_t;
+		result: bool;
+	end
+	{st}
+	// Fact: A negative relative error causes validation to fail immediately.
+		// Arrange
+	JiecTest_initialize(jt);
+		// Act
+	result := JiecTest_validateNEARREL(jt, 1.0, 1.0, -0.01, 'negative rel_error should fail', false, TestName, __LINE__);
+		// Assert
+	EXPECT_FALSE(result);
+
+	// Fact: Two zero values are always within relative tolerance.
+		// Arrange
+	JiecTest_initialize(jt);
+		// Act
+	result := JiecTest_validateNEARREL(jt, 0.0, 0.0, 0.01, 'both zero should pass', false, TestName, __LINE__);
+		// Assert
+	EXPECT_TRUE(result);
+
+	// Fact: Large-magnitude values within the relative tolerance of the larger scale pass.
+		// Arrange
+	JiecTest_initialize(jt);
+		// Act
+	result := JiecTest_validateNEARREL(jt, 100.0, 101.0, 0.02, 'large scale within tolerance should pass', false, TestName, __LINE__);
+		// Assert
+	EXPECT_TRUE(result);
+
+	// Fact: Large-magnitude values exceeding the relative tolerance of the larger scale fail.
+		// Arrange
+	JiecTest_initialize(jt);
+		// Act
+	result := JiecTest_validateNEARREL(jt, 100.0, 110.0, 0.05, 'large scale exceeding tolerance should fail', false, TestName, __LINE__);
+		// Assert
+	EXPECT_FALSE(result);
+
+	// Fact: Small-magnitude values within a proportionally small relative tolerance pass.
+		// Arrange
+	JiecTest_initialize(jt);
+		// Act
+	result := JiecTest_validateNEARREL(jt, 0.0001, 0.00011, 0.2, 'small scale within tolerance should pass', false, TestName, __LINE__);
+		// Assert
+	EXPECT_TRUE(result);
+
+	// Fact: A difference exactly equal to the allowed value passes (boundary, using inclusive <=).
+		// Arrange
+	JiecTest_initialize(jt);
+		// Act
+	result := JiecTest_validateNEARREL(jt, 2.0, 1.0, 0.5, 'boundary exactly at allowed value should pass', false, TestName, __LINE__);
+		// Assert
+	EXPECT_TRUE(result);
+	{end}
+END_TEST_S
+
+(*{doc Test for the EXPECT_NEAR_REL / ASSERT_NEAR_REL macro family with successful cases.}*)
+TEST_S(test_near_rel_macros)
+	{st}
+	// Fact: EXPECT_NEAR_REL passes when values are within relative tolerance.
+		// Arrange/Act/Assert
+	EXPECT_NEAR_REL(1.0, 1.01, 0.02);
+
+	// Fact: EXPECT_NEAR_REL_MSG passes when values are within relative tolerance, with a message.
+		// Arrange/Act/Assert
+	EXPECT_NEAR_REL_MSG(100.0, 101.0, 0.02, 'large scale within tolerance');
+
+	// Fact: ASSERT_NEAR_REL passes when values are within relative tolerance.
+		// Arrange/Act/Assert
+	ASSERT_NEAR_REL(50.0, 50.4, 0.01);
+
+	// Fact: ASSERT_NEAR_REL_MSG passes when the difference exactly equals the allowed value.
+		// Arrange/Act/Assert
+	ASSERT_NEAR_REL_MSG(2.0, 1.0, 0.5, 'boundary within tolerance');
+	{end}
+END_TEST_S

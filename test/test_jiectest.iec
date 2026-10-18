@@ -13,6 +13,7 @@ TEST_S(test_jiectest_initialize)
 	jt.tmp_cycle := 12;
 	jt.tmp_active_test_index := 7;
 	jt.tmp_is_test_available := true;
+	jt.tmp_is_skipped := true;
 	jt.num_of_failures := 9;
 		// Act
 	JiecTest_initialize(jt);
@@ -23,6 +24,7 @@ TEST_S(test_jiectest_initialize)
 	EXPECT_EQ_INT(dint#__DINT_MIN__, jt.tmp_cycle);
 	EXPECT_EQ_INT(-1, jt.tmp_active_test_index);
 	EXPECT_FALSE(jt.tmp_is_test_available);
+	EXPECT_FALSE(jt.tmp_is_skipped);
 	EXPECT_EQ_INT(0, jt.num_of_failures);
 	{end}
 END_TEST_S

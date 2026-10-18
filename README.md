@@ -4,6 +4,7 @@
 
 ## 目次
 - [概要](#概要)
+- [アサーションのメッセージ引数](#アサーションのメッセージ引数)
 - [必要環境](#必要環境)
 - [単体テストのサンプルの実行方法](#単体テストのサンプルの実行方法)
   - [オムロン社製Sysmac Studioの場合](#オムロン社製sysmac-studioの場合の単体テストサンプルの実行方法)
@@ -12,6 +13,7 @@
 - [JiecUnit開発者向け](#jiecunit開発者向け)
   - [リポジトリ構成](#リポジトリ構成)
   - [JiecUnitのテスト方法](#jiecunitのテスト方法)
+  - [追加したアサーション API](#追加したアサーション-api)
   - [各メーカーの言語サポート状況](#各メーカーの言語サポート状況)
 - [ライセンス](#ライセンス)
 - [その他の情報](#その他の情報)
@@ -28,15 +30,43 @@ JiecUnitは現在、[IEC 61131-10 XML](https://plcopen.org/sites/default/files/d
 * オムロン社製[Sysmac Studio](https://www.fa.omron.co.jp/products/family/3077/download/software.html)
 * キーエンス社製[KV Studio](https://www.keyence.co.jp/support/user/controls/installer/)
 * CODESYS社製[CODESYS](https://content.helpme-codesys.com/en/CODESYS%20Installer/_inst_start_page.html)
+* Jieccのjierインタプリタによる直接実行（`jiecc --run`。PLC・IDE不要。開発者検証／CI用途）
+
+## アサーションのメッセージ引数
+
+すべての`EXPECT_*`・`ASSERT_*`アサーションマクロ、および`FAIL`・`ADD_FAILURE`は、失敗時に表示するメッセージを末尾の省略可能な引数として受け取ります。メッセージを渡すために`_MSG`サフィックス付きのマクロ名を使う必要はありません。
+
+```
+EXPECT_EQ_INT(expected, actual);
+EXPECT_EQ_INT(expected, actual, '期待値と一致しません');
+EXPECT_TRUE(condition, '条件を満たしていません');
+EXPECT_NEAR(1.0, 1.001, 0.01, '許容誤差を超えています');
+FAIL('想定外の分岐に到達しました');
+ADD_FAILURE('この時点で失敗として記録します');
+```
+
+- `_MSG`サフィックス付きのマクロ（`EXPECT_EQ_INT_MSG`など）は後方互換のために残していますが、**非推奨**です。新規コードでは末尾の省略可能な引数としてメッセージを渡してください。
+- メッセージ文字列や値引数に含まれるカンマ・括弧はそのまま書けます（例: `EXPECT_EQ_STRING(a, b, 'カンマ, と (括弧)');`）。
+- 引数の個数を間違えた場合の検出のされ方は4通りあります。Jiecc 8.0.0では、`jiecc -c`も`jiecc --run`も、次の1番目から3番目のケースを終了コード1のエラーとして報告します。4番目のケースだけは`jiecc -c`では検出されず、終了コード0で（誤った）XMLを出力してしまうため、終了コードだけを見る運用では見逃します。
+  - 多すぎる場合（必須引数より後ろの余分な引数が16個以内）: `JIECUNIT_ASSERTION_TAKES_<lo>_OR_<hi>_ARGUMENTS`（`<lo>`・`<hi>`は正しい総引数数）という名前の構文エラー（`INVALID_SYNTAX`）になります。`jiecc -c`によるコンパイル時、`jiecc --run`による直接実行時のいずれでも、呼び出し元の行番号とともに終了コード1で検出されます。`jiecc -c`は中身が空（0バイト）のXMLファイルを残します。
+  - 少なすぎる場合（例: `EXPECT_EQ_INT(1)`）: 必須引数が名前付きで宣言されているため、プリプロセッサが`PP34: Argument count mismatch; 'EXPECT_EQ_INT: expected 2-16777215, got 1'`のようなエラーを呼び出し元の行番号とともに報告します。引用部分は`マクロ名: expected <必要数>, got <実際の数>`の形式です。`16777215`はプリプロセッサ上の「上限なし」を表す内部値で、実際の上限は上記の構文エラー側で検出されます。同一ファイル内に複数あっても最初の1件で打ち切られます。Jiecc 8.0.0ではプリプロセッサ（jiepp）が失敗すると後続の処理を行わず、続けて`EXTERNAL_TOOL_ERROR`（`jiepp.exe failed with exit code 1`）を報告して終了コード1で終了します。XMLファイルは出力されません（`jiecc --run`も同じです）。なお、Jiecc 8.0.0より前のバージョンの`jiecc -c`は、このPP34エラーをstderrに表示しつつ終了コード0でPOUを1つも含まないXMLを出力していました。そうしたバージョンでは終了コードだけでは気付けないので、stderrの`error:`行も確認してください。`python scripts/run_tests.py`はstderrの`error:`行も検出して失敗として扱います。
+  - 引数を1つも書かなかった場合（例: `EXPECT_FALSE()`）: 空の引数1個として展開されるため、呼び出し元の行で`','; INVALID_SYNTAX`が報告され、`jiecc -c`・`jiecc --run`とも終了コード1で終了します。`jiecc -c`は中身が空（0バイト）のXMLファイルを残します。
+  - 必須引数より後ろの余分な引数が17個以上ある場合: `jiecc -c`はエラーを出さず終了コード0で**正常なXML**を生成してしまいます。この間違いは`jiecc --run`実行時の`UNDEFINED_SYMBOL`エラー（`_JIECUNIT_OPTMSG2_18`のような内部シンボル名を含む。終了コード1）でのみ検出されます。
+- 値引数の直後に置く最後の省略可能な引数（`EXPECT_TRUE`・`EXPECT_FALSE`なら2番目、`EXPECT_EQ_*`などの2値比較系は3番目、`EXPECT_NEAR`・`EXPECT_NEAR_REL`のような3値比較系は4番目、`FAIL`・`ADD_FAILURE`なら1番目の引数）は、常にSTRINGのメッセージとして解釈されます。数値やBOOLを渡してしまっても`jiecc -c`では検出されず、実行時に型不一致で停止するため注意してください（例: 許容誤差のつもりで`EXPECT_NEAR`ではなく`EXPECT_EQ_INT(a, b, tol)`のように書いてしまうミスに注意）。
+- `SKIP_TEST(reason)`の理由は、スキップした事実を記録に残すため省略できません。
+- `python scripts/check_macro_expansion.py`で、この省略可能引数の展開結果と`_MSG`版の展開結果が一致することを検証できます。
 
 ## 必要環境
 
 JiecUnitのサンプル単体テストを実行するには、以下の環境が必要です。
 
-* [Jiecc 5.14以降](https://www.graviness.com/iec_61131-3/jiecc.html#Header.Jiecc%E3%81%AE%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89%E3%81%A8%E5%AE%9F%E8%A1%8C%E6%96%B9%E6%B3%95)
+* [Jiecc 8.0.0以降](https://www.graviness.com/iec_61131-3/jiecc.html#Header.Jiecc%E3%81%AE%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89%E3%81%A8%E5%AE%9F%E8%A1%8C%E6%96%B9%E6%B3%95)
   * Jieccは、IEC 61131-3テキストをIEC 61131-10 XMLに変換する無料のコマンドラインソフトウェアです。[Jieccのダウンロードと実行方法](https://www.graviness.com/iec_61131-3/jiecc.html#Header.Jiecc%E3%81%AE%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89%E3%81%A8%E5%AE%9F%E8%A1%8C%E6%96%B9%E6%B3%95)を参照してください。
+  * Jiecc 8.0.0の動作環境はWindows 10（1903以降）です。
+  * `jiecc --run`（jierインタプリタによる直接実行）や`scripts/run_tests.py`も、Jiecc 8.0.0以降を使用します。
 * [Sysmac Studio](https://www.fa.omron.co.jp/products/family/3077/download/software.html)（試用期間制限あり）、[KV Studio](https://www.keyence.co.jp/support/user/controls/installer/)（試用回数制限あり）、または[CODESYS](https://content.helpme-codesys.com/en/CODESYS%20Installer/_inst_start_page.html)
   * いずれも同梱シミュレータでテスト可能。必要に応じてPLC本体もご用意ください。
+  * `jiecc --run`による直接実行のみで検証する場合は、ベンダIDEは不要です。
 
 ## 単体テストのサンプルの実行方法
 
@@ -206,15 +236,42 @@ Standardライブラリが追加されます。
 * [srcディレクトリ](./src/)：JiecUnit本体のソースコード。コア機能、テスト実行エンジン、設定ファイルなど。
 * [sysディレクトリ](./sys/)：JiecUnitの動作に必要な補助的コード。型変換ファンクション、コンソール出力、メーカー依存の補助関数など。
 * [testディレクトリ](./test/)：JiecUnit自体の単体テストコード。各種マクロ・内部関数の動作検証用テストファイル（test_jiectest.iec等）を含む。
+* [scriptsディレクトリ](./scripts/)：開発補助スクリプト。マクロ生成（generate_macros.py）、テスト一括実行（run_tests.py）、およびメッセージ引数省略形と`_MSG`形の展開結果一致検証（check_macro_expansion.py）を含む。
 * [checkディレクトリ](./check/)：テスト結果（XMLファイル等）の出力先。テスト実行時に生成される成果物を格納。
 * [README.md](./README.md)：本ドキュメント。使い方・構成・サポート状況などを記載。
+* [AGENTS.md](./AGENTS.md)：生成AI（AIエージェント）向けのリポジトリ運用ルール。CLAUDE.mdは、これを取り込むだけのファイル。
+* [CONTRIBUTING.md](./CONTRIBUTING.md)：貢献の流れ、コーディング規約（命名規則・フォーマット・テストの書き方など）、バージョン管理の運用ルール。
+* [CHANGELOG.md](./CHANGELOG.md)：変更履歴。
+* [SECURITY.md](./SECURITY.md)：セキュリティポリシー。脆弱性の報告方法。
+* [.githubディレクトリ](./.github/)：GitHub Actionsの設定（workflows/ci.yml）とDependabotの設定。CIのテストジョブはWindows（jiecc.zip）とLinux（jiecc.tgz）の両方で実行し、それぞれ、全スイートのコンパイル（`run_tests.py --compile-only`）とマクロ展開の一致検証（`check_macro_expansion.py`）を必須とし、jier（`jiecc --run`）によるテスト実行は任意とする（失敗しても警告として表示し、ワークフローは失敗させない）。
 * [LICENSE](./LICENSE)：ライセンス情報。
 * [VERSION](./VERSION)：バージョン管理用ファイル。
-* [VERSION_MANAGEMENT.md](./VERSION_MANAGEMENT.md)：バージョン管理の運用ルールや履歴。
 
 ### JiecUnitのテスト方法
 
-ターゲットの環境ごとに以下のコマンドを実行し、上述と同じ手順を実行します。
+まず、以下のコマンドで一括検証することを推奨します（全ターゲットのコンパイル確認、jierインタプリタによるテスト実行、およびメッセージ引数省略形と`_MSG`形の展開結果一致検証を一度に行います）。
+
+```
+$ cd <JiecUnit Project Root>
+$ python scripts/run_tests.py
+```
+
+マクロ展開の同値検証だけを単独で実行したい場合は、以下のコマンドを使用します。
+
+```
+$ python scripts/check_macro_expansion.py
+```
+
+個別にjierインタプリタで実行する場合は、以下のコマンドを使用します。
+
+```
+$ jiecc --run test/test.iec -I. -I./sys --max-cycles 200
+```
+
+* jiecc --runモードのプロセス終了コードはテスト結果を反映しません。テストの成否は標準出力の`[ PASSED ]`/`[ FAILED ]`行で判定してください（`scripts/run_tests.py`はこれを自動判定します）。
+* `--max-cycles`オプションは必須です。指定しない場合、複数スキャンサイクルにまたがるテストが完走しません。
+
+ベンダIDEへの取り込みを確認する場合は、ターゲットの環境ごとに以下のコマンドを実行し、上述と同じ手順を実行します。
 
 ```
 $ cd <JiecUnit Project Root>
@@ -225,6 +282,25 @@ or
 $ jiecc -I.. -I..\sys ..\test\test.iec -o .\test.xml -t keyence
 or
 $ jiecc -I.. -I..\sys ..\test\test.iec -o .\test.xml -t codesys
+```
+
+### 追加したアサーション API
+
+* `EXPECT_NEAR_REL(val1, val2, rel_error)` / `ASSERT_NEAR_REL(val1, val2, rel_error)`（末尾にmessageを追加可能）：相対誤差による近似比較。許容差は`rel_error * max(abs(val1), abs(val2))`。
+```
+EXPECT_NEAR_REL(100.0, 101.0, 0.02); // |100.0 - 101.0| <= 0.02 * 101.0 なので成功
+```
+* `FAIL()` / `FAIL(message)`：即座に失敗として記録し、テストを中断する。
+```
+FAIL('到達してはならない分岐に到達した');
+```
+* `ADD_FAILURE()` / `ADD_FAILURE(message)`：失敗として記録するが、テストは継続する。
+```
+ADD_FAILURE('この時点で不整合を検出したが、後続の検証も継続する');
+```
+* `SKIP_TEST(reason)`：現在のテストをスキップとして報告し、テストを終了する（成功でも失敗でもない）。
+```
+SKIP_TEST('この環境では出力フォーマットが処理系依存のため検証しない');
 ```
 
 ### 各メーカーのIEC 61131-3言語サポート状況
