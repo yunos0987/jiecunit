@@ -12,10 +12,11 @@ deprecated *_MSG aliases.
 Note: jiecc's process exit code does not reflect test failures in --run
 mode, so this script parses stdout instead.
 
-jiecc can also exit 0 during -c/--run while still reporting a preprocessing
-error on stderr (for example a PP34 argument-count error), emitting an XML
-file that is missing the affected POUs, or an interpreted run whose
-UNDEFINED_SYMBOL error is only visible in the output text. To catch these,
+Older jiecc (< 8.0.0) could exit 0 during -c/--run while still reporting a
+preprocessing error on stderr (for example a PP34 argument-count error),
+emitting an XML file that is missing the affected POUs; jiecc 8.0.0 fails
+with EXTERNAL_TOOL_ERROR and exit code 1 instead. An interpreted run whose
+UNDEFINED_SYMBOL error is only visible in the output text is still possible. To catch these,
 this script also treats any "error: " line in the compile/run output as a
 failure, independent of the process exit code.
 
@@ -47,8 +48,8 @@ _RE_PASSED = re.compile(r'^\[ PASSED \] (\d+) tests\.')
 _RE_SKIPPED = re.compile(r'^\[ SKIPPED\] (\d+) tests\.')
 _RE_FAILED_LINE = re.compile(r'\[ FAILED \]')
 _RE_ERROR_LINE = re.compile(r'\[  ERROR \]')
-# jiecc can exit 0 while still reporting an error on stderr (e.g. PP34 during
-# -c, or UNDEFINED_SYMBOL text during --run), so scan the output text for
+# jiecc (< 8.0.0) could exit 0 while still reporting an error on stderr (e.g.
+# PP34 during -c), and --run can print UNDEFINED_SYMBOL text, so scan the output text for
 # "error: " lines regardless of the process exit code.
 _RE_ERROR_TEXT = re.compile(r'(?m)^\S.*: error: | error: ')
 
@@ -202,7 +203,7 @@ def main():
     # type: () -> int
     parser = argparse.ArgumentParser(
         description='Compile and run the JiecUnit test suites with jiecc. '
-                     'jiecc may exit 0 while still emitting an "error: " '
+                     'older jiecc (< 8.0.0) may exit 0 while still emitting an "error: " '
                      'line on stderr (e.g. a PP34 preprocessing error), so '
                      'this script fails the check when it finds one, '
                      'regardless of the exit code.')

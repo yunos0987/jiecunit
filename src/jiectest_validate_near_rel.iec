@@ -2,7 +2,7 @@
 {#define __JIECTEST_VALIDATE_NEAR_REL_IEC__}
 
 (*{doc Validate that two floating-point values are nearly equal within the specified relative error tolerance.
-The allowed absolute difference is rel_error multiplied by the larger of the two values' magnitudes.
+The allowed absolute difference is rel_error multiplied by the larger of the magnitudes of the two values.
 @inout self The JiecTest_t structure.
 @input val1 The first value.
 @input val2 The second value.

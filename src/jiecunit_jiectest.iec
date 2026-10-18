@@ -96,6 +96,17 @@ function JiecTest_empty: bool
 	{end}
 end
 
+(*{doc Get the current cycle number of the active test case.
+@inout self The JiecTest_t structure.
+@return The current cycle number.}*)
+function JiecTest_currentCycle: dint
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	{st}
+	JiecTest_currentCycle := self.tmp_cycle;
+	{end}
+end
+
 (*{doc Report a test failure.
 Outputs failure information to the console and increments the failure counter.
 @inout self The JiecTest_t structure.
@@ -206,17 +217,6 @@ function JiecTest_deactivate: bool
 	var_in_out self: JiecTest_t; end
 	{st}
 	self.tmp_cycle := dint#__DINT_MIN__;
-	{end}
-end
-
-(*{doc Get the current cycle number of the active test case.
-@inout self The JiecTest_t structure.
-@return The current cycle number.}*)
-function JiecTest_currentCycle: dint
-	_PROLOGUE_OF_FUNCTION_()
-	var_in_out self: JiecTest_t; end
-	{st}
-	JiecTest_currentCycle := self.tmp_cycle;
 	{end}
 end
 

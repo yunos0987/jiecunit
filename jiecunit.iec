@@ -35,9 +35,11 @@
 //
 // Every public macro follows this template (square brackets mark the part
 // that is only present for K=1):
-//   {#define NAME(<required args>, ...)
+//   #define NAME(<required args>, ...)
 //       _JIECUNIT_OPTMSG<K>_N(__VA_ARGC__, <base>, <die>, [<fixed>,]
-//                              <required args>, __VA_ARGS__)}
+//                              <required args>, __VA_ARGS__)
+// (written inside the usual preprocessor directive braces, i.e. wrapped as
+// open-brace + the lines above + close-brace.)
 // Adding a new K (e.g. K=4 for a future 4-value assertion) means adding a
 // new _JIECUNIT_OPTMSG4_0.._16/_N family below that follows this template.
 //

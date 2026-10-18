@@ -47,11 +47,11 @@ ADD_FAILURE('この時点で失敗として記録します');
 
 - `_MSG`サフィックス付きのマクロ（`EXPECT_EQ_INT_MSG`など）は後方互換のために残していますが、**非推奨**です。新規コードでは末尾の省略可能な引数としてメッセージを渡してください。
 - メッセージ文字列や値引数に含まれるカンマ・括弧はそのまま書けます（例: `EXPECT_EQ_STRING(a, b, 'カンマ, と (括弧)');`）。
-- 引数の個数を間違えた場合の検出のされ方は4通りあります。`jiecc --run`（および`python scripts/run_tests.py`）はいずれの間違いも検出しますが、`jiecc -c`は次の2番目・4番目のケースでは終了コード0のまま（誤った）XMLを出力してしまうため、終了コードだけを見る運用では見逃します。`jiecc -c`を使う場合は標準エラー出力の`error:`行も必ず確認してください。
-  - 多すぎる場合（必須引数より後ろの余分な引数が16個以内）: `JIECUNIT_ASSERTION_TAKES_<lo>_OR_<hi>_ARGUMENTS`（`<lo>`・`<hi>`は正しい総引数数）という名前の構文エラーになります。`jiecc -c`によるコンパイル時、`jiecc --run`による直接実行時のいずれでも、呼び出し元の行番号とともに検出されます。
-  - 少なすぎる場合（例: `EXPECT_EQ_INT(1)`）: 必須引数が名前付きで宣言されているため、プリプロセッサが`PP34: Argument count mismatch; 'expected 2-16777215, got 1'`のようなエラーを呼び出し元の行番号とともに報告します。`16777215`はプリプロセッサ上の「上限なし」を表す内部値で、実際の上限は上記の構文エラー側で検出されます。同一ファイル内に複数あっても最初の1件で打ち切られます。ただし`jiecc -c`はこのPP34エラーをstderrに表示しつつ**終了コード0でPOUを1つも含まないXML**を出力してしまいます。終了コードだけを確認すると気付けず、そのままIDEに取り込むとテストが全部消えた空プロジェクトになるので注意してください。`python scripts/run_tests.py`はstderrの`error:`行を検出してこのケースを失敗として扱います。
-  - 引数を1つも書かなかった場合（例: `EXPECT_FALSE()`）: 空の引数1個として展開されるため、`jiecc -c`が呼び出し元の行で`','; INVALID_SYNTAX`を報告します。
-  - 必須引数より後ろの余分な引数が17個以上ある場合: `jiecc -c`はエラーを出さず**正常なXML**を生成してしまいます。この間違いは`jiecc --run`実行時の`UNDEFINED_SYMBOL`エラー（`_JIECUNIT_OPTMSG2_17`のような内部シンボル名を含む）でのみ検出されます。
+- 引数の個数を間違えた場合の検出のされ方は4通りあります。Jiecc 8.0.0では、`jiecc -c`も`jiecc --run`も、次の1番目から3番目のケースを終了コード1のエラーとして報告します。4番目のケースだけは`jiecc -c`では検出されず、終了コード0で（誤った）XMLを出力してしまうため、終了コードだけを見る運用では見逃します。
+  - 多すぎる場合（必須引数より後ろの余分な引数が16個以内）: `JIECUNIT_ASSERTION_TAKES_<lo>_OR_<hi>_ARGUMENTS`（`<lo>`・`<hi>`は正しい総引数数）という名前の構文エラー（`INVALID_SYNTAX`）になります。`jiecc -c`によるコンパイル時、`jiecc --run`による直接実行時のいずれでも、呼び出し元の行番号とともに終了コード1で検出されます。`jiecc -c`は中身が空（0バイト）のXMLファイルを残します。
+  - 少なすぎる場合（例: `EXPECT_EQ_INT(1)`）: 必須引数が名前付きで宣言されているため、プリプロセッサが`PP34: Argument count mismatch; 'EXPECT_EQ_INT: expected 2-16777215, got 1'`のようなエラーを呼び出し元の行番号とともに報告します。引用部分は`マクロ名: expected <必要数>, got <実際の数>`の形式です。`16777215`はプリプロセッサ上の「上限なし」を表す内部値で、実際の上限は上記の構文エラー側で検出されます。同一ファイル内に複数あっても最初の1件で打ち切られます。Jiecc 8.0.0ではプリプロセッサ（jiepp）が失敗すると後続の処理を行わず、続けて`EXTERNAL_TOOL_ERROR`（`jiepp.exe failed with exit code 1`）を報告して終了コード1で終了します。XMLファイルは出力されません（`jiecc --run`も同じです）。なお、Jiecc 8.0.0より前のバージョンの`jiecc -c`は、このPP34エラーをstderrに表示しつつ終了コード0でPOUを1つも含まないXMLを出力していました。そうしたバージョンでは終了コードだけでは気付けないので、stderrの`error:`行も確認してください。`python scripts/run_tests.py`はstderrの`error:`行も検出して失敗として扱います。
+  - 引数を1つも書かなかった場合（例: `EXPECT_FALSE()`）: 空の引数1個として展開されるため、呼び出し元の行で`','; INVALID_SYNTAX`が報告され、`jiecc -c`・`jiecc --run`とも終了コード1で終了します。`jiecc -c`は中身が空（0バイト）のXMLファイルを残します。
+  - 必須引数より後ろの余分な引数が17個以上ある場合: `jiecc -c`はエラーを出さず終了コード0で**正常なXML**を生成してしまいます。この間違いは`jiecc --run`実行時の`UNDEFINED_SYMBOL`エラー（`_JIECUNIT_OPTMSG2_18`のような内部シンボル名を含む。終了コード1）でのみ検出されます。
 - 値引数の直後に置く最後の省略可能な引数（`EXPECT_TRUE`・`EXPECT_FALSE`なら2番目、`EXPECT_EQ_*`などの2値比較系は3番目、`EXPECT_NEAR`・`EXPECT_NEAR_REL`のような3値比較系は4番目、`FAIL`・`ADD_FAILURE`なら1番目の引数）は、常にSTRINGのメッセージとして解釈されます。数値やBOOLを渡してしまっても`jiecc -c`では検出されず、実行時に型不一致で停止するため注意してください（例: 許容誤差のつもりで`EXPECT_NEAR`ではなく`EXPECT_EQ_INT(a, b, tol)`のように書いてしまうミスに注意）。
 - `SKIP_TEST(reason)`の理由は、スキップした事実を記録に残すため省略できません。
 - `python scripts/check_macro_expansion.py`で、この省略可能引数の展開結果と`_MSG`版の展開結果が一致することを検証できます。
@@ -60,9 +60,10 @@ ADD_FAILURE('この時点で失敗として記録します');
 
 JiecUnitのサンプル単体テストを実行するには、以下の環境が必要です。
 
-* [Jiecc 5.14以降](https://www.graviness.com/iec_61131-3/jiecc.html#Header.Jiecc%E3%81%AE%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89%E3%81%A8%E5%AE%9F%E8%A1%8C%E6%96%B9%E6%B3%95)
+* [Jiecc 8.0.0以降](https://www.graviness.com/iec_61131-3/jiecc.html#Header.Jiecc%E3%81%AE%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89%E3%81%A8%E5%AE%9F%E8%A1%8C%E6%96%B9%E6%B3%95)
   * Jieccは、IEC 61131-3テキストをIEC 61131-10 XMLに変換する無料のコマンドラインソフトウェアです。[Jieccのダウンロードと実行方法](https://www.graviness.com/iec_61131-3/jiecc.html#Header.Jiecc%E3%81%AE%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89%E3%81%A8%E5%AE%9F%E8%A1%8C%E6%96%B9%E6%B3%95)を参照してください。
-  * `jiecc --run`（jierインタプリタによる直接実行）や`scripts/run_tests.py`を使用する場合は、Jiecc 7.1.0以降が必要です。
+  * Jiecc 8.0.0の動作環境はWindows 10（1903以降）です。
+  * `jiecc --run`（jierインタプリタによる直接実行）や`scripts/run_tests.py`も、Jiecc 8.0.0以降を使用します。
 * [Sysmac Studio](https://www.fa.omron.co.jp/products/family/3077/download/software.html)（試用期間制限あり）、[KV Studio](https://www.keyence.co.jp/support/user/controls/installer/)（試用回数制限あり）、または[CODESYS](https://content.helpme-codesys.com/en/CODESYS%20Installer/_inst_start_page.html)
   * いずれも同梱シミュレータでテスト可能。必要に応じてPLC本体もご用意ください。
   * `jiecc --run`による直接実行のみで検証する場合は、ベンダIDEは不要です。
