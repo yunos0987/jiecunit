@@ -199,17 +199,15 @@ def _run_jiecc_compile(jiecc, root, path, out_xml):
 
 # Line number the probed expression sits on in each generated probe file.
 _MISSING_PROBE_LINE = 2
-_EMPTY_PROBE_LINE = 4
+_EMPTY_PROBE_LINE = 3
 
 
 def _compile_probe(expr):
     """A minimal compilable test whose assertion sits on _EMPTY_PROBE_LINE."""
     return ('{#include <jiecunit.iec>}\n'
             'TEST_S(t)\n'
-            '{st}\n'
             '%s;\n'
             'EOT();\n'
-            '{end}\n'
             'END_TEST_S\n' % expr)
 
 

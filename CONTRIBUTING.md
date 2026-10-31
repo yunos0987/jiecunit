@@ -97,7 +97,6 @@ TEST_S(test_mean)
 		x_negative: array[0..2] of lreal;
 		mean_val: lreal;
 	end
-	{st}
 	// Fact: The mean of a sequence of values equals their arithmetic average.
 		// Arrange
 	x_regular[0] := 6.0;
@@ -126,7 +125,6 @@ TEST_S(test_mean)
 	mean_val := mean(x_negative);
 		// Assert
 	EXPECT_NEAR(-2.0, mean_val, 1.0e-6);
-	{end}
 END_TEST_S
 ```
 
@@ -229,11 +227,9 @@ MAJOR.MINOR.PATCH
 {#include <jiecunit.iec>}
 
 TEST_S(test_version_info)
-	{st}
 	puts(jiec_concat('Version: ', _JIECUNIT_VERSION));
 	puts(jiec_concat('Short Ver: ', dint_to_string(_JIECUNIT_VER)));
 	puts(jiec_concat('Full Ver: ', dint_to_string(_JIECUNIT_FULL_VER)));
-	{end}
 END_TEST_S
 ```
 

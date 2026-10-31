@@ -6,7 +6,6 @@
 
 (*{doc Test that every assertion macro accepts an optional trailing message argument.}*)
 TEST_S(test_optional_message)
-	{st}
 	// Fact: A comparison assertion works without a message.
 		// Arrange/Act/Assert
 	EXPECT_EQ_INT(1, 1);
@@ -42,12 +41,10 @@ TEST_S(test_optional_message)
 	ASSERT_EQ_INT(2, 2);
 	ASSERT_EQ_INT(2, 2, 'assert with message');
 	ASSERT_TRUE(true, 'assert true with message');
-	{end}
 END_TEST_S
 
 (*{doc Test that the deprecated _MSG macros still behave like the optional-message form.}*)
 TEST_S(test_deprecated_msg_aliases)
-	{st}
 	// Fact: The deprecated _MSG form still compiles and passes.
 		// Arrange/Act/Assert
 	EXPECT_EQ_INT_MSG(1, 1, 'legacy form');
@@ -55,5 +52,4 @@ TEST_S(test_deprecated_msg_aliases)
 	EXPECT_NEAR_MSG(1.0, 1.001, 0.01, 'legacy form');
 	EXPECT_NEAR_REL_MSG(100.0, 101.0, 0.02, 'legacy form');
 	ASSERT_EQ_STRING_MSG('a', 'a', 'legacy form');
-	{end}
 END_TEST_S

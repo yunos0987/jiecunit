@@ -72,7 +72,6 @@ function JiecTest_validateCMP: bool
 		(*{doc The line number.}*)
 		line: dint;
 	end
-	{st}
 	JiecTest_validateCMP := lval JiecUnitOperator rval;
 	if JiecTest_validateCMP then
 		return;
@@ -82,7 +81,6 @@ function JiecTest_validateCMP: bool
 	puts(jiec_concat('Actual: ', JiecUnitToString(lval), ' vs ', JiecUnitToString(rval)));
 
 	JiecTest_failure(self:=self, message:=message, die:=die, file:=file, line:=line);
-	{end}
 end
 
 {#undef JiecTest_validateCMP}

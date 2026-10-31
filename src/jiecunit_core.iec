@@ -294,7 +294,6 @@ program {__func__:this_name} JiecUnitMain
 		// The count of tests reported as skipped, i.e. tests where _JIECTEST_.tmp_is_skipped was set (see JiecTest_skip).
 		num_of_skipped_tests: dint := 0;
 	end
-	{st}
 	if done then
 		return;
 	end_if;
@@ -386,7 +385,6 @@ program {__func__:this_name} JiecUnitMain
 			active_test_time0_in_us := currentMicrosecCount();
 		end_if;
 	until true end_repeat;
-	{end}
 	{#undef _initialize}
 	{#undef _register}
 	{#undef _active_test_index}

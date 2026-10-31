@@ -35,7 +35,6 @@ function JiecTest_initialize
 	var_temp
 		test_index: dint;
 	end
-	{st}
 	self.num_of_tests := 0;
 	for test_index := 0 to MAX_TESTS - 1 do
 		self.testnames[test_index] := '';
@@ -46,7 +45,6 @@ function JiecTest_initialize
 	self.tmp_is_test_available := false;
 	self.tmp_is_skipped := false;
 	self.num_of_failures := 0;
-	{end}
 end
 
 (*{doc Register a test case.
@@ -65,7 +63,6 @@ function JiecTest_register: dint
 	var_temp
 		test_index: dint;
 	end
-	{st}
 	// ignore, if it is already registered.
 	for test_index := 0 to self.num_of_tests - 1 do
 		if test_name = self.testnames[test_index] then
@@ -82,7 +79,6 @@ function JiecTest_register: dint
 	self.testnames[self.num_of_tests] := test_name;
 	inc(self.num_of_tests);
 	JiecTest_register := self.num_of_tests;
-	{end}
 end
 
 (*{doc Return bool value indicating whether there is no registered test case.
@@ -91,9 +87,7 @@ end
 function JiecTest_empty: bool
 	_PROLOGUE_OF_FUNCTION_()
 	var_in_out self: JiecTest_t; end
-	{st}
 	JiecTest_empty := self.num_of_tests = 0;
-	{end}
 end
 
 (*{doc Get the current cycle number of the active test case.
@@ -102,9 +96,7 @@ end
 function JiecTest_currentCycle: dint
 	_PROLOGUE_OF_FUNCTION_()
 	var_in_out self: JiecTest_t; end
-	{st}
 	JiecTest_currentCycle := self.tmp_cycle;
-	{end}
 end
 
 (*{doc Report a test failure.
@@ -132,7 +124,6 @@ function JiecTest_failure
 	var_temp
 		msg: string[STRING_MAX_SIZE];
 	end
-	{st}
 	msg := jiec_concat(file, ':', dint_to_string(line), '@', dint_to_string(JiecTest_currentCycle(self)));
 	if message <> '' then
 		msg := jiec_concat(msg, ' ', message);
@@ -140,7 +131,6 @@ function JiecTest_failure
 	puts(msg);
 
 	inc(self.num_of_failures);
-	{end}
 end
 
 (*{doc Mark the active test as skipped.
@@ -157,12 +147,10 @@ function JiecTest_skip
 		(*{doc The reason for skipping the test (optional).}*)
 		reason: string[STRING_MAX_SIZE] := '';
 	end
-	{st}
 	self.tmp_is_skipped := true;
 	if reason <> '' then
 		puts(jiec_concat('Skipped: ', reason));
 	end_if;
-	{end}
 end
 
 (*{doc Get a bool value indicating whether there is an active test case.
@@ -171,9 +159,7 @@ end
 function JiecTest_isActive: bool
 	_PROLOGUE_OF_FUNCTION_()
 	var_in_out self: JiecTest_t; end
-	{st}
 	JiecTest_isActive := self.tmp_cycle >= 0;
-	{end}
 end
 
 (*{doc Get the index of the active test case.
@@ -182,9 +168,7 @@ end
 function JiecTest_activeTestIndex: dint
 	_PROLOGUE_OF_FUNCTION_()
 	var_in_out self: JiecTest_t; end
-	{st}
 	JiecTest_activeTestIndex := self.tmp_active_test_index;
-	{end}
 end
 
 (*{doc Get the name of the active test case.
@@ -193,9 +177,7 @@ end
 function JiecTest_activeTestname: string[TESTNAME_MAX_SIZE]
 	_PROLOGUE_OF_FUNCTION_()
 	var_in_out self: JiecTest_t; end
-	{st}
 	JiecTest_activeTestname := self.testnames[self.tmp_active_test_index];
-	{end}
 end
 
 (*{doc Activate a test case and set the cycle counter to 0.
@@ -204,9 +186,7 @@ end
 function JiecTest_activate: bool
 	_PROLOGUE_OF_FUNCTION_()
 	var_in_out self: JiecTest_t; end
-	{st}
 	self.tmp_cycle := 0;
-	{end}
 end
 
 (*{doc Deactivate the current test case.
@@ -215,9 +195,7 @@ end
 function JiecTest_deactivate: bool
 	_PROLOGUE_OF_FUNCTION_()
 	var_in_out self: JiecTest_t; end
-	{st}
 	self.tmp_cycle := dint#__DINT_MIN__;
-	{end}
 end
 
 (*{doc Increment the cycle counter for the active test case.
@@ -226,10 +204,8 @@ end
 function JiecTest_nextCycle: bool
 	_PROLOGUE_OF_FUNCTION_()
 	var_in_out self: JiecTest_t; end
-	{st}
 	JiecTest_nextCycle := self.tmp_cycle <> dint#__DINT_MAX__; // false, if overflow happend.
 	self.tmp_cycle := self.tmp_cycle + 1;
-	{end}
 end
 
 (*{doc Get the test name at the specified index.
@@ -243,13 +219,11 @@ function JiecTest_testname: string[TESTNAME_MAX_SIZE]
 		(*{doc The index of the test case.}*)
 		test_index: dint;
 	end
-	{st}
 	if (0 <= test_index) and (test_index < self.num_of_tests) then
 		JiecTest_testname := self.testnames[test_index];
 	else
 		JiecTest_testname := '!No available tests!';
 	end_if;
-	{end}
 end
 
 // ------------------------ Define validator functions ------------------------ //

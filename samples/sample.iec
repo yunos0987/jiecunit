@@ -18,7 +18,6 @@ TEST_S(test_mean)
 	var
 		dats: array[BUFFER_SIZE] of lreal;
 	end
-	{st}
 	dats[0] := 1.0;
 	dats[1] := 2.0;
 	dats[2] := 3.0;
@@ -33,7 +32,6 @@ TEST_S(test_mean)
 	dats[2] := -3.0;
 	dats[3] := -6.0;
 	EXPECT_EQ_DOUBLE(-3.0, mean(dats, 4));
-	{end}
 END_TEST_S
 
 (*{doc A multiple-cycle test sample of the RunningMean function block.}*)
@@ -43,7 +41,6 @@ TEST_M(test_RunningMean)
 		mv: lreal;
 		ss: dint;
 	end
-	{st}
 	case CURRENT_CYCLE() of
 	0: // 1st cycle.
 		rm_instance(value:=2.0, mean_value=>mv, sample_size=>ss);
@@ -60,5 +57,4 @@ TEST_M(test_RunningMean)
 		// End Of the Test.
 		EOT();
 	end_case;
-	{end}
 END_TEST_M

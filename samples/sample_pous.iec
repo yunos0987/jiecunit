@@ -27,7 +27,6 @@ function mean: lreal
 		sample_index: dint;
 		sum_value: lreal;
 	end
-	{st}
 	if sample_size <= 0 then
 		mean := 0.0;
 		return;
@@ -38,7 +37,6 @@ function mean: lreal
 		sum_value := sum_value + sample_buffer[sample_index];
 	end_for;
 	mean := sum_value / sample_size;
-	{end}
 end
 
 (*{doc Incrementally compute the mean value.
@@ -68,9 +66,7 @@ function_block RunningMean
 	var
 		sum_value: lreal := 0.0;
 	end
-	{st}
 	sum_value := sum_value + value;
 	sample_size := sample_size + 1;
 	mean_value := sum_value / sample_size;
-	{end}
 end

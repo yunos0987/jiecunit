@@ -31,7 +31,6 @@ function JiecTest_validateNEAR: bool
 		(*{doc The line number.}*)
 		line: dint;
 	end
-	{st}
 	if abs_error < 0.0 then
 		JiecTest_failure(self:=self, message:='Absolute error cannot be negative.', die:=die, file:=file, line:=line);
 		JiecTest_validateNEAR := false;
@@ -48,7 +47,6 @@ function JiecTest_validateNEAR: bool
 	puts(jiec_concat('Value1 - Value2: ', lreal_to_string(val1 - val2)));
 
 	JiecTest_failure(self:=self, message:=message, die:=die, file:=file, line:=line);
-	{end}
 end
 
 {#endif}
