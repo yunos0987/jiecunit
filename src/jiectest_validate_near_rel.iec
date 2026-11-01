@@ -36,7 +36,6 @@ function JiecTest_validateNEARREL: bool
 		scale_value: lreal;
 		allowed_value: lreal;
 	end
-	{st}
 	if rel_error < 0.0 then
 		JiecTest_failure(self:=self, message:='Relative error cannot be negative.', die:=die, file:=file, line:=line);
 		JiecTest_validateNEARREL := false;
@@ -60,7 +59,6 @@ function JiecTest_validateNEARREL: bool
 	puts(jiec_concat('Allowed: ', lreal_to_string(allowed_value)));
 
 	JiecTest_failure(self:=self, message:=message, die:=die, file:=file, line:=line);
-	{end}
 end
 
 {#endif}

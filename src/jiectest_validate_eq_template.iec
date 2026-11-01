@@ -55,7 +55,6 @@ function JiecTest_validateEQ: bool
 		(*{doc The line number.}*)
 		line: dint;
 	end
-	{st}
 	JiecTest_validateEQ := expected = actual;
 	if JiecTest_validateEQ then
 		return;
@@ -65,7 +64,6 @@ function JiecTest_validateEQ: bool
 	puts(jiec_concat('Actual: ', JiecUnitToString(actual)));
 
 	JiecTest_failure(self:=self, message:=message, die:=die, file:=file, line:=line);
-	{end}
 end
 
 {#undef JiecTest_validateEQ}

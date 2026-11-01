@@ -2,7 +2,6 @@
 {#include <sys.iec>}
 
 TEST_S(test_jiec_concat)
-	{st}
 	// 0~16
 	EXPECT_EQ_STRING('', jiec_concat());
 	EXPECT_EQ_STRING('ab', jiec_concat('ab'));
@@ -23,14 +22,12 @@ TEST_S(test_jiec_concat)
 	EXPECT_EQ_STRING('abcdefghijklmnopqrstuvwxyzABCDEF', jiec_concat('ab', 'cd', 'ef', 'gh', 'ij', 'kl', 'mn', 'op', 'qr', 'st', 'uv', 'wx', 'yz', 'AB', 'CD', 'EF'));
 	//
 	EXPECT_EQ_STRING('', jiec_concat(''));
-	{end}
 END_TEST_S
 
 TEST_S(test_console_initialize)
 	var
 		console: Console_t;
 	end
-	{st}
 	// Fact: Console_initialize clears rows and resets row_index to 0.
 		// Arrange
 	console.row_index := 7;
@@ -52,14 +49,12 @@ TEST_S(test_console_initialize)
 		// Assert
 	EXPECT_EQ_INT(0, console.row_index);
 	EXPECT_EQ_STRING('', console.rows[0]);
-	{end}
 END_TEST_S
 
 TEST_S(test_console_print)
 	var
 		console: Console_t;
 	end
-	{st}
 	// Fact: Console_print appends text to the current row.
 		// Arrange
 	Console_initialize(console);
@@ -85,7 +80,6 @@ TEST_S(test_console_print)
 		// Assert
 	EXPECT_EQ_STRING('abcdef', console.rows[0]);
 	EXPECT_EQ_INT(0, console.row_index);
-	{end}
 END_TEST_S
 
 TEST_S(test_console_puts)
@@ -93,7 +87,6 @@ TEST_S(test_console_puts)
 		console: Console_t;
 		next_row: dint;
 	end
-	{st}
 	// Fact: Console_puts writes one line and advances row_index by one.
 		// Arrange
 	Console_initialize(console);
@@ -123,5 +116,4 @@ TEST_S(test_console_puts)
 	EXPECT_EQ_STRING('', console.rows[0]);
 	EXPECT_EQ_INT(1, console.row_index);
 	EXPECT_EQ_INT(1, next_row);
-	{end}
 END_TEST_S

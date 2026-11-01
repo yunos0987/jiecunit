@@ -2,6 +2,15 @@
 
 5.0.0 以降の変更を記録します。それ以前の変更は、Git の履歴と GitHub の Pull Request（https://github.com/yunos0987/jiecunit）を参照してください。
 
+## 6.0.0 (2026-11-01)
+
+5.0.0 からの変更です。
+
+### 互換性に影響する変更 / Breaking changes
+
+- 必要な Jiecc を 8.0.0 以降から 9.2.0 以降に変更しました。Jiecc 9.2.0 では、POU の本体直下に ST の文を直接書けるようになったため、`{st}` / `{end}`（マクロ定義内のものを含む）の囲みを、`src/`・`sys/`・`test/`・`samples/` のすべてのソースとマクロから取り除きました。JiecUnit を使うコードも、`{st}` / `{end}` は不要です。
+- Jiecc 9.2.0 未満では、`src/jiecunit_config.iec` の `{#error}` で前処理が止まります（`JiecUnit requires Jiecc 9.2.0 or later.`）。
+
 ## 5.0.0 (2026-10-18)
 
 4.2.0 からの変更です。

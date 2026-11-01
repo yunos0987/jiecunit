@@ -55,7 +55,6 @@ function JiecTest_validateNE: bool
 		(*{doc The line number.}*)
 		line: dint;
 	end
-	{st}
 	JiecTest_validateNE := expected <> actual;
 	if JiecTest_validateNE then
 		return;
@@ -65,7 +64,6 @@ function JiecTest_validateNE: bool
 	puts(jiec_concat('Actual: ', JiecUnitToString(actual)));
 
 	JiecTest_failure(self:=self, message:=message, die:=die, file:=file, line:=line);
-	{end}
 end
 
 {#undef JiecTest_validateNE}
