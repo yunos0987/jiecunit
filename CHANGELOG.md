@@ -2,6 +2,12 @@
 
 5.0.0 以降の変更を記録します。それ以前の変更は、Git の履歴と GitHub の Pull Request（https://github.com/yunos0987/jiecunit）を参照してください。
 
+## 未リリース / Unreleased
+
+### 新機能 / New features
+
+- Jiecc 9.4.0 以降の `jiecc --run`（jier）では、`JiecUnitMain` が集計を表示した時点で Jiecc の `halt` を呼んでスキャンループを止めます。プロセスは `--max-cycles` を待たずに終わり、終了コードがテストの結果を反映します（全テスト合格なら 0、失敗があるか登録時の致命的エラーなら 1）。`scripts/run_tests.py` の判定は変わりません（標準出力の集計行）。Jiecc 9.4.0 より前と実 PLC のターゲットでは従来どおり（`done` フラグでスキャンごとに `return`）。
+
 ## 6.0.0 (2026-11-01)
 
 5.0.0 からの変更です。

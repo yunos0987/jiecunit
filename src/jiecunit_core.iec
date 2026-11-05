@@ -266,7 +266,19 @@ program {__func__:this_name} JiecUnitMain
 	{#define _activate()            JiecTest_activate(_JIECTEST_)}
 	{#define _next_cycle()          JiecTest_nextCycle(_JIECTEST_)}
 	{#define _no_tests()            JiecTest_empty(_JIECTEST_)}
-	{#define _bye()                 done := true; return}
+{#if _JIER}
+{#if _JIECC_FULL_VER >= 90400}
+	// jier 9.4.0 or later: stop the scan loop at once and make the code the
+	// exit code of `jiecc --run` (0: all tests passed, 1: failures or a fatal
+	// error). Any statement after _bye() in the same scan does not run.
+	// (Two nested {#if}: `_JIER and (...)` is a PP50 type error when _JIER
+	// is not defined, i.e. for every target but jier.)
+	{#define _bye(rc)               halt(code := rc)}
+{#endif}
+{#endif}
+{#ifndef _bye}
+	{#define _bye(rc)               done := true; return}
+{#endif}
 	_DEFINE_SYS_IN_POU_();
 	_DECLARE_CONSOLE_IN_POU_();
 	_DECLARE_EXTERNAL_JIEC_TESTNAMES();
@@ -309,10 +321,10 @@ program {__func__:this_name} JiecUnitMain
 				register_result := _register(testname);
 				if register_result = -1 then
 					puts(jiec_concat('Fatal error: program $'', testname, '$' is already registered.'));
-					_bye();
+					_bye(1);
 				elsif register_result = -2 then
 					puts(jiec_concat('Fatal error: too many tests. MAX_TESTS=', dint_to_string(MAX_TESTS), '.'));
-					_bye();
+					_bye(1);
 				end_if;
 			end_if;
 		end_for;
@@ -364,8 +376,9 @@ program {__func__:this_name} JiecUnitMain
 					for test_index := 0 to num_of_failed_tests - 1 do
 						puts(jiec_concat('[ FAILED ] ', failed_testnames[test_index]));
 					end_for;
+					_bye(1);
 				end_if;
-				_bye();
+				_bye(0);
 			end_if;
 		until true end_repeat;
 	end_if;

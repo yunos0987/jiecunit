@@ -13,7 +13,7 @@ JiecUnit は、IEC 61131-3 ST 言語向けの単体テストフレームワー�
 
 - 変更後は、リポジトリルートで `python scripts/run_tests.py` を実行し、`All checks passed.` と表示されることを確認する。全ターゲットのコンパイル確認、jier（`jiecc --run`）によるテスト実行、メッセージ引数省略形と `_MSG` 形の展開結果の一致検証を一度に行う。
 - jiecc は、`--jiecc PATH`、環境変数 `JIECC`、`PATH` 上の `jiecc` の順に探す。
-- `jiecc --run` の終了コードは、テストの失敗を反映しない。テストの合否は標準出力の集計行から判定する（`scripts/run_tests.py` が行う）。
+- `jiecc --run` の終了コードは、Jiecc 9.4.0 以降ではテストの結果を反映する（`JiecUnitMain` が集計の後に `halt` を呼ぶ。全テスト合格なら 0、失敗か登録時の致命的エラーなら 1）。それより前の Jiecc では反映しない。テストの合否は Jiecc の版に関係なく標準出力の集計行から判定する（`scripts/run_tests.py` が行う）。
 - `jiecc` の終了コードが 0 でも、標準エラー出力に `error:` の行があれば失敗とみなす。手動でコンパイルや実行をした場合も、この行を確認する。
 - マクロ展開の一致検証だけを実行する場合は `python scripts/check_macro_expansion.py` を使う。
 
