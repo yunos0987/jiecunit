@@ -4,9 +4,29 @@
 
 ## 未リリース / Unreleased
 
+### 互換性に影響する変更 / Breaking changes
+
+- 必要な Jiecc を 9.2.0 以降から 9.4.0 以降に変更しました。Jiecc 9.4.0 未満では、`src/jiecunit_config.iec` の `{#error}` で前処理が止まります（`JiecUnit requires Jiecc 9.4.0 or later.`）。`jiecc --run`（jier）の `halt` と、Jiecc 9.4.0 から `jiecc` が受け付ける `-Wundef` を前提にするためです。
+
+### 不具合の修正 / Bug fixes
+
+- CODESYS ターゲットで、時間型の比較検証関数が `JiecTest_validate<CMP>_ltime` という名前で生成され、呼び出し側の `JiecTest_validate<CMP>_TIME`（`EXPECT_EQ_TIME` などの展開結果）と一致していませんでした。`sys/sys_conv.iec` が CODESYS 向けに `TIME` を `ltime` と定義しているため、関数名を組み立てるときに `TIME` が先に置換されていたものです。関数名を `*_TIME` に直しました。CODESYS 以外のターゲットの出力は変わりません。
+- MITSUBISHI ターゲットで、時間型の大小比較の検証関数（`JiecTest_validate{LT,LE,GE,GT}_TIME`）が、`sys/sys_conv.iec` に無い `time_to_string_sec` を呼ぶ形で生成されていました（GX Works3 でビルドエラーになります）。MITSUBISHI ではこれらを生成しないようにしました。
+- 対応していないターゲットで時間型のアサーションを使ったとき（KEYENCE / MITSUBISHI の `EXPECT_EQ_TIME` / `EXPECT_NE_TIME` 系、MITSUBISHI の `EXPECT_LT_TIME` / `EXPECT_LE_TIME` / `EXPECT_GE_TIME` / `EXPECT_GT_TIME` 系と `ASSERT_*` 版）、従来は未定義関数の呼び出しを含む XML が黙って生成されていました。前処理の時点で `not supported on this target` のエラー（jiepp の `__error`）になるようにしました。
+
 ### 新機能 / New features
 
-- Jiecc 9.4.0 以降の `jiecc --run`（jier）では、`JiecUnitMain` が集計を表示した時点で Jiecc の `halt` を呼んでスキャンループを止めます。プロセスは `--max-cycles` を待たずに終わり、終了コードがテストの結果を反映します（全テスト合格なら 0、失敗があるか登録時の致命的エラーなら 1）。`scripts/run_tests.py` の判定は変わりません（標準出力の集計行）。Jiecc 9.4.0 より前と実 PLC のターゲットでは従来どおり（`done` フラグでスキャンごとに `return`）。
+- `jiecc --run`（jier）では、`JiecUnitMain` が集計を表示した時点で Jiecc の `halt` を呼んでスキャンループを止めます。プロセスは `--max-cycles` を待たずに終わり、終了コードがテストの結果を反映します（全テスト合格なら 0、失敗があるか登録時の致命的エラーなら 1）。`scripts/run_tests.py` は従来どおり標準出力の集計行で判定し、加えて終了コードも見ます（下記）。実 PLC のターゲットでは従来どおり（`done` フラグでスキャンごとに `return`）。
+- `scripts/run_tests.py` の compile フェーズを並列に実行します。同時に動かす `jiecc` の数は `--jobs N` で 1〜4 の範囲で指定でき、既定は 4 です（5 以上は指定できません）。run フェーズと macro-check フェーズは従来どおり 1 本ずつ実行します。出力の表の形式と既存のオプションは変わりません。
+- `scripts/run_tests.py` は、compile と run の `jiecc` に `-Werror` と `-Wundef` を付けます。警告が出るとそのスイートは失敗になります。
+- `scripts/run_tests.py` の run フェーズは、標準出力の集計行に加えて `jiecc --run` の終了コードも見て、0 以外なら失敗にします。
+
+### その他 / Other
+
+- 互換性に影響しない内部の変更です。公開マクロの名前と引数、関数名、失敗時の出力、生成される IEC 61131-10 XML（空白の違いを除く）は変わりません。
+  - 比較の検証関数 `JiecTest_validate<CMP>_<DATATYPE>` を、テンプレートファイルを型ごとに `{#include}` する方式から、関数の定義全体に展開する関数形式マクロで生成する方式に変えました。`src/jiectest_validate_cmp_template.iec`・`src/jiectest_validate_eq_template.iec`・`src/jiectest_validate_ne_template.iec` を削除し、`src/jiectest_validate_common.iec` を追加しました。
+  - 省略可能なメッセージ引数を振り分ける内部マクロを、必須引数の個数ごとの 4 系統から 1 系統（`_JIECUNIT_OPTMSG_N`）にまとめました。必須引数より後ろの余分な引数が 17 個以上あるとき、`jiecc --run` の `UNDEFINED_SYMBOL` に出る内部シンボル名が `_JIECUNIT_OPTMSG2_18` のような名前から `_JIECUNIT_OPTMSG_18` のような名前に変わります。
+  - `src/jiecunit_core.iec` と `sys/sys.iec` の `{#if _JIER}` を `{#ifdef _JIER}` に変えました。`-Wundef` を付けても、jier 以外のターゲットで `_JIER` が未定義である旨の警告（`PP54`）が出ません。
 
 ## 6.0.0 (2026-11-01)
 

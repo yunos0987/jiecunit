@@ -6,8 +6,10 @@
 {#define _JIECUNIT_VER      600}
 {#define _JIECUNIT_VERSION  "6.0.0"}
 
-{#if _JIECC and (_JIECC_FULL_VER < 90200)}
-{#error JiecUnit requires Jiecc 9.2.0 or later.}
+{#ifdef _JIECC}
+{#if _JIECC_FULL_VER < 90400}
+{#error JiecUnit requires Jiecc 9.4.0 or later.}
+{#endif}
 {#endif}
 
 {#define MAX_TESTS 512}
