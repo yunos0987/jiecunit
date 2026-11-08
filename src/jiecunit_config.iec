@@ -2,9 +2,9 @@
 {#define __JIECUNIT_CONFIG_IEC__}
 
 {#define _JIECUNIT          true}
-{#define _JIECUNIT_FULL_VER 60000}
-{#define _JIECUNIT_VER      600}
-{#define _JIECUNIT_VERSION  "6.0.0"}
+{#define _JIECUNIT_FULL_VER 70000}
+{#define _JIECUNIT_VER      700}
+{#define _JIECUNIT_VERSION  "7.0.0"}
 
 {#ifdef _JIECC}
 {#if _JIECC_FULL_VER < 90400}
