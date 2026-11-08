@@ -1,116 +1,50 @@
 {#ifndef __JIECTEST_VALIDATE_EQ_IEC__}
 {#define __JIECTEST_VALIDATE_EQ_IEC__}
 
-{#define JiecUnitValidatorName INT32}
-{#define JiecUnitValueDatatype dint}
-{#define JiecUnitToString dint_to_string}
-{#include "jiectest_validate_eq_template.iec"}
-{#undef JiecUnitToString}
-{#undef JiecUnitValueDatatype}
-{#undef JiecUnitValidatorName}
+{#include "jiectest_validate_common.iec"}
 
-{#if not (_KEYENCE or _MITSUBISHI)}
-{#define JiecUnitValidatorName INT64}
-{#define JiecUnitValueDatatype lint}
-{#define JiecUnitToString lint_to_string}
-{#include "jiectest_validate_eq_template.iec"}
-{#undef JiecUnitToString}
-{#undef JiecUnitValueDatatype}
-{#undef JiecUnitValidatorName}
-{#endif}
+// Defines JiecTest_validateEQ_<DATATYPE> (see jiectest_validate_common.iec).
+{#define _JIECTEST_DEFINE_VALIDATE_EQ_(DATATYPE, TYPE, TOSTR)
+(*${doc Validate that the expected value equals the actual value.$n$
+@inout self The JiecTest_t structure.$n$
+@input expected The expected value.$n$
+@input actual The actual value.$n$
+@input message The failure message.$n$
+@input die Whether to abort the test on failure.$n$
+@input file The source file name.$n$
+@input line The line number.$n$
+@return True if the values are equal, false otherwise.$n$
+$}*)$n$
+function JiecTest_validateEQ_@@DATATYPE: bool$n$
+	_PROLOGUE_OF_FUNCTION_()$n$
+	_DECLARE_CONSOLE_IN_POU_()$n$
+	var_in_out self: JiecTest_t; end$n$
+	var_input$n$
+		(*${doc The expected value.$}*)$n$
+		expected: TYPE;$n$
+		(*${doc The actual value.$}*)$n$
+		actual: TYPE;$n$
+		(*${doc The failure message.$}*)$n$
+		message: string[128];$n$
+		(*${doc Whether to abort the test on failure.$}*)$n$
+		die: bool := true;$n$
+		(*${doc The source file name.$}*)$n$
+		file: string[FILENAME_MAX_SIZE];$n$
+		(*${doc The line number.$}*)$n$
+		line: dint;$n$
+	end$n$
+	JiecTest_validateEQ_@@DATATYPE := expected = actual;$n$
+	if JiecTest_validateEQ_@@DATATYPE then$n$
+		return;$n$
+	end_if;$n$
+$n$
+	puts(jiec_concat('Expected: ', TOSTR(expected)));$n$
+	puts(jiec_concat('Actual: ', TOSTR(actual)));$n$
+$n$
+	JiecTest_failure(self:=self, message:=message, die:=die, file:=file, line:=line);$n$
+end$n$
+}
 
-{#define JiecUnitValidatorName UINT32}
-{#define JiecUnitValueDatatype udint}
-{#define JiecUnitToString udint_to_string}
-{#include "jiectest_validate_eq_template.iec"}
-{#undef JiecUnitToString}
-{#undef JiecUnitValueDatatype}
-{#undef JiecUnitValidatorName}
-
-{#if not (_KEYENCE or _MITSUBISHI)}
-{#define JiecUnitValidatorName UINT64}
-{#define JiecUnitValueDatatype ulint}
-{#define JiecUnitToString ulint_to_string}
-{#include "jiectest_validate_eq_template.iec"}
-{#undef JiecUnitToString}
-{#undef JiecUnitValueDatatype}
-{#undef JiecUnitValidatorName}
-{#endif}
-
-{#define JiecUnitValidatorName DOUBLE}
-{#define JiecUnitValueDatatype lreal}
-{#define JiecUnitToString lreal_to_string}
-{#include "jiectest_validate_eq_template.iec"}
-{#undef JiecUnitToString}
-{#undef JiecUnitValueDatatype}
-{#undef JiecUnitValidatorName}
-
-{#define JiecUnitValidatorName BOOL}
-{#define JiecUnitValueDatatype bool}
-{#define JiecUnitToString bool_to_string}
-{#include "jiectest_validate_eq_template.iec"}
-{#undef JiecUnitToString}
-{#undef JiecUnitValueDatatype}
-{#undef JiecUnitValidatorName}
-
-{#define JiecUnitValidatorName BIT32}
-{#define JiecUnitValueDatatype dword}
-{#define JiecUnitToString dword_to_string}
-{#include "jiectest_validate_eq_template.iec"}
-{#undef JiecUnitToString}
-{#undef JiecUnitValueDatatype}
-{#undef JiecUnitValidatorName}
-
-{#if not (_KEYENCE or _MITSUBISHI)}
-{#define JiecUnitValidatorName BIT64}
-{#define JiecUnitValueDatatype lword}
-{#define JiecUnitToString lword_to_string}
-{#include "jiectest_validate_eq_template.iec"}
-{#undef JiecUnitToString}
-{#undef JiecUnitValueDatatype}
-{#undef JiecUnitValidatorName}
-{#endif}
-
-{#if not (_KEYENCE or _MITSUBISHI)}
-{#define JiecUnitValidatorName TIME}
-{#define JiecUnitValueDatatype time}
-{#define JiecUnitToString time_to_string_sec}
-{#include "jiectest_validate_eq_template.iec"}
-{#undef JiecUnitToString}
-{#undef JiecUnitValueDatatype}
-{#undef JiecUnitValidatorName}
-
-{#define JiecUnitValidatorName DATE}
-{#define JiecUnitValueDatatype date}
-{#define JiecUnitToString date_to_string}
-{#include "jiectest_validate_eq_template.iec"}
-{#undef JiecUnitToString}
-{#undef JiecUnitValueDatatype}
-{#undef JiecUnitValidatorName}
-
-{#define JiecUnitValidatorName TOD}
-{#define JiecUnitValueDatatype time_of_day}
-{#define JiecUnitToString tod_to_string}
-{#include "jiectest_validate_eq_template.iec"}
-{#undef JiecUnitToString}
-{#undef JiecUnitValueDatatype}
-{#undef JiecUnitValidatorName}
-
-{#define JiecUnitValidatorName DT}
-{#define JiecUnitValueDatatype date_and_time}
-{#define JiecUnitToString dt_to_string}
-{#include "jiectest_validate_eq_template.iec"}
-{#undef JiecUnitToString}
-{#undef JiecUnitValueDatatype}
-{#undef JiecUnitValidatorName}
-{#endif}
-
-{#define JiecUnitValidatorName STRING}
-{#define JiecUnitValueDatatype string[STRING_MAX_SIZE]}
-{#define JiecUnitToString }
-{#include "jiectest_validate_eq_template.iec"}
-{#undef JiecUnitToString}
-{#undef JiecUnitValueDatatype}
-{#undef JiecUnitValidatorName}
+_JIECTEST_FOR_EQ_TYPES_(_JIECTEST_DEFINE_VALIDATE_EQ_)
 
 {#endif}

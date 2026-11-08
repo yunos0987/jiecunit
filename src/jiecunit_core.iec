@@ -33,7 +33,11 @@
 {#if not (_KEYENCE or _MITSUBISHI)}
 {#define _VALIDATE_EQ_BIT64_MSG(die, expected, actual, message)     _VALIDATE_EQ_DATATYPE(BIT64, die, expected, actual, message)}
 {#endif}
+{#if not (_KEYENCE or _MITSUBISHI)}
 {#define _VALIDATE_EQ_TIME_MSG(die, expected, actual, message)      _VALIDATE_EQ_DATATYPE(TIME, die, expected, actual, message)}
+{#else}
+{#define _VALIDATE_EQ_TIME_MSG(die, expected, actual, message)      __error('EXPECT_EQ_TIME / ASSERT_EQ_TIME are not supported on this target')}
+{#endif}
 {#if not (_KEYENCE or _MITSUBISHI)}
 {#define _VALIDATE_EQ_DATE_MSG(die, expected, actual, message)      _VALIDATE_EQ_DATATYPE(DATE, die, expected, actual, message)}
 {#define _VALIDATE_EQ_TOD_MSG(die, expected, actual, message)       _VALIDATE_EQ_DATATYPE(TOD, die, expected, actual, message)}
@@ -59,7 +63,11 @@
 {#if not (_KEYENCE or _MITSUBISHI)}
 {#define _VALIDATE_NE_BIT64_MSG(die, expected, actual, message)     _VALIDATE_NE_DATATYPE(BIT64, die, expected, actual, message)}
 {#endif}
+{#if not (_KEYENCE or _MITSUBISHI)}
 {#define _VALIDATE_NE_TIME_MSG(die, expected, actual, message)      _VALIDATE_NE_DATATYPE(TIME, die, expected, actual, message)}
+{#else}
+{#define _VALIDATE_NE_TIME_MSG(die, expected, actual, message)      __error('EXPECT_NE_TIME / ASSERT_NE_TIME are not supported on this target')}
+{#endif}
 {#if not (_KEYENCE or _MITSUBISHI)}
 {#define _VALIDATE_NE_DATE_MSG(die, expected, actual, message)      _VALIDATE_NE_DATATYPE(DATE, die, expected, actual, message)}
 {#define _VALIDATE_NE_TOD_MSG(die, expected, actual, message)       _VALIDATE_NE_DATATYPE(TOD, die, expected, actual, message)}
@@ -81,7 +89,9 @@
 {#if not (_KEYENCE or _MITSUBISHI)}
 {#define _VALIDATE_EQ_BIT64(die, expected, actual)      _VALIDATE_EQ_DATATYPE(BIT64, die, expected, actual, '')}
 {#endif}
+{#if not (_KEYENCE or _MITSUBISHI)}
 {#define _VALIDATE_EQ_TIME(die, expected, actual)       _VALIDATE_EQ_DATATYPE(TIME, die, expected, actual, '')}
+{#endif}
 {#if not (_KEYENCE or _MITSUBISHI)}
 {#define _VALIDATE_EQ_DATE(die, expected, actual)       _VALIDATE_EQ_DATATYPE(DATE, die, expected, actual, '')}
 {#define _VALIDATE_EQ_TOD(die, expected, actual)        _VALIDATE_EQ_DATATYPE(TOD, die, expected, actual, '')}
@@ -103,7 +113,9 @@
 {#if not (_KEYENCE or _MITSUBISHI)}
 {#define _VALIDATE_NE_BIT64(die, expected, actual)      _VALIDATE_NE_DATATYPE(BIT64, die, expected, actual, '')}
 {#endif}
+{#if not (_KEYENCE or _MITSUBISHI)}
 {#define _VALIDATE_NE_TIME(die, expected, actual)       _VALIDATE_NE_DATATYPE(TIME, die, expected, actual, '')}
+{#endif}
 {#if not (_KEYENCE or _MITSUBISHI)}
 {#define _VALIDATE_NE_DATE(die, expected, actual)       _VALIDATE_NE_DATATYPE(DATE, die, expected, actual, '')}
 {#define _VALIDATE_NE_TOD(die, expected, actual)        _VALIDATE_NE_DATATYPE(TOD, die, expected, actual, '')}
@@ -140,10 +152,18 @@
 {#define _VALIDATE_GE_DOUBLE_MSG(die, lval, rval, message)  _VALIDATE_CMP_DATATYPE(GE, DOUBLE, die, lval, rval, message)}
 {#define _VALIDATE_GT_DOUBLE_MSG(die, lval, rval, message)  _VALIDATE_CMP_DATATYPE(GT, DOUBLE, die, lval, rval, message)}
 
+{#if not _MITSUBISHI}
 {#define _VALIDATE_LT_TIME_MSG(die, lval, rval, message)    _VALIDATE_CMP_DATATYPE(LT, TIME, die, lval, rval, message)}
 {#define _VALIDATE_LE_TIME_MSG(die, lval, rval, message)    _VALIDATE_CMP_DATATYPE(LE, TIME, die, lval, rval, message)}
 {#define _VALIDATE_GE_TIME_MSG(die, lval, rval, message)    _VALIDATE_CMP_DATATYPE(GE, TIME, die, lval, rval, message)}
 {#define _VALIDATE_GT_TIME_MSG(die, lval, rval, message)    _VALIDATE_CMP_DATATYPE(GT, TIME, die, lval, rval, message)}
+{#else}
+// MITSUBISHI: sys_conv.iec has no time_to_string_sec, so the TIME comparison validators are not generated.
+{#define _VALIDATE_LT_TIME_MSG(die, lval, rval, message)    __error('EXPECT_LT_TIME / ASSERT_LT_TIME are not supported on this target')}
+{#define _VALIDATE_LE_TIME_MSG(die, lval, rval, message)    __error('EXPECT_LE_TIME / ASSERT_LE_TIME are not supported on this target')}
+{#define _VALIDATE_GE_TIME_MSG(die, lval, rval, message)    __error('EXPECT_GE_TIME / ASSERT_GE_TIME are not supported on this target')}
+{#define _VALIDATE_GT_TIME_MSG(die, lval, rval, message)    __error('EXPECT_GT_TIME / ASSERT_GT_TIME are not supported on this target')}
+{#endif}
 {#if not (_KEYENCE or _MITSUBISHI)}
 {#define _VALIDATE_LT_DATE_MSG(die, lval, rval, message)    _VALIDATE_CMP_DATATYPE(LT, DATE, die, lval, rval, message)}
 {#define _VALIDATE_LE_DATE_MSG(die, lval, rval, message)    _VALIDATE_CMP_DATATYPE(LE, DATE, die, lval, rval, message)}
@@ -190,10 +210,12 @@
 {#define _VALIDATE_GE_DOUBLE(die, lval, rval)   _VALIDATE_CMP_DATATYPE(GE, DOUBLE, die, lval, rval, '')}
 {#define _VALIDATE_GT_DOUBLE(die, lval, rval)   _VALIDATE_CMP_DATATYPE(GT, DOUBLE, die, lval, rval, '')}
 
+{#if not _MITSUBISHI}
 {#define _VALIDATE_LT_TIME(die, lval, rval)     _VALIDATE_CMP_DATATYPE(LT, TIME, die, lval, rval, '')}
 {#define _VALIDATE_LE_TIME(die, lval, rval)     _VALIDATE_CMP_DATATYPE(LE, TIME, die, lval, rval, '')}
 {#define _VALIDATE_GE_TIME(die, lval, rval)     _VALIDATE_CMP_DATATYPE(GE, TIME, die, lval, rval, '')}
 {#define _VALIDATE_GT_TIME(die, lval, rval)     _VALIDATE_CMP_DATATYPE(GT, TIME, die, lval, rval, '')}
+{#endif}
 {#if not (_KEYENCE or _MITSUBISHI)}
 {#define _VALIDATE_LT_DATE(die, lval, rval)     _VALIDATE_CMP_DATATYPE(LT, DATE, die, lval, rval, '')}
 {#define _VALIDATE_LE_DATE(die, lval, rval)     _VALIDATE_CMP_DATATYPE(LE, DATE, die, lval, rval, '')}
@@ -266,7 +288,16 @@ program {__func__:this_name} JiecUnitMain
 	{#define _activate()            JiecTest_activate(_JIECTEST_)}
 	{#define _next_cycle()          JiecTest_nextCycle(_JIECTEST_)}
 	{#define _no_tests()            JiecTest_empty(_JIECTEST_)}
-	{#define _bye()                 done := true; return}
+{#ifdef _JIER}
+	// jier (Jiecc 9.4.0 or later is required): stop the scan loop at once and
+	// make the code the exit code of `jiecc --run` (0: all tests passed, 1:
+	// failures or a fatal error). Any statement after _bye() in the same scan
+	// does not run.
+	{#define _bye(rc)               halt(code := rc)}
+{#else}
+	// PLC targets: keep returning at the top of every scan.
+	{#define _bye(rc)               done := true; return}
+{#endif}
 	_DEFINE_SYS_IN_POU_();
 	_DECLARE_CONSOLE_IN_POU_();
 	_DECLARE_EXTERNAL_JIEC_TESTNAMES();
@@ -309,10 +340,10 @@ program {__func__:this_name} JiecUnitMain
 				register_result := _register(testname);
 				if register_result = -1 then
 					puts(jiec_concat('Fatal error: program $'', testname, '$' is already registered.'));
-					_bye();
+					_bye(1);
 				elsif register_result = -2 then
 					puts(jiec_concat('Fatal error: too many tests. MAX_TESTS=', dint_to_string(MAX_TESTS), '.'));
-					_bye();
+					_bye(1);
 				end_if;
 			end_if;
 		end_for;
@@ -364,8 +395,9 @@ program {__func__:this_name} JiecUnitMain
 					for test_index := 0 to num_of_failed_tests - 1 do
 						puts(jiec_concat('[ FAILED ] ', failed_testnames[test_index]));
 					end_for;
+					_bye(1);
 				end_if;
-				_bye();
+				_bye(0);
 			end_if;
 		until true end_repeat;
 	end_if;
@@ -400,7 +432,7 @@ end
 
 {#include "jiecunit_macros.iec"}
 
-{#if _JIER}
+{#ifdef _JIER}
 	{#define _JIECUNIT_DEFINE_TASKS(...)
 		_JIECUNIT_EXTERN_PROGRAMS(__VA_ARGC__, __VA_ARGS__);
 		task JiecUnitTask(priority := 0);

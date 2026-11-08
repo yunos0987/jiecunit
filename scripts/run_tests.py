@@ -9,16 +9,21 @@ to determine pass/fail/skip counts. It also runs scripts/check_macro_expansion.p
 to verify that the optional-message assertion macros stay equivalent to their
 deprecated *_MSG aliases.
 
-Note: jiecc's process exit code does not reflect test failures in --run
-mode, so this script parses stdout instead.
+JiecUnit requires Jiecc 9.4.0 or later (src/jiecunit_config.iec stops the
+preprocessor with {#error} on older compilers). The exit code of
+`jiecc --run` reflects the test result (JiecUnitMain calls halt after the
+summary: 0 when every test passed, 1 on failures or a fatal registration
+error). This script judges a run by its stdout summary lines and
+additionally fails a run whose exit code is not 0.
 
-Older jiecc could exit 0 during -c/--run while still reporting a
-preprocessing error on stderr (for example a PP34 argument-count error),
-emitting an XML file that is missing the affected POUs; jiecc 9.2.0 fails
-with EXTERNAL_TOOL_ERROR and exit code 1 instead. An interpreted run whose
-UNDEFINED_SYMBOL error is only visible in the output text is still possible. To catch these,
-this script also treats any "error: " line in the compile/run output as a
-failure, independent of the process exit code.
+The compile phase runs up to --jobs jiecc processes at the same time
+(default and maximum: 4); the run and macro-check phases run one at a time.
+Every compile and run passes -Werror and -Wundef.
+
+An interpreted run whose UNDEFINED_SYMBOL error is only visible in the
+output text is still possible, so this script also treats any "error: "
+line in the compile/run output as a failure, independent of the process
+exit code.
 
 The macro-check phase runs by default; pass --skip-macro-check to disable it.
 --compile-only and --run-only both skip the macro-check phase as well, since
@@ -29,10 +34,12 @@ Usage:
   python scripts/run_tests.py --jiecc /path/to/jiecc.exe
   python scripts/run_tests.py test/test.iec --targets OMRON,STD
   python scripts/run_tests.py --compile-only
+  python scripts/run_tests.py --compile-only --jobs 2
   python scripts/run_tests.py --run-only --max-cycles 500
   python scripts/run_tests.py --skip-macro-check
 """
 import argparse
+import concurrent.futures
 import os
 import re
 import shutil
@@ -42,6 +49,14 @@ import tempfile
 
 _DEFAULT_SUITES = ['test/test.iec', 'samples/sample.iec']
 _DEFAULT_TARGETS = ['OMRON', 'KEYENCE', 'CODESYS', 'MITSUBISHI', 'STD']
+
+# Upper limit (and default) of --jobs. More concurrent jiecc processes made
+# the antivirus scan of each new process overload the OS.
+_MAX_JOBS = 4
+
+# Warning flags passed to every compile and run. -Wundef is accepted by
+# jiecc 9.4.0 and later, which JiecUnit requires anyway.
+_WARNING_FLAGS = ['-Werror', '-Wundef']
 
 _RE_TESTS_RAN = re.compile(r'^\[========\] (\d+) tests ran\.')
 _RE_PASSED = re.compile(r'^\[ PASSED \] (\d+) tests\.')
@@ -99,8 +114,8 @@ def _suite_stem(suite):
     return os.path.splitext(os.path.basename(suite))[0]
 
 
-def compile_suite(jiecc, root, suite, target, outdir, timeout):
-    # type: (str, str, str, str, str, int) -> tuple
+def compile_suite(jiecc, root, suite, target, outdir, timeout, flags):
+    # type: (str, str, str, str, str, int, list) -> tuple
     out_xml = os.path.join(outdir, '{}.{}.xml'.format(_suite_stem(suite), target))
     cmd = [
         jiecc, '-c', suite,
@@ -108,7 +123,7 @@ def compile_suite(jiecc, root, suite, target, outdir, timeout):
         '-I', os.path.join(root, 'sys'),
         '-t', target,
         '-o', out_xml,
-    ]
+    ] + list(flags)
     try:
         proc = subprocess.run(
             cmd, cwd=root, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
@@ -127,14 +142,14 @@ def compile_suite(jiecc, root, suite, target, outdir, timeout):
     return True, ''
 
 
-def run_suite(jiecc, root, suite, max_cycles, timeout):
-    # type: (str, str, str, int, int) -> tuple
+def run_suite(jiecc, root, suite, max_cycles, timeout, flags):
+    # type: (str, str, str, int, int, list) -> tuple
     cmd = [
         jiecc, '--run', suite,
         '-I', root,
         '-I', os.path.join(root, 'sys'),
         '--max-cycles', str(max_cycles),
-    ]
+    ] + list(flags)
     try:
         proc = subprocess.run(
             cmd, cwd=root, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
@@ -175,6 +190,9 @@ def run_suite(jiecc, root, suite, max_cycles, timeout):
         return False, 'output contains "[  ERROR ]":\n' + output
     if passed + skipped != ran:
         return False, 'passed ({}) + skipped ({}) != ran ({})'.format(passed, skipped, ran)
+    # jiecc --run exits 1 when a test failed (JiecUnitMain calls halt).
+    if proc.returncode != 0:
+        return False, 'exit code {}:\n'.format(proc.returncode) + output
 
     summary = '{} ran, {} passed, {} skipped'.format(ran, passed, skipped)
     return True, summary
@@ -203,10 +221,12 @@ def main():
     # type: () -> int
     parser = argparse.ArgumentParser(
         description='Compile and run the JiecUnit test suites with jiecc. '
-                     'older jiecc may exit 0 while still emitting an "error: " '
-                     'line on stderr (e.g. a PP34 preprocessing error), so '
-                     'this script fails the check when it finds one, '
-                     'regardless of the exit code.')
+                     'A run is judged by its stdout summary lines and also '
+                     'fails when jiecc exits with a nonzero code (jiecc --run '
+                     'exits 1 on test failures). Any "error: " line in the '
+                     'compile/run output also fails the check, regardless of '
+                     'the exit code. Compiles and runs pass -Werror and -Wundef. '
+                     'Requires Jiecc 9.4.0 or later.')
     parser.add_argument('suites', nargs='*', default=_DEFAULT_SUITES,
                         help='Test suite files, relative to the repository root '
                              '(default: {})'.format(', '.join(_DEFAULT_SUITES)))
@@ -232,10 +252,18 @@ def main():
                              'or --run-only is given).')
     parser.add_argument('--timeout', type=int, default=600,
                         help='Timeout in seconds for each jiecc invocation (default: 600)')
+    parser.add_argument('--jobs', type=int, default=_MAX_JOBS,
+                        help='Number of jiecc processes the compile phase runs at '
+                             'the same time, 1 to {0} (default: {0}). The run '
+                             'and macro-check phases always run one at a '
+                             'time.'.format(_MAX_JOBS))
     args = parser.parse_args()
 
     if args.compile_only and args.run_only:
         print('error: --compile-only and --run-only are mutually exclusive.', file=sys.stderr)
+        return 2
+    if not 1 <= args.jobs <= _MAX_JOBS:
+        print('error: --jobs must be between 1 and {}.'.format(_MAX_JOBS), file=sys.stderr)
         return 2
 
     jiecc = _resolve_jiecc(args.jiecc)
@@ -257,17 +285,31 @@ def main():
     do_run = not args.compile_only
     do_macro_check = not args.run_only and not args.compile_only and not args.skip_macro_check
 
+    flags = list(_WARNING_FLAGS)
+
     try:
         if do_compile:
-            for suite in args.suites:
-                for target in targets:
-                    ok, detail = compile_suite(jiecc, root, suite, target, outdir, args.timeout)
+            jobs = [(suite, target) for suite in args.suites for target in targets]
+            pool = concurrent.futures.ThreadPoolExecutor(max_workers=args.jobs)
+            try:
+                futures = [
+                    pool.submit(compile_suite, jiecc, root, suite, target, outdir,
+                                args.timeout, flags)
+                    for suite, target in jobs]
+                # Collect in submission order so the table order does not
+                # depend on which compile finishes first.
+                for (suite, target), future in zip(jobs, futures):
+                    ok, detail = future.result()
                     results.append(('compile', suite, target, ok, detail))
                     all_ok = all_ok and ok
+            finally:
+                # On Ctrl-C (or any other exception) do not start the queued
+                # compiles; only the ones already running finish.
+                pool.shutdown(wait=True, cancel_futures=True)
 
         if do_run:
             for suite in args.suites:
-                ok, detail = run_suite(jiecc, root, suite, args.max_cycles, args.timeout)
+                ok, detail = run_suite(jiecc, root, suite, args.max_cycles, args.timeout, flags)
                 results.append(('run', suite, '-', ok, detail))
                 all_ok = all_ok and ok
 
