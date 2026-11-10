@@ -1,0 +1,14 @@
+[========] Running 2 tests.
+[ RUN    ] test_fails
+Expected: 1
+Actual: 2
+test_fails:6@0
+[ FAILED ] test_fails (<time>)
+[ RUN    ] test_passes
+[     OK ] test_passes (<time>)
+[========] 2 tests ran. (<time>)
+[ PASSED ] 1 tests.
+[ FAILED ] 1 tests, listed below.
+[ FAILED ] test_fails
+[ WARNING] The console buffer is full (CONSOLE_MAX_ROWS=8); older lines may have been overwritten.
+[exit code: 1]

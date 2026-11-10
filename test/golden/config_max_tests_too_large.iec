@@ -1,0 +1,3 @@
+// golden-args: -D MAX_TESTS=513
+// MAX_TESTS above the limit of the generated macros stops the preprocessor.
+{#include <jiecunit.iec>}

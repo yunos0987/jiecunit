@@ -28,15 +28,17 @@ TEST_S(test_console_initialize)
 	var
 		console: Console_t;
 	end
-	// Fact: Console_initialize clears rows and resets row_index to 0.
+	// Fact: Console_initialize clears rows, resets row_index to 0 and clears wrapped.
 		// Arrange
 	console.row_index := 7;
+	console.wrapped := true;
 	console.rows[0] := 'dirty0';
 	console.rows[1] := 'dirty1';
 		// Act
 	Console_initialize(console);
 		// Assert
 	EXPECT_EQ_INT(0, console.row_index);
+	EXPECT_FALSE(console.wrapped);
 	EXPECT_EQ_STRING('', console.rows[0]);
 	EXPECT_EQ_STRING('', console.rows[1]);
 
@@ -96,8 +98,9 @@ TEST_S(test_console_puts)
 	EXPECT_EQ_STRING('line0', console.rows[0]);
 	EXPECT_EQ_INT(1, console.row_index);
 	EXPECT_EQ_INT(1, next_row);
+	EXPECT_FALSE(console.wrapped);
 
-	// Fact: Console_puts wraps row_index to 0 at the last row boundary.
+	// Fact: Console_puts wraps row_index to 0 at the last row boundary and sets wrapped.
 		// Arrange
 	console.row_index := CONSOLE_MAX_ROWS - 1;
 		// Act
@@ -106,6 +109,7 @@ TEST_S(test_console_puts)
 	EXPECT_EQ_STRING('tail', console.rows[CONSOLE_MAX_ROWS - 1]);
 	EXPECT_EQ_INT(0, console.row_index);
 	EXPECT_EQ_INT(0, next_row);
+	EXPECT_TRUE(console.wrapped);
 
 	// Fact: Console_puts accepts empty lines and still advances row_index.
 		// Arrange

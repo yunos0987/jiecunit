@@ -73,7 +73,7 @@ function JiecTest_validate@@CMP@@_@@DATATYPE: bool$n$
 		(*${doc The right-hand side value.$}*)$n$
 		rval: TYPE;$n$
 		(*${doc The failure message.$}*)$n$
-		message: string[128];$n$
+		message: string[STRING_MAX_SIZE];$n$
 		(*${doc Whether to abort the test on failure.$}*)$n$
 		die: bool := true;$n$
 		(*${doc The source file name.$}*)$n$

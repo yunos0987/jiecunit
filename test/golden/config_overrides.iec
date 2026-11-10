@@ -1,0 +1,14 @@
+// golden-args: -D MAX_TESTS=2 -D TESTNAME_MAX_SIZE=16 -D FILENAME_MAX_SIZE=64 -D EXPRESSION_MAX_SIZE=32 -D STRING_MAX_SIZE=200 -D CONSOLE_MAX_COLS=100
+// Every size can be overridden with -D without a redefinition warning.
+{#include <jiecunit.iec>}
+
+TEST_S(test_one)
+	EXPECT_EQ_INT(MAX_TESTS, 2);
+	EXPECT_EQ_INT(STRING_MAX_SIZE, 200);
+END_TEST_S
+
+DEFINE_CONFIGURATION(
+	_JIEC_TESTNAMES_LIST_(
+		test_one
+	)
+)

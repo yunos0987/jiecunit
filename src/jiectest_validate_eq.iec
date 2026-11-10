@@ -25,7 +25,7 @@ function JiecTest_validateEQ_@@DATATYPE: bool$n$
 		(*${doc The actual value.$}*)$n$
 		actual: TYPE;$n$
 		(*${doc The failure message.$}*)$n$
-		message: string[128];$n$
+		message: string[STRING_MAX_SIZE];$n$
 		(*${doc Whether to abort the test on failure.$}*)$n$
 		die: bool := true;$n$
 		(*${doc The source file name.$}*)$n$

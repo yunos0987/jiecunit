@@ -25,8 +25,12 @@
 - `SET_TEST_MAX_CYCLES(n)` を追加しました。実行中のテストのサイクル数の上限を変えます（0 なら無制限）。次のテストでは `JIECUNIT_MAX_CYCLES_PER_TEST` に戻ります。`JIECUNIT_MAX_CYCLES_PER_TEST` は `-D` で上書きできます。
 - テストプログラムが JiecUnitMain の 1 サイクルの間に 1 回も実行されなかったとき、または 2 回以上実行されたとき（別の周期のタスクに割り付けたときなど）、`[  ERROR ]` を出して失敗にします。JiecUnitMain は、従来どおりタスクの先頭に置くほか、末尾に置いても動きます。
 
+- 設定値を `-D NAME=VALUE` で上書きできるようにしました（従来は再定義の警告 PP35 が出て、`-Werror` では失敗していました）。対象は `MAX_TESTS`・`TESTNAME_MAX_SIZE`・`FILENAME_MAX_SIZE`・`JIECUNIT_MAX_CYCLES_PER_TEST`・`EXPRESSION_MAX_SIZE`（新設。既定 128）と、`sys/sys_config.iec` の `STRING_MAX_SIZE`・`CONSOLE_MAX_ROWS`・`CONSOLE_MAX_COLS` です。`MAX_TESTS` が 512（`src/jiecunit_macros.iec` の上限）を超えるとき、`TESTNAME_MAX_SIZE`・`FILENAME_MAX_SIZE`・`EXPRESSION_MAX_SIZE` が `STRING_MAX_SIZE` を超えるときは、前処理をエラーで止めます。`CONSOLE_MAX_COLS` より長い行は、従来どおりコンソールの行バッファでは切れます。
+- コンソール（`g_console`）の行バッファが一巡して古い行が上書きされうるとき、集計の最後に `[ WARNING] The console buffer is full (CONSOLE_MAX_ROWS=N); older lines may have been overwritten.` と出します。集計の後だけでなく、登録時の致命的エラーで終わるときも出します。`Console_t` に `wrapped` を追加しました。
+
 ### その他 / Other
 
+- 検証関数の `message` 引数の長さを `string[128]` から `string[STRING_MAX_SIZE]` にそろえました（失敗の出力を行う `JiecTest_failure` と同じ長さです）。
 - `scripts/check_golden.py` を追加しました。`test/golden/*.iec` を `jiecc --run` で実行し、標準出力と終了コードを `test/golden/*.out` と比べます。所要時間の表示とパスの区切りは比べる前に正規化します。`--update` で期待値を作り直します。`scripts/run_tests.py` は、この検査を `golden` フェーズとして実行します（`--skip-golden` で省略できます。`--compile-only`・`--run-only` のときも実行しません）。CI でも、jier の実行と同じく任意のステップとして実行します。
 - `scripts/run_tests.py` の `--max-cycles` の既定値を 200 から 100000 に変えました。jier の実行は集計の後の `halt` で止まるので、この値は集計に達しない実行を打ち切るときだけ効きます。
 

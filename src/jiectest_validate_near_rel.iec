@@ -24,7 +24,7 @@ function JiecTest_validateNEARREL: bool
 		(*{doc The allowed relative error.}*)
 		rel_error: lreal;
 		(*{doc The failure message.}*)
-		message: string[128];
+		message: string[STRING_MAX_SIZE];
 		(*{doc Whether to abort the test on failure.}*)
 		die: bool := true;
 		(*{doc The source file name.}*)
