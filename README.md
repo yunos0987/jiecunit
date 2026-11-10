@@ -122,6 +122,7 @@ END_TEST_S
 * `F_SetUp` が致命的に失敗するか、`SKIP_TEST`・`EOT()` で終えたときは、本体を実行しません。
 * `F_TearDown` は、テストが `EOT()`・`ASSERT`・`SKIP_TEST`・サイクルの上限のどれで終わっても、JiecUnitMain が 1 サイクル待つ間に実行されます。TearDown の失敗もそのテストに数えます。
 * フィクスチャの型は、関数の `var_in_out` に渡せる型（構造体）にしてください。
+* `F_SetUp` と `F_TearDown` は、何もしない場合も両方とも定義してください（無いと未定義の関数になります）。
 
 ### アサーション
 
@@ -142,7 +143,7 @@ END_TEST_S
 | `EXPECT_FATAL_FAILURE(stmt, sub)` / `EXPECT_NONFATAL_FAILURE(stmt, sub)` | 文がその種類の失敗をちょうど 1 つ起こし、その出力（位置の行を除く）のどれかの行が `sub` を含む（アサーションやヘルパー自体のテスト用。確かめた失敗は表示も集計もしません） |
 | `HAS_FATAL_FAILURE()` / `HAS_NONFATAL_FAILURE()` / `HAS_FAILURE()` | 実行中のテストに失敗があったか |
 
-* 上の `EXPECT_` はすべて `ASSERT_` でも書けます（`EXPECT_FATAL_FAILURE` / `EXPECT_NONFATAL_FAILURE` を除く）。ターゲットごとに使える型は、[ターゲットごとのアサーションの対応](#ターゲットごとのアサーションの対応)を参照してください。
+* 表の `EXPECT_` で始まるものは、`EXPECT_FATAL_FAILURE` / `EXPECT_NONFATAL_FAILURE` を除き、`ASSERT_` でも書けます（`FAIL` / `ADD_FAILURE` / `HAS_*` は表のとおりです）。ターゲットごとに使える型は、[ターゲットごとのアサーションの対応](#ターゲットごとのアサーションの対応)を参照してください。
 * `<T>` は `SINT` `INT` `DINT` `LINT` `USINT` `UINT` `UDINT` `ULINT` `INT32` `INT64` `UINT32` `UINT64` `REAL` `FLOAT` `LREAL` `DOUBLE` `BOOL` `BYTE` `WORD` `DWORD` `LWORD` `BIT32` `BIT64` `TIME` `DATE` `TOD` `DT` `STRING` です。整数とビット列は 32bit か 64bit の型に広げて比べます。`REAL` / `FLOAT` は REAL のまま、`LREAL` / `DOUBLE` は LREAL で比べます（どちらも厳密な比較です。丸め誤差を許すときは `EXPECT_FLOAT_EQ` / `EXPECT_DOUBLE_EQ` か `EXPECT_NEAR` を使います）。
 * `EXPECT_EQ_ARRAY_<T>` の配列は添字 0 から始まる必要があり、`n` は配列の長さ以下にします。`n` と配列の式は何度も評価されるので、副作用のない式にしてください。
 
@@ -168,6 +169,7 @@ END_TEST_S
 
 * Google Test と同じく、ヘルパーの中の `ASSERT_*`・`FAIL` はヘルパーから戻るだけで、テストは続きます。`HAS_FATAL_FAILURE()` で分かり、`ASSERT_NO_FATAL_FAILURE` でテストを終えられます。
 * `JIECUNIT_DECLARE_HELPER()` を書き忘れると、`jiecunit_in_helper` が未宣言というエラーになります。
+* ヘルパーの中で `EOT()` や `SKIP_TEST` を呼ぶと、テストはその時点で終わったものとされ、ヘルパーから戻ります。呼び出し側の本体は、そのサイクルの残りを実行します（Google Test の `GTEST_SKIP` は、ヘルパーから戻るだけです）。
 
 ### 失敗の出力
 
@@ -187,7 +189,8 @@ level after filling
 * 位置は `<ファイル>:<行>: Failure` で、複数サイクルのテストでは ` (cycle N)` が付きます。ファイルは jiecc に渡した（またはインクルードに書いた）パス、行は jiecc で変換する前のテキストの行です。
 * 式のテキストと値を出します。値がリテラルと同じ表示なら `Which is:` を省きます。不等と大小は `Expected: (a) < (b), actual: 3 vs 2`、`EXPECT_TRUE` は `Value of: c` / `  Actual: false` / `Expected: true` と出します。
 * STRING の値は `'...'` で囲み、`'` と `$` を `$'`・`$$` と書きます。REAL の値は、LREAL に広げた正確な値で出します（例: `0.10000000149011612`）。
-* 式のテキストの長さは `EXPRESSION_MAX_SIZE`（既定 128）文字までです。PLC のメモリやスキャン時間を減らしたいとき、または長い式が文字列の長さの制限に掛かるときは、`JIECUNIT_NO_EXPRESSION_TEXT` を定義すると、式のテキストを渡さず値だけを出します。
+* ファイル名は jiecc に渡したパスがそのまま入るので、jiecc は相対パス（例: `jiecc samples/sample.iec ...`）で呼んでください。ファイル名は `FILENAME_MAX_SIZE`（既定 128）文字までです。
+* 式のテキストの長さは `EXPRESSION_MAX_SIZE`（既定 128）文字までです。jier は長いファイル名や式も切らずに出しますが、PLC で長さを超えたときに切れるかビルドエラーになるかは、ベンダーによります。PLC のメモリやスキャン時間を減らしたいとき、または長い式が文字列の長さの制限に掛かるときは、`JIECUNIT_NO_EXPRESSION_TEXT` を定義すると、式のテキストを渡さず値だけを出します。
 * 所要時間は、時計のあるターゲット（OMRON・KEYENCE）では `(123us)`、それ以外（jier・CODESYS・三菱）では `(n/a)` です。
 * コンソール（`g_console`）の行バッファ（`CONSOLE_MAX_ROWS` 行）が一巡したときは、最後に `[ WARNING] The console buffer is full ...` と出します。古い行が上書きされている可能性があります。
 
@@ -248,6 +251,8 @@ PLC の `g_console` の行を古い順に書き出したテキストも変換で
 * テストの登録は自動ではありません。一覧（`_JIEC_TESTNAMES_LIST_`）に書き、数の照合で書き忘れを検出します（jiepp はマクロからディレクティブを作れず、構成とタスク割付にプログラム名が要るため）。
 * `EXPECT_FLOAT_EQ` / `EXPECT_DOUBLE_EQ` は、無限大を同じ無限大とだけ等しいとします（Google Test は最大の有限値と無限大を 1 ULP 離れているとみなします）。
 * REAL の値は 9 桁ではなく、LREAL に広げた正確な値で表示します。
+* `EXPECT_DOUBLE_EQ`（4 ULP 以内）と `EXPECT_EQ_DOUBLE`（厳密な比較）は、語順が違うだけで意味が違います（`EXPECT_EQ_<T>` の形は JiecUnit の型ごとのマクロです）。
+* `EXPECT_FATAL_FAILURE` / `EXPECT_NONFATAL_FAILURE` の `sub` は、失敗の出力の 1 行ずつと照合します（Google Test は全文と照合します）。
 * `EXPECT_FATAL_FAILURE` の文は、ヘルパーの呼び出しにしてください（文に直接 `ASSERT_*` を書くとテストから戻ってしまい、次のサイクルの始めにその旨の失敗になります）。
 * フィルタ、`DISABLED_`、シャッフル、繰り返し、パラメータ化テスト、モックはありません。
 

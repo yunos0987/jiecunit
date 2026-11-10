@@ -1,4 +1,4 @@
-// golden-args: -D CONSOLE_MAX_ROWS=8
+// golden-args: -D CONSOLE_MAX_ROWS=8 -D JIECUNIT_JIER_CONSOLE_WARNING
 // The console warning also follows the list of failed tests.
 {#include <jiecunit.iec>}
 

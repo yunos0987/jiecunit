@@ -192,7 +192,7 @@ function JiecTest_validateDOUBLE_EQ: bool
 	end_if;
 
 	JiecTest_beginFailure(self:=self, file:=file, line:=line);
-	JiecTest_print(self, 'Expected equality of these values (within 4 ULPs):');
+	JiecTest_print(self, 'Expected equality of these values:');
 	JiecTest_printValue(self:=self, text:=expected_text, value:=lreal_to_string(expected));
 	JiecTest_printValue(self:=self, text:=actual_text, value:=lreal_to_string(actual));
 	JiecTest_endFailure(self:=self, message:=message, die:=die);
@@ -236,7 +236,7 @@ function JiecTest_validateFLOAT_EQ: bool
 	end_if;
 
 	JiecTest_beginFailure(self:=self, file:=file, line:=line);
-	JiecTest_print(self, 'Expected equality of these values (within 4 ULPs):');
+	JiecTest_print(self, 'Expected equality of these values:');
 	JiecTest_printValue(self:=self, text:=expected_text, value:=lreal_to_string(real_to_lreal(expected)));
 	JiecTest_printValue(self:=self, text:=actual_text, value:=lreal_to_string(real_to_lreal(actual)));
 	JiecTest_endFailure(self:=self, message:=message, die:=die);

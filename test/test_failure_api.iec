@@ -59,7 +59,7 @@ TEST_S(test_failure_messages)
 	EXPECT_NONFATAL_FAILURE(EXPECT_NEAR(1.5, x, 0.1), 'The difference between 1.5 and x is 0.5, which exceeds 0.1, where');
 	EXPECT_NONFATAL_FAILURE(EXPECT_NEAR(1.5, x, 0.1), 'x evaluates to 1.0, and');
 	// Fact: the ULP comparisons say so.
-	EXPECT_NONFATAL_FAILURE(EXPECT_DOUBLE_EQ(1.1, x), 'within 4 ULPs');
+	EXPECT_NONFATAL_FAILURE(EXPECT_DOUBLE_EQ(1.1, x), '  1.1');
 	EXPECT_NONFATAL_FAILURE(EXPECT_FLOAT_EQ(1.5, r), '    Which is: 1.0');
 	// Fact: the message is printed, and ADD_FAILURE prints Failed.
 	EXPECT_NONFATAL_FAILURE(EXPECT_EQ_INT(5, a, 'the message'), 'the message');

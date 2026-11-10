@@ -38,7 +38,7 @@
 {#define _DEFINE_SYS_IN_CONFIGURATION_()
 }
 {#define _DEFINE_CONSOLE_IN_CONFIGURATION_()
-	var_global _CONSOLE_: Console_t := (row_index:=0, wrapped:=false, rows:=[CONSOLE_MAX_ROWS('')]); end
+	var_global _CONSOLE_: Console_t := (row_index:=0, full:=false, wrapped:=false, rows:=[CONSOLE_MAX_ROWS('')]); end
 }
 {#if not (_KEYENCE or _MITSUBISHI)}
 	{#define _DEFINE_SYS_IN_POU_()
@@ -155,7 +155,9 @@ type
 	Console_t: struct
 		(*{doc Current row index for writing.}*)
 		row_index: dint;
-		(*{doc Whether row_index has wrapped around, i.e. new lines overwrite the oldest ones.}*)
+		(*{doc Whether every row has been written once, so that the next line overwrites the oldest one.}*)
+		full: bool;
+		(*{doc Whether a line has overwritten an older one.}*)
 		wrapped: bool;
 		(*{doc Array of text rows.}*)
 		rows: array[CONSOLE_MAX_ROWS] of string[CONSOLE_MAX_COLS];
@@ -163,7 +165,7 @@ type
 end
 
 (*{doc Initialize the Console structure.
-Clears all rows, resets the row index to 0 and clears wrapped.
+Clears all rows, resets the row index to 0 and clears full and wrapped.
 @inout self The Console_t structure to initialize.
 @return Always returns true.}*)
 function Console_initialize: bool
@@ -176,6 +178,7 @@ function Console_initialize: bool
 		self.rows[row_index] := '';
 	end_for;
 	self.row_index := 0;
+	self.full := false;
 	self.wrapped := false;
 end
 
@@ -197,8 +200,9 @@ function Console_print: bool
 end
 
 (*{doc Print a line to the console and advance to the next row.
-The row index wraps around when it reaches the maximum number of rows; then
-wrapped is set, and the next lines overwrite the oldest ones.
+The row index wraps around when it reaches the maximum number of rows (full
+is set), and a line written after that overwrites the oldest one (wrapped is
+set).
 @inout self The Console_t structure.
 @input line The line to print.
 @return The new row index after advancing.}*)
@@ -212,10 +216,13 @@ function Console_puts: dint
 {#ifdef _JIER}
 	PUTS(line);
 {#endif}
+	if self.full then
+		self.wrapped := true;
+	end_if;
 	self.rows[self.row_index] := line;
 	self.row_index := (self.row_index + 1) mod CONSOLE_MAX_ROWS;
 	if self.row_index = 0 then
-		self.wrapped := true;
+		self.full := true;
 	end_if;
 	Console_puts := self.row_index;
 end

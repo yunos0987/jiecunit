@@ -124,7 +124,8 @@ function JiecTest_validateNEAR: bool
 	// for a NaN explicitly, because abs() of a NaN is not a NaN on every
 	// target (jier returns 0.0).
 	difference := val1 - val2;
-	JiecTest_validateNEAR := (val1 = val2) or ((difference = difference) and (abs(difference) <= abs_error));
+	// (difference - difference is 0 only for a finite difference.)
+	JiecTest_validateNEAR := (val1 = val2) or (((difference - difference) = 0.0) and (abs(difference) <= abs_error));
 	if JiecTest_validateNEAR then
 		return;
 	end_if;

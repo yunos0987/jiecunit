@@ -433,7 +433,13 @@ end
 function JiecTest_activeTestname: string[TESTNAME_MAX_SIZE]
 	_PROLOGUE_OF_FUNCTION_()
 	var_in_out self: JiecTest_t; end
-	JiecTest_activeTestname := self.testnames[self.tmp_active_test_index];
+	// No test is active before the first one starts (index -1), for example
+	// after a fatal registration error: return an empty name.
+	if (0 <= self.tmp_active_test_index) and (self.tmp_active_test_index < self.num_of_tests) then
+		JiecTest_activeTestname := self.testnames[self.tmp_active_test_index];
+	else
+		JiecTest_activeTestname := '';
+	end_if;
 end
 
 (*{doc Activate a test case and set the cycle counter to 0.

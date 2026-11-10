@@ -214,7 +214,7 @@ def to_xml(tests, problems):
                     err = ET.SubElement(case, 'error', message='the test failed without a failure message')
                     err.text = '\n'.join(test.lines)
                 for block in blocks:
-                    message = block[1] if len(block) > 1 else block[0]
+                    message = '\n'.join(block[:2])
                     failure = ET.SubElement(case, 'failure', message=message, type='')
                     failure.text = '\n'.join(block)
             other = _lines_outside_failures(test.lines)
@@ -313,8 +313,8 @@ def self_test():
     fails = [c for c in root.iter('testcase') if c.get('name') == 'fails'][0]
     failures = fails.findall('failure')
     _check(len(failures) == 2, xml)
-    _check(failures[0].get('message') == 'Expected equality of these values:', failures[0].attrib)
-    _check(failures[1].get('message') == 'Failed', failures[1].attrib)
+    _check(failures[0].get('message') == 'a.iec:3: Failure\nExpected equality of these values:', failures[0].attrib)
+    _check(failures[1].get('message') == 'a.iec:4: Failure (cycle 1)\nFailed', failures[1].attrib)
     _check(fails.get('time') is None)
     passes = [c for c in root.iter('testcase') if c.get('name') == 'passes'][0]
     _check(passes.get('time') == '0.000012' and passes.get('classname') == 'Suite')

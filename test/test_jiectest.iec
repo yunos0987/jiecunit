@@ -471,6 +471,14 @@ TEST_S(test_jiectest_active_testname)
 	name := JiecTest_activeTestname(jt);
 		// Assert
 	EXPECT_EQ_STRING('test_alpha', name);
+
+	// Fact: JiecTest_activeTestname returns an empty name when no test is active (index -1 or out of range).
+		// Arrange
+	jt.tmp_active_test_index := -1;
+		// Act/Assert
+	EXPECT_EQ_STRING('', JiecTest_activeTestname(jt));
+	jt.tmp_active_test_index := jt.num_of_tests;
+	EXPECT_EQ_STRING('', JiecTest_activeTestname(jt));
 END_TEST_S
 
 TEST_S(test_jiectest_testname)

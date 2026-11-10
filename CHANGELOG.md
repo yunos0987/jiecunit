@@ -30,7 +30,7 @@
 - 複数サイクルのテストの所要時間が、サイクルごとに「テスト開始からの経過時間」を足していたため、二乗で大きくなっていました。
 - オムロン・キーエンスの所要時間が、100ns 単位のカウンタを `/100/1000`（10ms 単位）で換算していました。`/10`（us 単位）に直し、カウンタの差を元の型で取ってから換算するようにしました（カウンタが一巡しても正しい差になります）。
 - テストが終わった後（ヘルパーの中の ASSERT の後など）の失敗の位置が `@-2147483648` と表示されていました。
-- `EXPECT_NEAR`・`EXPECT_NEAR_REL` に NaN を渡したとき、jier では成功していました（jier の `abs` は NaN に 0.0 を返します）。NaN は明示的に判定して失敗にし、`A NaN is never near any value.` と出します。同じ値（同符号の無限大どうしを含む）は、差を計算せずに近いとみなします。
+- `EXPECT_NEAR`・`EXPECT_NEAR_REL` に NaN を渡したとき、jier では成功していました（jier の `abs` は NaN に 0.0 を返します）。NaN は明示的に判定して失敗にし、`A NaN is never near any value.` と出します。同じ値（同符号の無限大どうしを含む）は、差を計算せずに近いとみなします。違う値は、差が有限で許容値以内のときだけ近いとみなします（`EXPECT_NEAR_REL(inf, 1.0, 0.1)` のように許容値も無限大になる場合を含め、無限大は有限の値に近くありません）。
 
 ### 新機能 / New features
 
@@ -47,11 +47,12 @@
 - 再実行: 完了した後（`g_jiecunit_result.state` が 2 のとき）に `g_jiecunit_rerun` を true にすると、JiecUnitMain がそれを false に戻して、すべてのテストをもう一度実行します（PLC をダウンロードし直す必要がありません）。実行中に立てた要求は、完了の時点で捨てます。テストプログラムの変数は初期化されないので、テストごとに初期化したい状態はフィクスチャ（`TEST_F_*`）に置いてください。フィクスチャは実行のたびに初期値に戻ります。
 - `DECLARE_EXTERNAL_JIECUNIT_RESULT()` で、`g_jiecunit_result` と `g_jiecunit_rerun` の `var_external` を宣言できます。
 - `JIECUNIT_NO_HALT` を定義すると、jier でも集計の後に `halt` せず、PLC と同じく動き続けます（再実行の確認などに使います）。この場合、jier の終了は `--max-cycles` か、利用者のプログラムの `halt` によります。
+- KEYENCE・MITSUBISHI で使えない型のアサーション（64bit の整数とビット列、DATE・TOD・DT。配列の形を含む）は、前処理の時点で `not supported on this target` のエラーにします（従来は TIME の EQ/NE だけで、ほかは展開されないマクロ名が残り、ベンダーのツールで初めてエラーになっていました）。
 - `SET_TEST_MAX_CYCLES(n)` を追加しました。実行中のテストのサイクル数の上限を変えます（0 なら無制限）。次のテストでは `JIECUNIT_MAX_CYCLES_PER_TEST` に戻ります。`JIECUNIT_MAX_CYCLES_PER_TEST` は `-D` で上書きできます。
 - テストプログラムが JiecUnitMain の 1 サイクルの間に 1 回も実行されなかったとき、または 2 回以上実行されたとき（別の周期のタスクに割り付けたときなど）、`[  ERROR ]` を出して失敗にします。JiecUnitMain は、従来どおりタスクの先頭に置くほか、末尾に置いても動きます。
 
 - 設定値を `-D NAME=VALUE` で上書きできるようにしました（従来は再定義の警告 PP35 が出て、`-Werror` では失敗していました）。対象は `MAX_TESTS`・`TESTNAME_MAX_SIZE`・`FILENAME_MAX_SIZE`・`JIECUNIT_MAX_CYCLES_PER_TEST`・`EXPRESSION_MAX_SIZE`（新設。既定 128）と、`sys/sys_config.iec` の `STRING_MAX_SIZE`・`CONSOLE_MAX_ROWS`・`CONSOLE_MAX_COLS` です。`MAX_TESTS` が 512（`src/jiecunit_macros.iec` の上限）を超えるとき、`TESTNAME_MAX_SIZE`・`FILENAME_MAX_SIZE`・`EXPRESSION_MAX_SIZE` が `STRING_MAX_SIZE` を超えるときは、前処理をエラーで止めます。`CONSOLE_MAX_COLS` より長い行は、従来どおりコンソールの行バッファでは切れます。
-- コンソール（`g_console`）の行バッファが一巡して古い行が上書きされうるとき、集計の最後に `[ WARNING] The console buffer is full (CONSOLE_MAX_ROWS=N); older lines may have been overwritten.` と出します。集計の後だけでなく、登録時の致命的エラーで終わるときも出します。`Console_t` に `wrapped` を追加しました。
+- コンソール（`g_console`）の行バッファが一巡して古い行が上書きされたとき、集計の最後に `[ WARNING] The console buffer is full (CONSOLE_MAX_ROWS=N); older lines may have been overwritten.` と出します（すべての行を標準出力に出す jier では、`JIECUNIT_JIER_CONSOLE_WARNING` を定義したときだけ出します）。`Console_t` に `full`（一巡した）と `wrapped`（上書きした）を追加しました。
 
 - テストを `_JIEC_TESTNAMES_LIST_` に書き忘れると、そのテストは黙って実行されませんでした。`TEST_S` / `TEST_M` の定義の数を jiepp の名前付きカウンタで数え、一覧の名前の数と違えば前処理をエラーで止めます。比べるのは数だけです。一覧に同じ名前を 2 回書いたときは、jier ではコンパイル時の `DUPLICATE_SYMBOL`、PLC では登録時の `Fatal error: ... already registered.` で検出されます。名前の綴りの誤りは、jier では未定義のプログラム、PLC では実行時の `[  ERROR ] ... was not found in active tasks.` で検出されます。一覧は 1 回だけ展開してください（カウンタは戻らないので、2 回目は必ず不一致になります）。`JIECUNIT_NO_TEST_COUNT_CHECK` を定義すると照合しません。完全な自動登録は、jiepp がマクロからディレクティブを作れないこと、構成（configuration）とベンダーのタスク割付にプログラム名の列挙が要ることから、行っていません。
 

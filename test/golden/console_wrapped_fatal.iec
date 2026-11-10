@@ -1,5 +1,6 @@
-// golden-args: -D CONSOLE_MAX_ROWS=1
-// The console warning also follows a fatal registration error (a name listed twice).
+// golden-args: -D CONSOLE_MAX_ROWS=1 -D JIECUNIT_JIER_CONSOLE_WARNING
+// A fatal registration error (a name listed twice) with a one-row console:
+// the single line fills the console but overwrites nothing, so no warning.
 {#include <jiecunit.iec>}
 
 TEST_S(test_twice)

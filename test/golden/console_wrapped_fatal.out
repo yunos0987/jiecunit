@@ -1,3 +1,2 @@
 Fatal error: program 'test_twice' is already registered.
-[ WARNING] The console buffer is full (CONSOLE_MAX_ROWS=1); older lines may have been overwritten.
 [exit code: 1]
