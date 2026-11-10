@@ -76,9 +76,9 @@ TEST_S(test_time_to_literal)
 	EXPECT_EQ_STRING('T#0.5ms', time_to_literal(time#0.5ms));
 
 	// Fact: nanoseconds are the last digits of the fraction.
-	tiny := time#1ms / 1000000;
+	tiny := time#0.000001ms;
 	EXPECT_EQ_STRING('T#0.000001ms', time_to_literal(tiny));
-	EXPECT_EQ_STRING('T#250.123456ms', time_to_literal(time#250ms + tiny * 123456));
+	EXPECT_EQ_STRING('T#250.123456ms', time_to_literal(time#250.123456ms));
 
 	// Fact: durations longer than a DINT of microseconds (about 35m47s) are not cut off.
 	EXPECT_EQ_STRING('T#35m47s483.647ms', time_to_literal(time#2147483.647ms));
@@ -97,4 +97,8 @@ TEST_S(test_time_to_literal)
 	EXPECT_EQ_DINT(1, jiec_time_quotient(time#1s, time#1s));
 	EXPECT_EQ_DINT(86399, jiec_time_quotient(time#1d - time#1ms, time#1s));
 	EXPECT_EQ_DINT(36500, jiec_time_quotient(time#36500d12h, time#1d));
+	// Fact: jiec_time_remainder is what is left after the whole units.
+	EXPECT_TRUE(time#999ms = jiec_time_remainder(time#999ms, time#1s));
+	EXPECT_TRUE(time#0s = jiec_time_remainder(time#1s, time#1s));
+	EXPECT_TRUE(time#12h = jiec_time_remainder(time#36500d12h, time#1d));
 END_TEST_S

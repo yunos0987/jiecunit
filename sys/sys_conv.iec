@@ -86,7 +86,8 @@ end
 
 {#if not (_MITSUBISHI)}
 (*{doc How many times a duration contains a unit, rounded down.
-Uses only the subtraction and the comparison of TIME values, so that it works
+Uses only the addition, the subtraction and the comparison of TIME values:
+the PLC tools do not multiply or divide a TIME value by a number. It works
 without 64-bit integers and never computes a duration longer than value.
 @input value The duration; must not be negative.
 @input unit The unit; must be positive.
@@ -127,6 +128,55 @@ function jiec_time_quotient: dint
 	end_while;
 end
 
+(*{doc What is left of a duration after taking out the whole units.
+The counterpart of jiec_time_quotient, with the same restrictions: the PLC
+tools do not multiply or divide a TIME value by a number, so the remainder
+is computed with subtractions and comparisons too.
+@input value The duration; must not be negative.
+@input unit The unit; must be positive.
+@return value minus the whole units in it (less than unit).}*)
+function jiec_time_remainder: time
+	_PROLOGUE_OF_FUNCTION_FOR_SYS_();
+	var_input
+		(*{doc The duration; must not be negative.}*)
+		value: time;
+		(*{doc The unit; must be positive.}*)
+		unit: time;
+	end
+	var_temp
+		remaining: time;
+		chunk: time;
+		chunk_count: dint;
+	end
+	remaining := value;
+	while remaining >= unit do
+		chunk := unit;
+		chunk_count := 1;
+		while chunk_count < 1073741824 do
+			if (remaining - chunk) < chunk then
+				exit;
+			end_if;
+			chunk := chunk + chunk;
+			chunk_count := chunk_count * 2;
+		end_while;
+		remaining := remaining - chunk;
+	end_while;
+	jiec_time_remainder := remaining;
+end
+
+// The nanoseconds of a duration shorter than a second, as DINT.
+{#if _OMRON}
+	{#define _jiec_subsecond_to_nsec(...) lint_to_dint(TimeToNanoSec(__VA_ARGS__))}
+{#elif _KEYENCE}
+	{#define _jiec_subsecond_to_nsec(...) (TimeToMicroSec(__VA_ARGS__) * 1000)}
+{#elif _CODESYS}
+	{#define _jiec_subsecond_to_nsec(...) lint_to_dint(ltime_to_lint(__VA_ARGS__))}
+{#else}
+	// jier has only time_to_usec_dint, which drops what is below a
+	// microsecond: count the nanoseconds that are left.
+	{#define _jiec_subsecond_to_nsec(...) (time_to_usec_dint(__VA_ARGS__) * 1000 + jiec_time_quotient(jiec_time_remainder(__VA_ARGS__, time#0.001ms), time#0.000001ms))}
+{#endif}
+
 (*{doc Convert a time value to text in the form of a duration literal of IEC 61131-3.
 The form is "T#[-][<d>d][<h>h][<m>m][<s>s][<ms>ms]", for example
 "T#1h30m5s250ms"; a part that is 0 is left out, and 0 is "T#0s". A fraction of
@@ -145,7 +195,6 @@ function time_to_literal: string[64]
 		remaining: time;
 		days: dint;
 		seconds: dint;
-		usec: dint;
 		nsec: dint;
 		fraction: dint;
 		fraction_str: string[16];
@@ -162,14 +211,16 @@ function time_to_literal: string[64]
 		return;
 	end_if;
 
+	// (The PLC tools do not multiply or divide a TIME value by a number, so
+	// the value is split with jiec_time_quotient / jiec_time_remainder.)
 	days := jiec_time_quotient(remaining, time#1d);
 	if days > 0 then
-		remaining := remaining - time#1d * days;
+		remaining := jiec_time_remainder(remaining, time#1d);
 		text := jiec_concat(text, dint_to_string(days), 'd');
 	end_if;
 	// Less than a day is left.
 	seconds := jiec_time_quotient(remaining, time#1s);
-	remaining := remaining - time#1s * seconds;
+	remaining := jiec_time_remainder(remaining, time#1s);
 	if seconds >= 3600 then
 		text := jiec_concat(text, dint_to_string(seconds / 3600), 'h');
 		seconds := seconds mod 3600;
@@ -181,14 +232,11 @@ function time_to_literal: string[64]
 	if seconds > 0 then
 		text := jiec_concat(text, dint_to_string(seconds), 's');
 	end_if;
-	// Less than a second is left: it fits in a DINT of microseconds. What is
-	// left below a microsecond is read as nanoseconds after multiplying it.
-	usec := time_to_usec_dint(remaining);
-	remaining := remaining - (time#1ms * usec) / 1000;
-	nsec := time_to_usec_dint(remaining * 1000);
-	fraction := (usec mod 1000) * 1000 + nsec;
-	if (usec >= 1000) or (fraction > 0) then
-		text := jiec_concat(text, dint_to_string(usec / 1000));
+	// Less than a second is left: its nanoseconds fit in a DINT.
+	nsec := _jiec_subsecond_to_nsec(remaining);
+	fraction := nsec mod 1000000;
+	if nsec > 0 then
+		text := jiec_concat(text, dint_to_string(nsec / 1000000));
 		if fraction > 0 then
 			fraction_str := dint_to_string(fraction);
 			while len(fraction_str) < 6 do
