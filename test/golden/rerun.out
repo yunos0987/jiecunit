@@ -4,7 +4,8 @@
 [ RUN    ] local_variables_are_kept
 [     OK ] local_variables_are_kept (n/a)
 [ RUN    ] skipped
-Skipped: always skipped
+test/golden/rerun.iec:42: Skipped
+always skipped
 [ SKIPPED] skipped (n/a)
 [========] 3 tests ran. (n/a)
 [ PASSED ] 2 tests.
@@ -23,7 +24,8 @@ Expected equality of these values:
 fails in the second run
 [ FAILED ] local_variables_are_kept (n/a)
 [ RUN    ] skipped
-Skipped: always skipped
+test/golden/rerun.iec:42: Skipped
+always skipped
 [ SKIPPED] skipped (n/a)
 [========] 3 tests ran. (n/a)
 [ PASSED ] 1 tests.

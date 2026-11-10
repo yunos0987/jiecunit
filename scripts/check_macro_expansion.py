@@ -53,6 +53,12 @@ _NO_MSG_ALIAS_MACROS = [
     ('ASSERT_FLOAT_EQ', 2),
     ('ASSERT_NO_FATAL_FAILURE', 1),
     ('EXPECT_NO_FATAL_FAILURE', 1),
+    ('EXPECT_NEAR_ARRAY', 4, (0, 1, 3)),
+    ('ASSERT_NEAR_ARRAY', 4, (0, 1, 3)),
+    ('EXPECT_FLOAT_EQ_ARRAY', 3, 2),
+    ('ASSERT_FLOAT_EQ_ARRAY', 3, 2),
+    ('EXPECT_DOUBLE_EQ_ARRAY', 3, 2),
+    ('ASSERT_DOUBLE_EQ_ARRAY', 3, 2),
     ('EXPECT_STR_CONTAINS', 2),
     ('ASSERT_STR_CONTAINS', 2),
     ('EXPECT_EQ_ARRAY_SINT', 3, 2),
@@ -433,9 +439,12 @@ def main():
             continue
         texts = _TEXT_RE.findall(body)
         text_checked += 1
-        if texts != _VALUES[:arity]:
+        # arity is the number of leading arguments with a text, or the
+        # indexes of the arguments with a text.
+        expected_texts = [_VALUES[i] for i in arity] if isinstance(arity, tuple) else _VALUES[:arity]
+        if texts != expected_texts:
             text_failures.append('{}: source texts {} but expected {}'.format(
-                name, texts, _VALUES[:arity]))
+                name, texts, expected_texts))
     failures.extend('(source text) ' + f for f in text_failures)
 
     for i, (name, arity) in enumerate(e[:2] for e in _NO_MSG_ALIAS_MACROS):

@@ -226,22 +226,40 @@
 	end_if}
 
 // Compare two arrays element by element from index 0 to n - 1 and report the
-// first element that differs with the EQ validator of the element type
-// (BASE is its _VALIDATE_EQ_<DATATYPE>_MSG macro). The loop variable
-// jiecunit_loop_index is declared by the TEST_* headers and by
-// JIECUNIT_DECLARE_HELPER. (ST does not short-circuit `and`, so the loop
-// exits instead of testing the index and the elements in one condition.)
+// first element that fails the validator of the element type (BASE is a
+// _VALIDATE_EQ_<DATATYPE>_MSG, _VALIDATE_FLOAT_EQ_MSG or
+// _VALIDATE_DOUBLE_EQ_MSG macro). The loop variable jiecunit_loop_index is
+// declared by the TEST_* headers and by JIECUNIT_DECLARE_HELPER.
+// Only the elements that differ are passed to the validator, and the loop
+// goes on when the validator accepts them: the validator decides (elements
+// that differ can be equal for it, for example within 4 ULPs, or after the
+// conversion to the type of the assertion where a target narrows implicitly).
 {#define _VALIDATE_EQ_ARRAY_(BASE, die_, expected_, actual_, n_, message_, expected_text_, actual_text_)
 	jiecunit_loop_index := 0;
 	while jiecunit_loop_index < (n_) do
 		if expected_[jiecunit_loop_index] <> actual_[jiecunit_loop_index] then
+			JiecTest_markFailures(_JIECTEST_);
+			BASE(die_, expected_[jiecunit_loop_index], actual_[jiecunit_loop_index], JiecTest_arrayMessage(index:=jiecunit_loop_index, message:=message_), JiecTest_indexedText(text:=expected_text_, index:=jiecunit_loop_index), JiecTest_indexedText(text:=actual_text_, index:=jiecunit_loop_index));
+			if JiecTest_failedSinceMark(_JIECTEST_) then
+				exit;
+			end_if;
+		end_if;
+		jiecunit_loop_index := jiecunit_loop_index + 1;
+	end_while}
+
+// The same with EXPECT_NEAR for each element. Every element is passed to
+// the validator, also equal ones, so that a negative abs_error fails as it
+// does with EXPECT_NEAR.
+{#define _VALIDATE_NEAR_ARRAY_(die_, expected_, actual_, n_, abs_error_, message_, expected_text_, actual_text_, abs_error_text_)
+	jiecunit_loop_index := 0;
+	while jiecunit_loop_index < (n_) do
+		JiecTest_markFailures(_JIECTEST_);
+		_VALIDATE_NEAR_MSG(die_, expected_[jiecunit_loop_index], actual_[jiecunit_loop_index], abs_error_, JiecTest_arrayMessage(index:=jiecunit_loop_index, message:=message_), JiecTest_indexedText(text:=expected_text_, index:=jiecunit_loop_index), JiecTest_indexedText(text:=actual_text_, index:=jiecunit_loop_index), abs_error_text_);
+		if JiecTest_failedSinceMark(_JIECTEST_) then
 			exit;
 		end_if;
 		jiecunit_loop_index := jiecunit_loop_index + 1;
-	end_while;
-	if jiecunit_loop_index < (n_) then
-		BASE(die_, expected_[jiecunit_loop_index], actual_[jiecunit_loop_index], JiecTest_arrayMessage(index:=jiecunit_loop_index, message:=message_), JiecTest_indexedText(text:=expected_text_, index:=jiecunit_loop_index), JiecTest_indexedText(text:=actual_text_, index:=jiecunit_loop_index));
-	end_if}
+	end_while}
 
 {#define _VALIDATE_STR_CONTAINS_MSG(die_, haystack_, needle_, message_, haystack_text_, needle_text_)
 	if not JiecTest_validateSTR_CONTAINS(self:=_JIECTEST_, haystack:=haystack_, needle:=needle_, message:=message_, die:=die_, file:=__FILE__, line:=__LINE__, haystack_text:=haystack_text_, needle_text:=needle_text_) then

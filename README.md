@@ -86,7 +86,8 @@ DEFINE_CONFIGURATION(
 | `TEST_S(suite, name)` / `TEST_M(suite, name)` | スイートに属するテスト。プログラム名は `suite_name`（一覧にはこの名前を書く）、結果の表示は `suite.name` です。 |
 | `TEST_F_S(F, name)` / `TEST_F_M(F, name)` | フィクスチャ `F` を使うテスト（Google Test の `TEST_F`）。終わりは `END_TEST_S` / `END_TEST_M` です。 |
 | `EOT()` | テストを終えます。 |
-| `SKIP_TEST(reason)` | テストをスキップとして終えます。失敗の後にスキップしたテストは `[ FAILED ]` です。 |
+| `SKIP_TEST(reason)` | テストをスキップとして終えます。Google Test と同じく `file:line: Skipped` と理由の 2 行を出します。失敗の後にスキップしたテストは `[ FAILED ]` です。 |
+| `JIECUNIT_LOG(text)` | テストやヘルパーから 1 行出力します（失敗にはなりません）。 |
 | `SET_TEST_MAX_CYCLES(n)` | そのテストのサイクル数の上限を変えます（下記）。 |
 
 * KEYENCE では、プログラム名（`suite_name` / `F_name` を含む）を 64 バイト以内にしてください。
@@ -138,9 +139,12 @@ END_TEST_S
 | `EXPECT_NEAR_REL(a, b, rel_error)` | 差の絶対値が `rel_error * max(abs(a), abs(b))` 以下 |
 | `EXPECT_DOUBLE_EQ(a, b)` / `EXPECT_FLOAT_EQ(a, b)` | LREAL／REAL として 4 ULP 以内（Google Test と同じ） |
 | `EXPECT_EQ_ARRAY_<T>(expected, actual, n)` | 配列の添字 0 から n - 1 が等しい。最初に違う要素を報告します |
+| `EXPECT_NEAR_ARRAY(expected, actual, n, abs_error)` | 配列の各要素が `EXPECT_NEAR` を満たす |
+| `EXPECT_FLOAT_EQ_ARRAY(expected, actual, n)` / `EXPECT_DOUBLE_EQ_ARRAY(expected, actual, n)` | REAL／LREAL の配列の各要素が 4 ULP 以内 |
 | `EXPECT_STR_CONTAINS(s, sub)` | 文字列 `s` が `sub` を含む |
 | `FAIL()` / `ADD_FAILURE()` | 失敗を記録する（`FAIL` はテストを終える） |
 | `EXPECT_NO_FATAL_FAILURE(stmt)` / `ASSERT_NO_FATAL_FAILURE(stmt)` | 文が新しい致命的な失敗を起こさない |
+| `SCOPED_TRACE(text, stmt)` | 文を実行し、その間の失敗に `text` とこの行の位置を添える（下記） |
 | `EXPECT_FATAL_FAILURE(stmt, sub)` / `EXPECT_NONFATAL_FAILURE(stmt, sub)` | 文がその種類の失敗をちょうど 1 つ起こし、その出力（位置の行を除く）のどれかの行が `sub` を含む（アサーションやヘルパー自体のテスト用。確かめた失敗は表示も集計もしません） |
 | `HAS_FATAL_FAILURE()` / `HAS_NONFATAL_FAILURE()` / `HAS_FAILURE()` | 実行中のテストに失敗があったか |
 
@@ -170,6 +174,16 @@ END_TEST_S
 
 * Google Test と同じく、ヘルパーの中の `ASSERT_*`・`FAIL` はヘルパーから戻るだけで、テストは続きます。`HAS_FATAL_FAILURE()` で分かり、`ASSERT_NO_FATAL_FAILURE` でテストを終えられます。
 * `JIECUNIT_DECLARE_HELPER()` を書き忘れると、`g_jiectest` か `jiecunit_in_helper` が未宣言（`UNDEFINED_SYMBOL`）というエラーになります。
+* 同じヘルパーを何度も呼ぶと、失敗がどの呼び出しのものか分かりません。`SCOPED_TRACE(text, stmt)` で呼び出しを包むと、その間の失敗の後ろに `JiecUnit trace:` と `file:line: text` の行が付きます（入れ子にすると内側から順に並びます。深さは 8 まで）。`text` は実行時に組み立てられます。
+
+  ```
+  for value_index := 0 to 2 do
+  	SCOPED_TRACE(jiec_concat('value_index ', dint_to_string(value_index)), ok := check_in_range(values[value_index]));
+  end_for;
+  ```
+
+  Google Test の `SCOPED_TRACE` はスコープの終わりまで有効ですが、ST にはその仕組みが無いので、対象の文を引数に書きます。文はヘルパーの呼び出しにしてください。文が POU から戻ると（文に直接 `ASSERT_*` を書いた場合や、ヘルパーの中で `SCOPED_TRACE(text, ASSERT_NO_FATAL_FAILURE(...))` と書いた場合）、そのサイクルの終わりまでトレースが残り、後の無関係な失敗にも付きます。`ASSERT_NO_FATAL_FAILURE` と組み合わせるときは、`ASSERT_NO_FATAL_FAILURE(SCOPED_TRACE(text, ok := helper()))` と外側に書きます。`text` は `EXPRESSION_MAX_SIZE`（既定 128）文字までです。
+* 値をメッセージや `JIECUNIT_LOG` に入れるときは、`jiec_concat('level=', dint_to_string(level))` のように組み立てます。
 * ヘルパーの中で `EOT()` や `SKIP_TEST` を呼ぶと、テストはその時点で終わったものとされ、ヘルパーから戻ります。呼び出し側の本体は、そのサイクルの残りを実行します（Google Test の `GTEST_SKIP` は、ヘルパーから戻るだけです）。
 
 ### 失敗の出力
@@ -228,6 +242,7 @@ level after filling
 | `EXPRESSION_MAX_SIZE` | 128 | 失敗に出す式のテキストの長さ |
 | `JIECUNIT_MAX_CYCLES_PER_TEST` | 100000（jier 1000） | テストのサイクル数の上限 |
 | `JIECUNIT_MAX_NO_FATAL_FAILURE_DEPTH` | 8 | `*_NO_FATAL_FAILURE` の入れ子の深さ |
+| `JIECUNIT_MAX_TRACE_DEPTH` | 8 | `SCOPED_TRACE` の入れ子の深さ |
 | `STRING_MAX_SIZE` | ターゲットごと（255〜1986） | 文字列の長さ |
 | `CONSOLE_MAX_ROWS` / `CONSOLE_MAX_COLS` | 1024 / ターゲットごと | コンソールの行数／1 行の長さ |
 | `JIECUNIT_NO_EXPRESSION_TEXT` | （未定義） | 定義すると、失敗に式のテキストを出さない |
@@ -235,7 +250,7 @@ level after filling
 | `JIECUNIT_NO_HALT` | （未定義） | 定義すると、jier でも集計の後に止まらない |
 | `JIECUNIT_MANUAL_START` | （未定義） | 定義すると、`g_jiecunit_rerun` を true にするまでテストを始めない |
 
-小さい PLC では、`MAX_TESTS` と `CONSOLE_MAX_ROWS` を小さくするとメモリを減らせます。
+小さい PLC では、`MAX_TESTS` と `CONSOLE_MAX_ROWS` を小さくするとメモリを減らせます。`MAX_TESTS` を一覧のテストの数より小さくすると、前処理のエラーになります。
 
 ### JUnit XML
 
@@ -246,6 +261,8 @@ $ jiecc --run test/test.iec -I. -I./sys > output.txt
 $ python scripts/jiecunit_to_junit.py output.txt -o result.xml
 $ python scripts/run_tests.py --run-only --junit-dir build/junit   # スイートごとに書く
 ```
+
+再実行した出力は、最後の実行だけを変換します。実行が途中で切れている、結果の無いテストがある、集計の行（`[ PASSED ]`・`[ SKIPPED]`・`[ FAILED ]` の数）と読み取った結果が合わない、コンソールの警告があるなどの問題は、XML に `(run)` という名前のエラーとして加え、終了コード 1 を返します。
 
 PLC の `g_console` の行を古い順に書き出したテキストも変換できます。`suite.name` のテストは `classname` が `suite` になります。
 
@@ -259,7 +276,7 @@ PLC の `g_console` の行を古い順に書き出したテキストも変換で
 * `EXPECT_FATAL_FAILURE` / `EXPECT_NONFATAL_FAILURE` の `sub` は、失敗の出力の 1 行ずつと照合します（Google Test は全文と照合します）。
 * `EXPECT_FATAL_FAILURE` の文は、ヘルパーの呼び出しにしてください（文に直接 `ASSERT_*` を書くとテストから戻ってしまい、次のサイクルの始めにその旨の失敗になります）。
 * 結果の行の見出しは 8 文字幅（`[ RUN    ]`、`[     OK ]`、`[========]`）で、Google Test の 10 文字幅（`[ RUN      ]`）と違います。集計の文面も違います（`[ FAILED ] N tests, listed below.`）。Google Test の出力用の正規表現は、そのままでは合いません。
-* `SKIP_TEST(reason)` の出力は `Skipped: reason` の 1 行で、位置の行（`file:line: Skipped`）はありません。
+* `SCOPED_TRACE(text, stmt)` は、対象の文を引数に取ります（Google Test はスコープの終わりまで有効です）。見出しは `Google Test trace:` ではなく `JiecUnit trace:` です。
 * `EXPECT_NEAR_REL`（相対誤差）は JiecUnit のアサーションで、Google Test にはありません。無限大は、同じ無限大のほかには近いとみなしません。
 * フィルタ、`DISABLED_`、シャッフル、繰り返し、パラメータ化テスト、モックはありません。
 

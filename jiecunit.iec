@@ -960,6 +960,18 @@
 
 // Substring: EXPECT_STR_CONTAINS(haystack, needle) checks that the string
 // haystack contains needle (an empty needle is contained in every string).
+// Arrays of REAL / LREAL with a tolerance: EXPECT_NEAR_ARRAY(expected, actual,
+// n, abs_error) checks each pair of elements as EXPECT_NEAR does,
+// EXPECT_FLOAT_EQ_ARRAY (REAL) and EXPECT_DOUBLE_EQ_ARRAY (LREAL) as
+// EXPECT_FLOAT_EQ / EXPECT_DOUBLE_EQ do (within 4 ULPs). The first element
+// that fails is reported. The rules of EXPECT_EQ_ARRAY_<T> apply.
+{#define EXPECT_NEAR_ARRAY(expected, actual, n, abs_error, ...) _VALIDATE_NEAR_ARRAY_(false, expected, actual, n, abs_error, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 4, 5, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual), _JIECUNIT_TEXT(@abs_error))}
+{#define ASSERT_NEAR_ARRAY(expected, actual, n, abs_error, ...) _VALIDATE_NEAR_ARRAY_(true, expected, actual, n, abs_error, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 4, 5, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual), _JIECUNIT_TEXT(@abs_error))}
+{#define EXPECT_FLOAT_EQ_ARRAY(expected, actual, n, ...)  _VALIDATE_EQ_ARRAY_(_VALIDATE_FLOAT_EQ_MSG, false, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_FLOAT_EQ_ARRAY(expected, actual, n, ...)  _VALIDATE_EQ_ARRAY_(_VALIDATE_FLOAT_EQ_MSG, true, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_DOUBLE_EQ_ARRAY(expected, actual, n, ...) _VALIDATE_EQ_ARRAY_(_VALIDATE_DOUBLE_EQ_MSG, false, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_DOUBLE_EQ_ARRAY(expected, actual, n, ...) _VALIDATE_EQ_ARRAY_(_VALIDATE_DOUBLE_EQ_MSG, true, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+
 {#define EXPECT_STR_CONTAINS(haystack, needle, ...)    _VALIDATE_STR_CONTAINS_MSG(false, haystack, needle, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@haystack), _JIECUNIT_TEXT(@needle))}
 {#define ASSERT_STR_CONTAINS(haystack, needle, ...)    _VALIDATE_STR_CONTAINS_MSG(true, haystack, needle, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@haystack), _JIECUNIT_TEXT(@needle))}
 
@@ -985,6 +997,7 @@
 
 {#define _JIEC_TESTNAMES_LIST_(...)
 	_JIECUNIT_CHECK_TEST_COUNT(__VA_ARGC__)
+	__assert(__VA_ARGC__ <= MAX_TESTS, 'JiecUnit: _JIEC_TESTNAMES_LIST_ has more names than MAX_TESTS. Define a larger MAX_TESTS (-D MAX_TESTS=n).')
 	var_global
 		_JIECTESTNAMES_: array[MAX_TESTS] of string[TESTNAME_MAX_SIZE] := [_STRINGIFY_(__VA_ARGS__), (MAX_TESTS - __VA_ARGC__)('')];
 		_JIECTEST_: JiecTest_t;
@@ -1003,8 +1016,10 @@
 	_JIECUNIT_COUNT_TEST()
 	program ${single-body:true$} ${__func__:TestName$} program_name
 	_DECLARE_EXTERNAL_JIEC_TEST();
-	var
+	var constant
 		jiecunit_in_helper: bool := false;
+	end
+	var
 		jiecunit_loop_index: dint;
 	end
 	// (Two statements: `or` does not short-circuit, and the name is compared
@@ -1029,8 +1044,10 @@
 	_JIECUNIT_COUNT_TEST()
 	program ${single-body:true$} ${__func__:TestName$} program_name
 	_DECLARE_EXTERNAL_JIEC_TEST();
-	var
+	var constant
 		jiecunit_in_helper: bool := false;
+	end
+	var
 		jiecunit_loop_index: dint;
 		fixture: fixture_type;
 		jiecunit_fixture_init: fixture_type;
@@ -1103,7 +1120,20 @@ end}
 {#define EOT() JiecTest_deactivate(_JIECTEST_); return}
 
 // Skip the current test. The test is reported as skipped, not as passed.
-{#define SKIP_TEST(reason_) JiecTest_skip(self:=_JIECTEST_, reason:=reason_); EOT()}
+{#define SKIP_TEST(reason_) JiecTest_skip(self:=_JIECTEST_, reason:=reason_, file:=__FILE__, line:=__LINE__); EOT()}
+
+// Print a line from a test or a helper (a POU with JIECUNIT_DECLARE_HELPER).
+{#define JIECUNIT_LOG(text_) JiecTest_log(self:=_JIECTEST_, line:=text_)}
+
+// Run a statement (usually the call of a helper) and add text and the
+// position of this line to every failure that the statement generates, like
+// SCOPED_TRACE of Google Test. ST has no scopes that end by themselves, so
+// the statement is an argument. It must not return from the POU (an ASSERT_*
+// written directly in it): the trace would stay until the end of the cycle.
+{#define SCOPED_TRACE(text_, statement_)
+	JiecTest_pushTrace(self:=_JIECTEST_, text:=text_, file:=__FILE__, line:=__LINE__);
+	statement_;
+	JiecTest_popTrace(_JIECTEST_)}
 
 // Set the maximum number of cycles of the current test: the test fails if it
 // is still running after it has run max_cycles cycles. 0 or a negative value
@@ -1128,8 +1158,10 @@ end}
 // ASSERT_NO_FATAL_FAILURE(helper(...)) stops the test after it.
 {#define JIECUNIT_DECLARE_HELPER()
 	_DECLARE_EXTERNAL_JIEC_TEST();
-	var
+	var constant
 		jiecunit_in_helper: bool := true;
+	end
+	var
 		jiecunit_loop_index: dint;
 	end}
 

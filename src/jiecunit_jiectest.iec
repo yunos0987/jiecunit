@@ -57,6 +57,16 @@ type
 		tmp_capture_line: dint;
 		(*{doc The number of nested captures that were rejected and not yet finished.}*)
 		tmp_capture_rejected: dint;
+		(*{doc The number of failures when an array assertion started to check an element (see JiecTest_markFailures).}*)
+		tmp_failure_mark: dint;
+		(*{doc The depth of the nested SCOPED_TRACE statements.}*)
+		tmp_trace_depth: dint;
+		(*{doc The source file of each nested SCOPED_TRACE statement.}*)
+		tmp_trace_files: array[JIECUNIT_MAX_TRACE_DEPTH] of string[FILENAME_MAX_SIZE];
+		(*{doc The source line of each nested SCOPED_TRACE statement.}*)
+		tmp_trace_lines: array[JIECUNIT_MAX_TRACE_DEPTH] of dint;
+		(*{doc The text of each nested SCOPED_TRACE statement.}*)
+		tmp_trace_texts: array[JIECUNIT_MAX_TRACE_DEPTH] of string[EXPRESSION_MAX_SIZE];
 		(*{doc The name of the active test shown in the results: suite.name for a test in a suite, otherwise the program name.}*)
 		tmp_display_name: string[TESTNAME_MAX_SIZE];
 		(*{doc Whether the TearDown of the fixture of the active test has still to run.}*)
@@ -93,7 +103,7 @@ end
 (*{doc Reset the per-test fields for a new test.
 Clears the cycle counter, the active and skipped flags, the execution count,
 the single-cycle flag, the definition position, the fatal and non-fatal
-failure counts and marks, the capture state and the fixture state, sets the
+failure counts and marks, the capture state, the traces and the fixture state, sets the
 display name to the program name of the active test, and sets the maximum
 number of cycles to JIECUNIT_MAX_CYCLES_PER_TEST. Does not activate the test.
 @inout self The JiecTest_t structure.
@@ -120,6 +130,8 @@ function JiecTest_beginTest
 	self.tmp_capture_file := '';
 	self.tmp_capture_line := 0;
 	self.tmp_capture_rejected := 0;
+	self.tmp_failure_mark := 0;
+	self.tmp_trace_depth := 0;
 	self.tmp_teardown_pending := false;
 	self.tmp_teardown_waits := 0;
 	if (0 <= self.tmp_active_test_index) and (self.tmp_active_test_index < self.num_of_tests) then
@@ -260,7 +272,8 @@ function JiecTest_beginFailure
 end
 
 (*{doc Finish the output of a failure and count it.
-Prints the message, if any, and counts the failure: in the total failure
+Prints the message, if any, then the texts of the SCOPED_TRACE statements
+that are running, and counts the failure: in the total failure
 count and as a fatal (die) or non-fatal failure of the active test. While
 failures are captured, it is counted only as a captured failure.
 @inout self The JiecTest_t structure.
@@ -276,8 +289,23 @@ function JiecTest_endFailure
 		(*{doc Whether the failure aborts the test.}*)
 		die: bool := true;
 	end
+	var_temp
+		trace_index: dint;
+	end
 	if message <> '' then
 		JiecTest_print(self, message);
+	end_if;
+	if self.tmp_trace_depth > 0 then
+		// The innermost SCOPED_TRACE first, as in Google Test.
+		JiecTest_print(self, 'JiecUnit trace:');
+		trace_index := self.tmp_trace_depth - 1;
+		if trace_index > JIECUNIT_MAX_TRACE_DEPTH - 1 then
+			trace_index := JIECUNIT_MAX_TRACE_DEPTH - 1;
+		end_if;
+		while trace_index >= 0 do
+			JiecTest_print(self, jiec_concat(self.tmp_trace_files[trace_index], ':', dint_to_string(self.tmp_trace_lines[trace_index]), ': ', self.tmp_trace_texts[trace_index]));
+			trace_index := trace_index - 1;
+		end_while;
 	end_if;
 	if self.tmp_capturing then
 		if die then
@@ -391,8 +419,13 @@ end
 (*{doc Mark the active test as skipped.
 The test is reported as skipped rather than passed or failed. Does not abort the test by itself;
 combine with EOT() (see the SKIP_TEST macro) to end the test immediately.
+Prints "<file>:<line>: Skipped" (followed by " (cycle N)" in a multi-cycle
+test; only "Skipped" without a file name) and then the reason, if any, as
+Google Test does.
 @inout self The JiecTest_t structure.
 @input reason The reason for skipping the test (optional).
+@input file The source file name (optional).
+@input line The line number.
 @return Always returns true.}*)
 function JiecTest_skip
 	_PROLOGUE_OF_FUNCTION_()
@@ -401,11 +434,27 @@ function JiecTest_skip
 	var_input
 		(*{doc The reason for skipping the test (optional).}*)
 		reason: string[STRING_MAX_SIZE] := '';
+		(*{doc The source file name (optional).}*)
+		file: string[FILENAME_MAX_SIZE] := '';
+		(*{doc The line number.}*)
+		line: dint := 0;
+	end
+	var_temp
+		msg: string[STRING_MAX_SIZE];
 	end
 	self.tmp_is_skipped := true;
+	if file <> '' then
+		msg := jiec_concat(file, ':', dint_to_string(line), ': Skipped');
+	else
+		msg := 'Skipped';
+	end_if;
+	if not self.tmp_is_single_cycle then
+		msg := jiec_concat(msg, ' (cycle ', dint_to_string(JiecTest_currentCycle(self)), ')');
+	end_if;
 	// Not a failure, so not printed through JiecTest_print.
+	puts(msg);
 	if reason <> '' then
-		puts(jiec_concat('Skipped: ', reason));
+		puts(reason);
 	end_if;
 end
 
@@ -577,6 +626,97 @@ function JiecTest_setMaxCycles: bool
 		max_cycles: dint;
 	end
 	self.tmp_max_cycles := max_cycles;
+end
+
+(*{doc Print a line from a test or a helper (JIECUNIT_LOG).
+The line is always printed, also while failures are captured, and it is not
+part of a failure.
+@inout self The JiecTest_t structure.
+@input line The line to print.
+@return Always returns true.}*)
+function JiecTest_log: bool
+	_PROLOGUE_OF_FUNCTION_()
+	_DECLARE_CONSOLE_IN_POU_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc The line to print.}*)
+		line: string[STRING_MAX_SIZE];
+	end
+	puts(line);
+	JiecTest_log := true;
+end
+
+(*{doc Start a SCOPED_TRACE statement: every failure until JiecTest_popTrace shows the text and its position.
+If the statements are nested deeper than JIECUNIT_MAX_TRACE_DEPTH, a failure
+is reported, and the inner texts are not shown.
+@inout self The JiecTest_t structure.
+@input text The text to show with the failures.
+@input file The source file name.
+@input line The line number.
+@return Always returns true.}*)
+function JiecTest_pushTrace: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc The text to show with the failures.}*)
+		text: string[EXPRESSION_MAX_SIZE];
+		(*{doc The source file name.}*)
+		file: string[FILENAME_MAX_SIZE];
+		(*{doc The line number.}*)
+		line: dint;
+	end
+	JiecTest_pushTrace := true;
+	if (self.tmp_trace_depth >= 0) and (self.tmp_trace_depth < JIECUNIT_MAX_TRACE_DEPTH) then
+		self.tmp_trace_files[self.tmp_trace_depth] := file;
+		self.tmp_trace_lines[self.tmp_trace_depth] := line;
+		self.tmp_trace_texts[self.tmp_trace_depth] := text;
+	elsif self.tmp_trace_depth = JIECUNIT_MAX_TRACE_DEPTH then
+		JiecTest_beginFailure(self:=self, file:=file, line:=line);
+		JiecTest_print(self, jiec_concat('SCOPED_TRACE is nested deeper than ', dint_to_string(JIECUNIT_MAX_TRACE_DEPTH), ' (JIECUNIT_MAX_TRACE_DEPTH); the inner texts are not shown.'));
+		JiecTest_endFailure(self:=self, message:='', die:=false);
+	end_if;
+	inc(self.tmp_trace_depth);
+end
+
+(*{doc Finish a SCOPED_TRACE statement.
+@inout self The JiecTest_t structure.
+@return Always returns true.}*)
+function JiecTest_popTrace: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	JiecTest_popTrace := true;
+	if self.tmp_trace_depth > 0 then
+		dec(self.tmp_trace_depth);
+	end_if;
+end
+
+(*{doc Remember the number of failures, for JiecTest_failedSinceMark.
+An array assertion calls it before it checks an element. While failures are
+captured, the captured ones are counted.
+@inout self The JiecTest_t structure.
+@return Always returns true.}*)
+function JiecTest_markFailures: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	JiecTest_markFailures := true;
+	if self.tmp_capturing then
+		self.tmp_failure_mark := self.tmp_captured_fatal + self.tmp_captured_nonfatal;
+	else
+		self.tmp_failure_mark := self.tmp_fatal_failures + self.tmp_nonfatal_failures;
+	end_if;
+end
+
+(*{doc Whether a failure has been reported since JiecTest_markFailures.
+@inout self The JiecTest_t structure.
+@return True if there has been a failure.}*)
+function JiecTest_failedSinceMark: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	if self.tmp_capturing then
+		JiecTest_failedSinceMark := (self.tmp_captured_fatal + self.tmp_captured_nonfatal) <> self.tmp_failure_mark;
+	else
+		JiecTest_failedSinceMark := (self.tmp_fatal_failures + self.tmp_nonfatal_failures) <> self.tmp_failure_mark;
+	end_if;
 end
 
 (*{doc Act on a fatal failure (ASSERT_*, FAIL) after it has been reported.
@@ -800,7 +940,8 @@ end
 (*{doc Clean up what a statement left by returning from the test.
 Called by JiecUnitMain at the start of each cycle. The statements of
 ASSERT_NO_FATAL_FAILURE / EXPECT_NO_FATAL_FAILURE and of EXPECT_FATAL_FAILURE /
-EXPECT_NONFATAL_FAILURE end within one cycle, so their marks are cleared. If
+EXPECT_NONFATAL_FAILURE and of SCOPED_TRACE end within one cycle, so their
+marks and traces are cleared. If
 failures are still being captured, the statement of EXPECT_FATAL_FAILURE /
 EXPECT_NONFATAL_FAILURE returned from the test (an ASSERT written directly in
 it): the capture is ended, a failure is reported and the test is ended (also
@@ -811,6 +952,7 @@ function JiecTest_endLeftCapture: bool
 	_PROLOGUE_OF_FUNCTION_()
 	var_in_out self: JiecTest_t; end
 	self.tmp_fatal_mark_depth := 0;
+	self.tmp_trace_depth := 0;
 	self.tmp_capture_rejected := 0;
 	JiecTest_endLeftCapture := self.tmp_capturing;
 	if not self.tmp_capturing then

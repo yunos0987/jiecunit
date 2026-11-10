@@ -24,7 +24,8 @@ TearDown: level=10
 [ FAILED ] TankFixture.assert_fails (n/a)
 [ RUN    ] TankFixture.skipped
 SetUp: level=1
-Skipped: skipped in the body
+test/golden/suites_and_fixtures.iec:122: Skipped
+skipped in the body
 TearDown: level=30
 [ SKIPPED] TankFixture.skipped (n/a)
 [ RUN    ] TankFixture.times_out
@@ -42,7 +43,8 @@ the SetUp failed
 TearDown of BadSetUp
 [ FAILED ] BadSetUp.body_not_run (n/a)
 [ RUN    ] SkipInSetUp.body_not_run
-Skipped: skipped in the SetUp
+test/golden/suites_and_fixtures.iec:62: Skipped
+skipped in the SetUp
 TearDown of SkipInSetUp
 [ SKIPPED] SkipInSetUp.body_not_run (n/a)
 [ RUN    ] BadTearDown.fails_after_body

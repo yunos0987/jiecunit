@@ -12,7 +12,7 @@ JiecUnit は、IEC 61131-3 ST 言語向けの単体テストフレームワー�
 ## テスト
 
 - 変更後は、リポジトリルートで `python scripts/run_tests.py` を実行し、`All checks passed.` と表示されることを確認する。全ターゲットのコンパイル確認、jier（`jiecc --run`）によるテスト実行、メッセージ引数省略形と `_MSG` 形の展開結果の一致検証（式のテキストの順序を含む）、`test/golden` のゴールデン出力の比較と JUnit 変換の自己テストを一度に行う。
-- 失敗の出力やランナーの挙動を変えたときは、`python scripts/check_golden.py --update <ケース>` で期待値を作り直し、`git diff test/golden` で差分が意図どおりか確かめてからコミットする。新しい挙動には、`test/golden/` にケースを足す（失敗するテストの出力は、`test/test.iec` ではなくゴールデンか `EXPECT_NONFATAL_FAILURE` で確かめる）。
+- 失敗の出力やランナーの挙動を変えたときは、`python scripts/check_golden.py --update <ケース>` で期待値を作り直し、`git diff test/golden` で差分が意図どおりか確かめてからコミットする。ケースの 1 行目の `// golden-args:` に書いた引数を jiecc に渡す（`-Wno-error` は jiecc に渡さず、既定の `-Werror` を外す。`--allow-narrowing` と併用する）。新しい挙動には、`test/golden/` にケースを足す（失敗するテストの出力は、`test/test.iec` ではなくゴールデンか `EXPECT_NONFATAL_FAILURE` で確かめる）。
 - jiecc は、`--jiecc PATH`、環境変数 `JIECC`、`PATH` 上の `jiecc` の順に探す。
 - `jiecc --run` の終了コードはテストの結果を反映する（`JiecUnitMain` が集計の後に `halt` を呼ぶ。全テスト合格なら 0、失敗か登録時の致命的エラーなら 1）。テストの合否は標準出力の集計行から判定し、加えて `jiecc --run` の終了コードが 0 以外なら失敗とする（`scripts/run_tests.py` が行う）。必要な Jiecc は 9.4.0 以降（`src/jiecunit_config.iec` の `{#error}`）。
 - `jiecc` の終了コードが 0 でも、標準エラー出力に `error:` の行があれば失敗とみなす。手動でコンパイルや実行をした場合も、この行を確認する。

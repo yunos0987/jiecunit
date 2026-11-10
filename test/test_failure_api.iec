@@ -165,3 +165,64 @@ TEST_S(test_array_and_substring)
 	EXPECT_NONFATAL_FAILURE(EXPECT_STR_CONTAINS(s, 'xyz', 'with a message'), 'with a message');
 	EXPECT_FALSE(HAS_FAILURE());
 END_TEST_S
+
+TEST_S(test_tolerant_arrays)
+	var
+		expected_values: array[0..2] of lreal := [1.0, 2.0, 3.0];
+		near_values: array[0..2] of lreal := [1.0, 2.25, 2.75];
+		far_values: array[0..2] of lreal := [1.0, 2.25, 9.0];
+		sums: array[0..1] of lreal;
+		exact_values: array[0..1] of lreal := [0.3, 1.0];
+		real_values: array[0..1] of real := [0.5, 1.5];
+		other_real_values: array[0..1] of real := [0.5, 1.75];
+	end
+	sums[0] := 0.1 + 0.2;
+	sums[1] := 1.0;
+	// Fact: EXPECT_NEAR_ARRAY passes when every pair of elements is within the error.
+	EXPECT_NEAR_ARRAY(expected_values, near_values, 3, 0.25);
+	ASSERT_NEAR_ARRAY(expected_values, far_values, 2, 0.25);
+	EXPECT_NEAR_ARRAY(real_values, other_real_values, 2, 0.25);
+	// Fact: it goes on after elements that differ within the error, and reports the first one that is not.
+	EXPECT_NONFATAL_FAILURE(EXPECT_NEAR_ARRAY(expected_values, far_values, 3, 0.25), 'The difference between expected_values[2] and far_values[2] is 6.0');
+	EXPECT_NONFATAL_FAILURE(EXPECT_NEAR_ARRAY(expected_values, far_values, 3, 0.25, 'more'), 'The arrays differ first at index 2. more');
+	EXPECT_NONFATAL_FAILURE(EXPECT_NEAR_ARRAY(expected_values, near_values, 3, 0.125), 'The arrays differ first at index 1.');
+	// Fact: a negative error fails as with EXPECT_NEAR, also when the arrays are equal.
+	EXPECT_NONFATAL_FAILURE(EXPECT_NEAR_ARRAY(expected_values, expected_values, 3, -1.0), 'must not be negative');
+	// Fact: EXPECT_DOUBLE_EQ_ARRAY / EXPECT_FLOAT_EQ_ARRAY accept elements within 4 ULPs.
+	EXPECT_NE_LREAL(exact_values[0], sums[0]);
+	EXPECT_DOUBLE_EQ_ARRAY(exact_values, sums, 2);
+	ASSERT_DOUBLE_EQ_ARRAY(exact_values, sums, 2);
+	EXPECT_FLOAT_EQ_ARRAY(real_values, real_values, 2);
+	ASSERT_FLOAT_EQ_ARRAY(real_values, other_real_values, 1);
+	EXPECT_NONFATAL_FAILURE(EXPECT_DOUBLE_EQ_ARRAY(expected_values, near_values, 3), '  near_values[1]');
+	EXPECT_NONFATAL_FAILURE(EXPECT_FLOAT_EQ_ARRAY(real_values, other_real_values, 2), 'The arrays differ first at index 1.');
+	EXPECT_FALSE(HAS_FAILURE());
+END_TEST_S
+
+(*{doc A helper for the tests below: one non-fatal failure inside a nested SCOPED_TRACE.
+@return Always returns true.}*)
+function test_helper_traced_failure: bool
+	JIECUNIT_DECLARE_HELPER();
+	var
+		ok: bool;
+	end
+	SCOPED_TRACE('inner trace', ok := test_helper_add_failure());
+	test_helper_traced_failure := true;
+end
+
+TEST_S(test_trace_and_log)
+	var
+		ok: bool;
+	end
+	// Fact: a failure inside SCOPED_TRACE shows the text of the trace; nested traces are all shown.
+	EXPECT_NONFATAL_FAILURE(SCOPED_TRACE('the outer trace', ok := test_helper_add_failure()), 'JiecUnit trace:');
+	EXPECT_NONFATAL_FAILURE(SCOPED_TRACE('the outer trace', ok := test_helper_add_failure()), ': the outer trace');
+	EXPECT_NONFATAL_FAILURE(SCOPED_TRACE('the outer trace', ok := test_helper_traced_failure()), ': inner trace');
+	EXPECT_NONFATAL_FAILURE(SCOPED_TRACE('the outer trace', ok := test_helper_traced_failure()), ': the outer trace');
+	// Fact: a statement without a failure leaves nothing behind.
+	SCOPED_TRACE('no failure', ok := test_helper_check_positive(1));
+	EXPECT_EQ_DINT(0, g_jiectest.tmp_trace_depth);
+	// Fact: JIECUNIT_LOG is not a failure.
+	JIECUNIT_LOG('a line from test_trace_and_log');
+	EXPECT_FALSE(HAS_FAILURE());
+END_TEST_S

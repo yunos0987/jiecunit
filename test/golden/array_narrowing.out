@@ -1,0 +1,18 @@
+test/golden/array_narrowing.iec:15.0: warning: 0x20080001: 'type mismatch in test_narrowed_elements: expected REAL but got LREAL'; TYPE_MISMATCH_WARNING
+test/golden/array_narrowing.iec:15.0: warning: 0x20080001: 'type mismatch in test_narrowed_elements: expected REAL but got LREAL'; TYPE_MISMATCH_WARNING
+2 type warning(s) in this module
+[========] Running 1 tests.
+[ RUN    ] test_narrowed_elements
+test/golden/array_narrowing.iec:15: Failure
+Expected equality of these values:
+  expected_values[2]
+    Which is: 3.0
+  actual_values[2]
+    Which is: 99.0
+The arrays differ first at index 2.
+[ FAILED ] test_narrowed_elements (n/a)
+[========] 1 tests ran. (n/a)
+[ PASSED ] 0 tests.
+[ FAILED ] 1 tests, listed below.
+[ FAILED ] test_narrowed_elements
+[exit code: 1]

@@ -6,10 +6,12 @@ test/golden/skip_after_failure.iec:9: Failure
 Expected equality of these values:
   1
   2
-Skipped: skipped after a failure
+test/golden/skip_after_failure.iec:10: Skipped
+skipped after a failure
 [ FAILED ] test_fails_then_skips (n/a)
 [ RUN    ] test_skips
-Skipped: plain skip
+test/golden/skip_after_failure.iec:14: Skipped
+plain skip
 [ SKIPPED] test_skips (n/a)
 [========] 3 tests ran. (n/a)
 [ PASSED ] 1 tests.

@@ -10,6 +10,7 @@
 
 - `JiecTest_t` のフィールドを変えました。`tmp_is_test_available` を削除し、`tmp_is_active`・`tmp_exec_count`・`tmp_is_single_cycle`・`tmp_max_cycles`・`tmp_test_file`・`tmp_test_line` を追加しました。ほかに、テストごとの致命的・非致命的な失敗の数、失敗の捕捉、表示名、TearDown の待ちのフィールドも追加しました。テストが動いているかどうかは `tmp_is_active` で表し、`JiecTest_deactivate` はサイクル数（`tmp_cycle`）を変えません（従来は `DINT` の最小値にしていました）。初期化直後の `tmp_cycle` は 0 です。`JiecTest_nextCycle` は、テストが動いていないときと上限に達したときはサイクル数を変えません。
 - 時計の無いターゲット（jier・CODESYS・MITSUBISHI）では、所要時間を `(0us)` ではなく `(n/a)` と表示します。
+- `SKIP_TEST(reason)` の出力を、Google Test と同じ 2 行（`file:line: Skipped`、理由）にしました（従来は `Skipped: reason` の 1 行）。複数サイクルのテストでは、位置の行に ` (cycle N)` が付きます。`JiecTest_skip` に、省略可能な入力 `file`・`line` を追加しました。
 - 失敗の出力を Google Test の形式に変えました。出力を解析しているツールに影響します。
   - 位置の行を詳細より先に出し、`<ファイル>:<行>: Failure` の形にしました（従来は詳細の後に `<テスト名>:<行>@<サイクル>`）。ファイルは `__FILE__`（jiecc に渡した、またはインクルードに書いたパス）です。複数サイクルのテスト（`TEST_M`）では末尾に ` (cycle N)` を付けます。
   - 値だけでなく、テストに書いた式のテキストも出します。等値は `Expected equality of these values:` に続けて式ごとに `  <式>` と `    Which is: <値>`（式と値の表示が同じリテラルのときは省略）、不等と大小は `Expected: (<式1>) <op> (<式2>), actual: <値1> vs <値2>`、`EXPECT_TRUE`/`EXPECT_FALSE` は `Value of: <式>` / `  Actual: <値>` / `Expected: <値>`、`EXPECT_NEAR`/`EXPECT_NEAR_REL` は `The difference between ... which exceeds ..., where` と各式の値、`FAIL`/`ADD_FAILURE` は `Failed` です。メッセージは最後の行に出します。
@@ -24,6 +25,8 @@
 
 ### 不具合の修正 / Bug fixes
 
+- `MAX_TESTS` が一覧のテストの数より小さいとき、PLC 向けの変換が成功して、繰り返し数が負の初期値（`repetitionValue="-2"`）を持つ XML を出していました。前処理のエラーにしました。
+- `EXPECT_EQ_ARRAY_<T>` に `<T>` より広い型の配列を渡し、ターゲットが暗黙に縮小する場合、縮小すると等しくなる要素で比較を打ち切り、その後ろの違いを見ずに成功していました。検証が成功した要素の後も比較を続けます。
 - 失敗した後に `SKIP_TEST` したテストが `[ SKIPPED]` と表示され、失敗の一覧にも載りませんでした（失敗がそれだけなら `[ FAILED ] 0 tests, listed below.` と出て終了コード 1）。失敗を優先して `[ FAILED ]` と表示するようにしました。
 - `EOT()` を呼ばない `TEST_M` や、本体の途中で `return` した `TEST_S` は、終わらずに後続のテストと集計が実行されませんでした。`TEST_S` は最初のサイクルの終わりで終了します（GTest の `return` と同じ）。`TEST_M` は `JIECUNIT_MAX_CYCLES_PER_TEST` サイクル実行してもまだ終わっていなければ失敗として記録され、次のテストへ進みます。既定値は 100000 で、1 秒に 50 サイクル程度しか実行できない jier では 1000 です。0 以下なら無制限です。サイクル数があふれたときも失敗にします。
 - テストが 1 つも無いとき、`[========] Running 0 tests.` の後に何も起きず、jier では `--max-cycles` まで止まりませんでした。空の集計を出して終了します（終了コード 0。Google Test と同じ）。
@@ -34,6 +37,9 @@
 
 ### 新機能 / New features
 
+- `SCOPED_TRACE(text, stmt)` を追加しました。文を実行する間の失敗に、`JiecUnit trace:` と `file:line: text` の行を添えます（入れ子は `JIECUNIT_MAX_TRACE_DEPTH` = 8 まで）。同じヘルパーを何度も呼ぶテストで、どの呼び出しの失敗かが分かります。
+- `JIECUNIT_LOG(text)` を追加しました。テストやヘルパーから 1 行出力します。
+- `EXPECT_NEAR_ARRAY`・`ASSERT_NEAR_ARRAY`（各要素を `EXPECT_NEAR` で比べる）と、`EXPECT_FLOAT_EQ_ARRAY`・`EXPECT_DOUBLE_EQ_ARRAY`（各要素を 4 ULP 以内で比べる。`ASSERT_` 形もあります）を追加しました。
 - `JIECUNIT_MANUAL_START` を定義すると、`g_jiecunit_rerun` を true にするまでテストを始めません（既定では、運転にするとすぐに始めます）。
 - `EXPECT_DOUBLE_EQ`・`ASSERT_DOUBLE_EQ`（LREAL）と `EXPECT_FLOAT_EQ`・`ASSERT_FLOAT_EQ`（REAL）を追加しました。Google Test と同じく、2 つの値の間にある表現可能な値の数（ULP の距離）が 4 以下なら等しいとみなします（2 の冪をまたぐ場合・ゼロをまたぐ場合・非正規化数を含む）。NaN はどの値とも等しくありません。Google Test と違い、無限大は同じ無限大とだけ等しいとします（Google Test は最大の有限値と無限大を 1 ULP 離れているとみなします）。ビット列への変換（ベンダーによって挙動が違う）は使わず、2 の冪による正規化で距離を計算します。末尾にメッセージを渡せます（`_MSG` 形はありません）。
 - ヘルパーでアサーションを使えるようにしました（`JIECUNIT_DECLARE_HELPER()`）。Google Test と同じく、ヘルパーの中の致命的な失敗（`ASSERT_*`・`FAIL`）は、ヘルパーから戻るだけでテストは続きます。次を追加しました。
@@ -61,6 +67,8 @@
 
 ### その他 / Other
 
+- `jiecunit_in_helper`（ヘルパーの中かどうか）を `var constant` にしました。関数のローカル変数の初期値が効かない環境で、ヘルパーの中の `ASSERT_*` がテストを終えてしまう恐れがありました。
+- `scripts/jiecunit_to_junit.py` が、最後の実行を取り違えないようにしました。出力を先頭から順に読み、テストの外にある `Running N tests.` の行で実行を切り替えます（従来は次の行の内容から推測していて、別のプログラムの行が挟まると、失敗した最後の実行を読まずに合格の XML を出すことがありました）。集計の行（`[ PASSED ]`・`[ SKIPPED]`・`[ FAILED ]` の数）と読み取った結果が合わないとき、集計の後にテストの行があるときは、問題として報告します。
 - PLC のツールに取り込めない恐れのある箇所を直しました。`JiecTest_t` の配列の上限が XML に式（`upper="8-1"`）のまま出ていたのを、数値で出るようにしました。変数名 `t1`・`t2`・`t3`・`next` を改名しました（キーエンス・三菱のデバイス名や命令名と重なりうるため）。`jiec_quote` の 1 文字用の変数を `string[8]` にし、切り詰めの余白を 1 増やしました（OMRON の STRING のサイズは終端を含むため）。
 - 実行していないとき、各テストプログラムは `JiecTest_isActive` を呼ぶだけで戻ります（従来は毎スキャン、テスト名の文字列も比べていました）。
 - ゴールデンの比較で、`(n/a)` を所要時間として正規化するのをやめました（時計の無い jier が `(0us)` と出す退行を検出できます）。

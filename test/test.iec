@@ -90,6 +90,8 @@ DEFINE_CONFIGURATION(
 		test_failure_messages,
 		test_fatal_failure_in_helper,
 		test_fatal_failure_checks,
-		test_array_and_substring
+		test_array_and_substring,
+		test_tolerant_arrays,
+		test_trace_and_log
 	)
 )

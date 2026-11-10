@@ -17,6 +17,8 @@ A case can pass extra jiecc arguments on its FIRST line (a "golden-args"
 comment on any other line is reported as an error):
   // golden-args: --max-cycles 50
 The default arguments are: --max-cycles 1000 -Werror -Wundef.
+The word -Wno-error in golden-args is not passed to jiecc: it removes -Werror
+from the default arguments (-Werror wins over --allow-narrowing).
 A case whose preprocessing is expected to fail is written the same way; its
 .out file records the error text and the nonzero exit code.
 
@@ -85,6 +87,9 @@ def _case_args(path):
     if any(a == '--max-cycles' or a.startswith('--max-cycles=') for a in extra):
         i = args.index('--max-cycles')
         del args[i:i + 2]
+    if '-Wno-error' in extra:
+        extra = [a for a in extra if a != '-Wno-error']
+        args.remove('-Werror')
     return args + extra
 
 

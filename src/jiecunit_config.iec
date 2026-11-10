@@ -57,6 +57,17 @@
 {#ifndef JIECUNIT_MAX_NO_FATAL_FAILURE_DEPTH}
 {#define JIECUNIT_MAX_NO_FATAL_FAILURE_DEPTH 8}
 {#endif}
+{#if JIECUNIT_MAX_NO_FATAL_FAILURE_DEPTH < 1}
+{#error JiecUnit: the maximum nesting depth of the no-fatal-failure statements must be 1 or more.}
+{#endif}
+
+// The maximum nesting depth of SCOPED_TRACE.
+{#ifndef JIECUNIT_MAX_TRACE_DEPTH}
+{#define JIECUNIT_MAX_TRACE_DEPTH 8}
+{#endif}
+{#if JIECUNIT_MAX_TRACE_DEPTH < 1}
+{#error JiecUnit: the maximum nesting depth of the scoped traces must be 1 or more.}
+{#endif}
 
 // The maximum length of the text of an expression shown in a failure.
 {#ifndef EXPRESSION_MAX_SIZE}
