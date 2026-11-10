@@ -44,7 +44,7 @@ import sys
 
 _DEFAULT_ARGS = ['--max-cycles', '1000', '-Werror', '-Wundef']
 _ARGS_RE = re.compile(r'^\s*//\s*golden-args:(.*)$')
-_TIME_RE = re.compile(r'\((?:\d+[a-z]+|n/a)\)')
+_TIME_RE = re.compile(r'\(\d+[a-z]+\)')
 _PATH_RE = re.compile(r'[\w.:/\\-]+\.iec')
 
 

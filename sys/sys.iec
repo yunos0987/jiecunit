@@ -249,7 +249,7 @@ function jiec_quote: string[STRING_MAX_SIZE]
 	var_temp
 		index: dint;
 		size: dint;
-		piece: string[2];
+		piece: string[8]; // a character (multi-byte ones too) or its two-character escape
 		quoted: string[STRING_MAX_SIZE];
 		cut: bool;
 	end
@@ -263,8 +263,9 @@ function jiec_quote: string[STRING_MAX_SIZE]
 		elsif piece = '$$' then
 			piece := '$$$$';
 		end_if;
-		// Keep room for the closing quote and the three dots.
-		if len(quoted) + len(piece) > STRING_MAX_SIZE - 4 then
+		// Keep room for the closing quote, the three dots and the terminator
+		// (the size of a STRING includes it on OMRON).
+		if len(quoted) + len(piece) > STRING_MAX_SIZE - 5 then
 			cut := true;
 			exit;
 		end_if;

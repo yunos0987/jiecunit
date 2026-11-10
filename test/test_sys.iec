@@ -157,7 +157,8 @@ TEST_S(test_jiec_quote)
 		// Act
 	quoted := jiec_quote(long_text);
 		// Assert
-	EXPECT_EQ_INT(STRING_MAX_SIZE, len(quoted));
+	// (One less than STRING_MAX_SIZE: on OMRON the size of a STRING includes the terminator.)
+	EXPECT_EQ_INT(STRING_MAX_SIZE - 1, len(quoted));
 	EXPECT_EQ_STRING('$'...', right(quoted, 4));
 	EXPECT_EQ_STRING('$'x', left(quoted, 2));
 END_TEST_S

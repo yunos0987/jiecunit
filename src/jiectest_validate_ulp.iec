@@ -66,7 +66,7 @@ function JiecTest_almostEquals: bool
 		m: lreal;        // x scaled into [1, 2)
 		scale: lreal;    // the power of two with scale <= x < 2 * scale
 		ulp: lreal;      // the ULP at x
-		next: lreal;     // the next power of two above x
+		next_power: lreal;     // the next power of two above x
 		distance: lreal;
 		powers: array[0..9] of lreal; // 2^1, 2^2, 2^4, ..., 2^512
 		i: dint;
@@ -114,7 +114,7 @@ function JiecTest_almostEquals: bool
 	if x < boundary then
 		// Subnormal values and the smallest normal binade share one ULP.
 		ulp := smallest;
-		next := boundary;
+		next_power := boundary;
 	else
 		powers[0] := 2.0;
 		for k := 1 to 9 do
@@ -141,15 +141,15 @@ function JiecTest_almostEquals: bool
 			end_for;
 		end_if;
 		ulp := scale * JiecTest_pow2(-mantissa_bits);
-		next := scale * 2.0;
+		next_power := scale * 2.0;
 	end_if;
 
 	// All the subtractions are exact (the values are within a factor of 2,
 	// or the result is a multiple of the ULP).
-	if y < next then
+	if y < next_power then
 		distance := (y - x) / ulp;
 	else
-		distance := ((next - x) / ulp) + ((y - next) / (2.0 * ulp));
+		distance := ((next_power - x) / ulp) + ((y - next_power) / (2.0 * ulp));
 	end_if;
 	JiecTest_almostEquals := distance <= 4.0;
 end

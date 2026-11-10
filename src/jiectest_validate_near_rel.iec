@@ -46,9 +46,9 @@ function JiecTest_validateNEARREL: bool
 		scale_value: lreal;
 		allowed_value: lreal;
 		difference: lreal;
-		t1: string[STRING_MAX_SIZE];
-		t2: string[STRING_MAX_SIZE];
-		t3: string[STRING_MAX_SIZE];
+		val1_shown: string[STRING_MAX_SIZE];
+		val2_shown: string[STRING_MAX_SIZE];
+		rel_error_shown: string[STRING_MAX_SIZE];
 	end
 	if rel_error < 0.0 then
 		JiecTest_beginFailure(self:=self, file:=file, line:=line);
@@ -73,20 +73,20 @@ function JiecTest_validateNEARREL: bool
 		return;
 	end_if;
 
-	t1 := val1_text;
-	if t1 = '' then
-		t1 := lreal_to_string(val1);
+	val1_shown := val1_text;
+	if val1_shown = '' then
+		val1_shown := lreal_to_string(val1);
 	end_if;
-	t2 := val2_text;
-	if t2 = '' then
-		t2 := lreal_to_string(val2);
+	val2_shown := val2_text;
+	if val2_shown = '' then
+		val2_shown := lreal_to_string(val2);
 	end_if;
-	t3 := rel_error_text;
-	if t3 = '' then
-		t3 := lreal_to_string(rel_error);
+	rel_error_shown := rel_error_text;
+	if rel_error_shown = '' then
+		rel_error_shown := lreal_to_string(rel_error);
 	end_if;
 	JiecTest_beginFailure(self:=self, file:=file, line:=line);
-	JiecTest_printNearFailure(self:=self, val1:=val1, val2:=val2, tolerance:=rel_error, bound:=jiec_concat(t3, ' * max(|', t1, '|, |', t2, '|) = ', lreal_to_string(allowed_value)), val1_text:=val1_text, val2_text:=val2_text, tolerance_text:=rel_error_text);
+	JiecTest_printNearFailure(self:=self, val1:=val1, val2:=val2, tolerance:=rel_error, bound:=jiec_concat(rel_error_shown, ' * max(|', val1_shown, '|, |', val2_shown, '|) = ', lreal_to_string(allowed_value)), val1_text:=val1_text, val2_text:=val2_text, tolerance_text:=rel_error_text);
 	JiecTest_endFailure(self:=self, message:=message, die:=die);
 end
 

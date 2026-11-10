@@ -38,9 +38,9 @@ type
 		(*{doc The depth of the nested ASSERT_NO_FATAL_FAILURE / EXPECT_NO_FATAL_FAILURE statements.}*)
 		tmp_fatal_mark_depth: dint;
 		(*{doc The number of fatal failures before each nested ASSERT_NO_FATAL_FAILURE / EXPECT_NO_FATAL_FAILURE statement (of the captured ones if it started while failures were captured).}*)
-		tmp_fatal_marks: array[0..JIECUNIT_MAX_NO_FATAL_FAILURE_DEPTH - 1] of dint;
+		tmp_fatal_marks: array[JIECUNIT_MAX_NO_FATAL_FAILURE_DEPTH] of dint;
 		(*{doc Whether each nested ASSERT_NO_FATAL_FAILURE / EXPECT_NO_FATAL_FAILURE statement started while failures were captured.}*)
-		tmp_fatal_marks_captured: array[0..JIECUNIT_MAX_NO_FATAL_FAILURE_DEPTH - 1] of bool;
+		tmp_fatal_marks_captured: array[JIECUNIT_MAX_NO_FATAL_FAILURE_DEPTH] of bool;
 		(*{doc Whether failures are being captured by EXPECT_FATAL_FAILURE / EXPECT_NONFATAL_FAILURE.}*)
 		tmp_capturing: bool;
 		(*{doc The text that a captured failure must contain.}*)

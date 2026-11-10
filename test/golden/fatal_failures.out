@@ -27,7 +27,7 @@ test/golden/fatal_failures.iec:27: Failure (cycle 1)
 Expected: ok := check_positive(-3) does not generate new fatal failures.
   Actual: it does.
 ASSERT_NO_FATAL_FAILURE stops the test
-[ FAILED ] test_assert_in_helper_continues (<time>)
+[ FAILED ] test_assert_in_helper_continues (n/a)
 [ RUN    ] test_capture_mismatches
 test/golden/fatal_failures.iec:33: Failure
 Expected: EXPECT_TRUE(true) generates 1 non-fatal failure containing 'none'
@@ -43,23 +43,23 @@ Expected: EXPECT_TRUE(false) generates 1 fatal failure containing 'Value of'
   Actual: 0 fatal and 1 non-fatal failures
 test/golden/fatal_failures.iec:37: Failure
 EXPECT_FATAL_FAILURE / EXPECT_NONFATAL_FAILURE cannot be nested.
-[ FAILED ] test_capture_mismatches (<time>)
+[ FAILED ] test_capture_mismatches (n/a)
 [ RUN    ] test_capture_left_by_return
 test/golden/fatal_failures.iec:41: Failure
 The statement of EXPECT_FATAL_FAILURE / EXPECT_NONFATAL_FAILURE returned from the test. Call a function (a helper with JIECUNIT_DECLARE_HELPER) that contains the assertion.
-[ FAILED ] test_capture_left_by_return (<time>)
+[ FAILED ] test_capture_left_by_return (n/a)
 [ RUN    ] test_capture_left_by_return_ends_test_m
 test/golden/fatal_failures.iec:47: Failure (cycle 0)
 The statement of EXPECT_FATAL_FAILURE / EXPECT_NONFATAL_FAILURE returned from the test. Call a function (a helper with JIECUNIT_DECLARE_HELPER) that contains the assertion.
-[ FAILED ] test_capture_left_by_return_ends_test_m (<time>)
+[ FAILED ] test_capture_left_by_return_ends_test_m (n/a)
 [ RUN    ] test_no_fatal_failure_inside_capture
 test/golden/fatal_failures.iec:59: Failure
 Expected: EXPECT_NO_FATAL_FAILURE(ok := check_positive(-1)) generates 1 fatal failure containing 'positive'
   Actual: 1 fatal and 1 non-fatal failures
-[ FAILED ] test_no_fatal_failure_inside_capture (<time>)
+[ FAILED ] test_no_fatal_failure_inside_capture (n/a)
 [ RUN    ] test_after
-[     OK ] test_after (<time>)
-[========] 6 tests ran. (<time>)
+[     OK ] test_after (n/a)
+[========] 6 tests ran. (n/a)
 [ PASSED ] 1 tests.
 [ FAILED ] 5 tests, listed below.
 [ FAILED ] test_assert_in_helper_continues

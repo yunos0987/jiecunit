@@ -4,10 +4,10 @@ test/golden/console_wrapped_failure.iec:6: Failure
 Expected equality of these values:
   1
   2
-[ FAILED ] test_fails (<time>)
+[ FAILED ] test_fails (n/a)
 [ RUN    ] test_passes
-[     OK ] test_passes (<time>)
-[========] 2 tests ran. (<time>)
+[     OK ] test_passes (n/a)
+[========] 2 tests ran. (n/a)
 [ PASSED ] 1 tests.
 [ FAILED ] 1 tests, listed below.
 [ FAILED ] test_fails

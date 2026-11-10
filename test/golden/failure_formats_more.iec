@@ -16,6 +16,7 @@ TEST_S(test_near_nan)
 	EXPECT_NEAR_REL(big, big, 0.5);
 	// An infinity is not near a finite value, even with a relative error.
 	EXPECT_NEAR_REL(big, 1.0, 0.5);
+	// As in Google Test, an infinite difference is within an infinite error (passes).
 	EXPECT_NEAR(big, 1.0, big);
 	EXPECT_NEAR(1.0, 1.0, -0.5);
 	EXPECT_NEAR_REL(1.0, 1.0, -0.5);

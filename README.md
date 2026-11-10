@@ -95,8 +95,8 @@ DEFINE_CONFIGURATION(
 
 ```
 type
-	TankFixture: struct           // フィクスチャのデータ。テストのたびに初期値に戻る
-		level: dint := 1;
+	TankFixture: struct           // フィクスチャのデータ。テストのたびにクリアされる
+		level: dint;
 	end
 end
 
@@ -118,7 +118,8 @@ TEST_F_S(TankFixture, fills)      // プログラム TankFixture_fills、表示 
 END_TEST_S
 ```
 
-* テストは変数 `fixture` を使えます。テストを実行するたびに `F` の初期値に戻ってから `F_SetUp` が呼ばれます。
+* テストは変数 `fixture` を使えます。テストを実行するたびに、`fixture` をクリアしてから `F_SetUp` を呼びます。
+* フィクスチャの初期値は、`F_SetUp` で代入してください。構造体のメンバーに書いた初期値（`level: dint := 1;`）には頼らないでください。OMRON の構造体定義にはメンバーの初期値が無く、0 や空文字列になります（メンバーの初期値がある環境では、クリアした後の値はその初期値です）。
 * `F_SetUp` が致命的に失敗するか、`SKIP_TEST`・`EOT()` で終えたときは、本体を実行しません。
 * `F_TearDown` は、テストが `EOT()`・`ASSERT`・`SKIP_TEST`・サイクルの上限のどれで終わっても、JiecUnitMain が 1 サイクル待つ間に実行されます。TearDown の失敗もそのテストに数えます。
 * フィクスチャの型は、関数の `var_in_out` に渡せる型（構造体）にしてください。
@@ -168,7 +169,7 @@ END_TEST_S
 ```
 
 * Google Test と同じく、ヘルパーの中の `ASSERT_*`・`FAIL` はヘルパーから戻るだけで、テストは続きます。`HAS_FATAL_FAILURE()` で分かり、`ASSERT_NO_FATAL_FAILURE` でテストを終えられます。
-* `JIECUNIT_DECLARE_HELPER()` を書き忘れると、`jiecunit_in_helper` が未宣言というエラーになります。
+* `JIECUNIT_DECLARE_HELPER()` を書き忘れると、`g_jiectest` か `jiecunit_in_helper` が未宣言（`UNDEFINED_SYMBOL`）というエラーになります。
 * ヘルパーの中で `EOT()` や `SKIP_TEST` を呼ぶと、テストはその時点で終わったものとされ、ヘルパーから戻ります。呼び出し側の本体は、そのサイクルの残りを実行します（Google Test の `GTEST_SKIP` は、ヘルパーから戻るだけです）。
 
 ### 失敗の出力
@@ -210,6 +211,8 @@ level after filling
 | `g_jiecunit_result.elapsed_us` / `run_count` | 所要時間（us）／実行した回数 |
 | `g_jiecunit_rerun` | 完了した後に true にすると、すべてのテストをもう一度実行します（実行中に立てた要求は捨てます） |
 
+* 既定では、PLC を運転にするとすぐにテストを始めます。`JIECUNIT_MANUAL_START` を定義する（`-D JIECUNIT_MANUAL_START`）と、`g_jiecunit_rerun` を true にするまで何も実行しません（その間、`g_jiecunit_result.state` は 0 です）。
+
 * 再実行では、テストプログラムの変数は初期化されません（PLC のプログラムは、ダウンロードし直すまで初期化されないため）。テストごとに初期化したい状態はフィクスチャに置いてください。
 * ほかの POU から参照するときは `DECLARE_EXTERNAL_JIECUNIT_RESULT();` で `var_external` を宣言できます。
 * jier（`jiecc --run`）は、集計の後に `halt` で止まり、終了コードが結果を表します（合格 0、失敗 1）。`JIECUNIT_NO_HALT` を定義すると止まらず、PLC と同じく動き続けます。
@@ -230,6 +233,7 @@ level after filling
 | `JIECUNIT_NO_EXPRESSION_TEXT` | （未定義） | 定義すると、失敗に式のテキストを出さない |
 | `JIECUNIT_NO_TEST_COUNT_CHECK` | （未定義） | 定義すると、テストの数と一覧の照合をしない |
 | `JIECUNIT_NO_HALT` | （未定義） | 定義すると、jier でも集計の後に止まらない |
+| `JIECUNIT_MANUAL_START` | （未定義） | 定義すると、`g_jiecunit_rerun` を true にするまでテストを始めない |
 
 小さい PLC では、`MAX_TESTS` と `CONSOLE_MAX_ROWS` を小さくするとメモリを減らせます。
 
@@ -254,6 +258,9 @@ PLC の `g_console` の行を古い順に書き出したテキストも変換で
 * `EXPECT_DOUBLE_EQ`（4 ULP 以内）と `EXPECT_EQ_DOUBLE`（厳密な比較）は、語順が違うだけで意味が違います（`EXPECT_EQ_<T>` の形は JiecUnit の型ごとのマクロです）。
 * `EXPECT_FATAL_FAILURE` / `EXPECT_NONFATAL_FAILURE` の `sub` は、失敗の出力の 1 行ずつと照合します（Google Test は全文と照合します）。
 * `EXPECT_FATAL_FAILURE` の文は、ヘルパーの呼び出しにしてください（文に直接 `ASSERT_*` を書くとテストから戻ってしまい、次のサイクルの始めにその旨の失敗になります）。
+* 結果の行の見出しは 8 文字幅（`[ RUN    ]`、`[     OK ]`、`[========]`）で、Google Test の 10 文字幅（`[ RUN      ]`）と違います。集計の文面も違います（`[ FAILED ] N tests, listed below.`）。Google Test の出力用の正規表現は、そのままでは合いません。
+* `SKIP_TEST(reason)` の出力は `Skipped: reason` の 1 行で、位置の行（`file:line: Skipped`）はありません。
+* `EXPECT_NEAR_REL`（相対誤差）は JiecUnit のアサーションで、Google Test にはありません。無限大は、同じ無限大のほかには近いとみなしません。
 * フィルタ、`DISABLED_`、シャッフル、繰り返し、パラメータ化テスト、モックはありません。
 
 ### 7.x からの移行

@@ -15,8 +15,8 @@ The difference between 1.5 and 1.0 is 0.5, which exceeds 0.1, where
 1.5 evaluates to 1.5,
 1.0 evaluates to 1.0, and
 0.1 evaluates to 0.1.
-[ FAILED ] test_no_text (<time>)
-[========] 1 tests ran. (<time>)
+[ FAILED ] test_no_text (n/a)
+[========] 1 tests ran. (n/a)
 [ PASSED ] 0 tests.
 [ FAILED ] 1 tests, listed below.
 [ FAILED ] test_no_text

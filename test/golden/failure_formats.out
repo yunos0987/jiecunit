@@ -22,7 +22,7 @@ Expected equality of these values:
   'it$'s'
   s
     Which is: 'abd'
-[ FAILED ] test_eq (<time>)
+[ FAILED ] test_eq (n/a)
 [ RUN    ] test_ne_and_cmp
 test/golden/failure_formats.iec:21: Failure
 Expected: (3) <> (a), actual: 3 vs 3
@@ -34,7 +34,7 @@ test/golden/failure_formats.iec:24: Failure
 Expected: (a) >= (4), actual: 3 vs 4
 test/golden/failure_formats.iec:25: Failure
 Expected: (a) > (4), actual: 3 vs 4
-[ FAILED ] test_ne_and_cmp (<time>)
+[ FAILED ] test_ne_and_cmp (n/a)
 [ RUN    ] test_bool
 test/golden/failure_formats.iec:32: Failure
 Value of: flag
@@ -44,7 +44,7 @@ test/golden/failure_formats.iec:33: Failure
 Value of: not flag
   Actual: true
 Expected: false
-[ FAILED ] test_bool (<time>)
+[ FAILED ] test_bool (n/a)
 [ RUN    ] test_float
 test/golden/failure_formats.iec:42: Failure
 Expected equality of these values:
@@ -61,7 +61,7 @@ The difference between 1.5 and x is 0.5, which exceeds 0.1 * max(|1.5|, |x|) = 0
 1.5 evaluates to 1.5,
 x evaluates to 1.0, and
 0.1 evaluates to 0.1.
-[ FAILED ] test_float (<time>)
+[ FAILED ] test_float (n/a)
 [ RUN    ] test_fail_and_add_failure
 test/golden/failure_formats.iec:48: Failure
 Failed
@@ -71,14 +71,14 @@ Failed
 test/golden/failure_formats.iec:50: Failure
 Failed
 stops here
-[ FAILED ] test_fail_and_add_failure (<time>)
+[ FAILED ] test_fail_and_add_failure (n/a)
 [ RUN    ] test_assert_in_multi_cycle
 test/golden/failure_formats.iec:59: Failure (cycle 1)
 Expected equality of these values:
   1
   2
-[ FAILED ] test_assert_in_multi_cycle (<time>)
-[========] 6 tests ran. (<time>)
+[ FAILED ] test_assert_in_multi_cycle (n/a)
+[========] 6 tests ran. (n/a)
 [ PASSED ] 0 tests.
 [ FAILED ] 6 tests, listed below.
 [ FAILED ] test_eq

@@ -1007,7 +1007,12 @@
 		jiecunit_in_helper: bool := false;
 		jiecunit_loop_index: dint;
 	end
-	if (not JiecTest_isActive(_JIECTEST_)) or (JiecTest_activeTestname(_JIECTEST_) <> @program_name) then
+	// (Two statements: `or` does not short-circuit, and the name is compared
+	// only while a test runs.)
+	if not JiecTest_isActive(_JIECTEST_) then
+		return;
+	end_if;
+	if JiecTest_activeTestname(_JIECTEST_) <> @program_name then
 		return;
 	end_if;
 	JiecTest_enterTest(self:=_JIECTEST_, single_cycle:=single_, file:=__FILE__, line:=__LINE__, display_name:=display_name_);
@@ -1035,7 +1040,12 @@
 		JiecTest_endTearDown(_JIECTEST_);
 		return;
 	end_if;
-	if (not JiecTest_isActive(_JIECTEST_)) or (JiecTest_activeTestname(_JIECTEST_) <> @program_name) then
+	// (Two statements: `or` does not short-circuit, and the name is compared
+	// only while a test runs.)
+	if not JiecTest_isActive(_JIECTEST_) then
+		return;
+	end_if;
+	if JiecTest_activeTestname(_JIECTEST_) <> @program_name then
 		return;
 	end_if;
 	if JiecTest_enterTest(self:=_JIECTEST_, single_cycle:=single_, file:=__FILE__, line:=__LINE__, display_name:=display_name_) then

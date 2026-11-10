@@ -16,75 +16,70 @@ The difference between big and 1.0 is inf, which exceeds 0.5 * max(|big|, |1.0|)
 big evaluates to inf,
 1.0 evaluates to 1.0, and
 0.5 evaluates to 0.5.
-test/golden/failure_formats_more.iec:19: Failure
-The difference between big and 1.0 is inf, which exceeds big, where
-big evaluates to inf,
-1.0 evaluates to 1.0, and
-big evaluates to inf.
-test/golden/failure_formats_more.iec:20: Failure
-The absolute error must not be negative, but -0.5 was given.
 test/golden/failure_formats_more.iec:21: Failure
+The absolute error must not be negative, but -0.5 was given.
+test/golden/failure_formats_more.iec:22: Failure
 The relative error must not be negative, but -0.5 was given.
-[ FAILED ] test_near_nan (<time>)
+[ FAILED ] test_near_nan (n/a)
 [ RUN    ] test_string_quoting
-test/golden/failure_formats_more.iec:28: Failure
+test/golden/failure_formats_more.iec:29: Failure
 Expected equality of these values:
   ''
   s
     Which is: 'a$'b$$c'
-test/golden/failure_formats_more.iec:29: Failure
-Expected: ('a$'b$$c') <> (s), actual: 'a$'b$$c' vs 'a$'b$$c'
 test/golden/failure_formats_more.iec:30: Failure
+Expected: ('a$'b$$c') <> (s), actual: 'a$'b$$c' vs 'a$'b$$c'
+test/golden/failure_formats_more.iec:31: Failure
 Expected: (s) < ('a'), actual: 'a$'b$$c' vs 'a'
-[ FAILED ] test_string_quoting (<time>)
+[ FAILED ] test_string_quoting (n/a)
 [ RUN    ] test_other_types
-test/golden/failure_formats_more.iec:39: Failure
+test/golden/failure_formats_more.iec:40: Failure
 Expected equality of these values:
   time#2s
     Which is: 2s
   t
     Which is: 1.5s
-test/golden/failure_formats_more.iec:40: Failure
-Expected: (3) > (u), actual: 3 vs 7
 test/golden/failure_formats_more.iec:41: Failure
+Expected: (3) > (u), actual: 3 vs 7
+test/golden/failure_formats_more.iec:42: Failure
 Expected equality of these values:
   false
   b
     Which is: true
-[ FAILED ] test_other_types (<time>)
+[ FAILED ] test_other_types (n/a)
 [ RUN    ] test_ulp
-test/golden/failure_formats_more.iec:49: Failure
+test/golden/failure_formats_more.iec:50: Failure
 Expected equality of these values:
   1.1
   x
     Which is: 1.0
-test/golden/failure_formats_more.iec:50: Failure
+test/golden/failure_formats_more.iec:51: Failure
 Expected equality of these values:
   1.5
   r
     Which is: 1.0
 REAL
-test/golden/failure_formats_more.iec:51: Failure
+test/golden/failure_formats_more.iec:52: Failure
 Expected equality of these values:
   1.25
   r
     Which is: 1.0
-[ FAILED ] test_ulp (<time>)
+[ FAILED ] test_ulp (n/a)
 [ RUN    ] test_array_and_substring
-test/golden/failure_formats_more.iec:59: Failure
+test/golden/failure_formats_more.iec:60: Failure
 Expected equality of these values:
   expected_values[1]
     Which is: 2
   actual_values[1]
     Which is: 5
 The arrays differ first at index 1.
-test/golden/failure_formats_more.iec:60: Failure
+test/golden/failure_formats_more.iec:61: Failure
 Value of: 'abc'
 Expected: has substring 'bd'
   Actual: 'abc'
 a message
-[ FAILED ] test_array_and_substring (<time>)
-[========] 5 tests ran. (<time>)
+[ FAILED ] test_array_and_substring (n/a)
+[========] 5 tests ran. (n/a)
 [ PASSED ] 0 tests.
 [ FAILED ] 5 tests, listed below.
 [ FAILED ] test_near_nan
