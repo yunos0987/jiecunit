@@ -174,7 +174,7 @@
 {#define _VALIDATE_GE_TIME_MSG(die, lval, rval, message, text1, text2)    _VALIDATE_CMP_DATATYPE(GE, TIME, die, lval, rval, message, text1, text2)}
 {#define _VALIDATE_GT_TIME_MSG(die, lval, rval, message, text1, text2)    _VALIDATE_CMP_DATATYPE(GT, TIME, die, lval, rval, message, text1, text2)}
 {#else}
-// MITSUBISHI: sys_conv.iec has no time_to_string_sec, so the TIME comparison validators are not generated.
+// MITSUBISHI: sys_conv.iec has no time_to_literal, so the TIME comparison validators are not generated.
 {#define _VALIDATE_LT_TIME_MSG(die, lval, rval, message, text1, text2)    __error('EXPECT_LT_TIME / ASSERT_LT_TIME are not supported on this target')}
 {#define _VALIDATE_LE_TIME_MSG(die, lval, rval, message, text1, text2)    __error('EXPECT_LE_TIME / ASSERT_LE_TIME are not supported on this target')}
 {#define _VALIDATE_GE_TIME_MSG(die, lval, rval, message, text1, text2)    __error('EXPECT_GE_TIME / ASSERT_GE_TIME are not supported on this target')}

@@ -42,7 +42,7 @@ DEFINE_CONFIGURATION(
 		test_dint_to_string,
 		test_lreal_to_string,
 		test_bool_to_string,
-		test_time_to_string_sec,
+		test_time_to_literal,
 		// validate_*.iec
 		test_eq_macro,
 		test_jiectest_validate_eq,

@@ -85,51 +85,123 @@ end
 {#endif}
 
 {#if not (_MITSUBISHI)}
-// note: int64 based
-(*{doc Convert a time value to a string representation in seconds.
-The output format is "<sign><seconds>.<microseconds>s" or "<sign><seconds>s" if there are no fractional seconds.
+(*{doc How many times a duration contains a unit, rounded down.
+Uses only the subtraction and the comparison of TIME values, so that it works
+without 64-bit integers and never computes a duration longer than value.
+@input value The duration; must not be negative.
+@input unit The unit; must be positive.
+@return The number of whole units in value (at most 2147483647).}*)
+function jiec_time_quotient: dint
+	_PROLOGUE_OF_FUNCTION_FOR_SYS_();
+	var_input
+		(*{doc The duration; must not be negative.}*)
+		value: time;
+		(*{doc The unit; must be positive.}*)
+		unit: time;
+	end
+	var_temp
+		remaining: time;
+		chunk: time;
+		chunk_count: dint;
+	end
+	jiec_time_quotient := 0;
+	remaining := value;
+	while remaining >= unit do
+		// Take the largest unit * 2^k that fits (the subtraction avoids a
+		// duration above the range of TIME).
+		chunk := unit;
+		chunk_count := 1;
+		while chunk_count < 1073741824 do
+			if (remaining - chunk) < chunk then
+				exit;
+			end_if;
+			chunk := chunk + chunk;
+			chunk_count := chunk_count * 2;
+		end_while;
+		if jiec_time_quotient > 2147483647 - chunk_count then
+			jiec_time_quotient := 2147483647;
+			return;
+		end_if;
+		remaining := remaining - chunk;
+		jiec_time_quotient := jiec_time_quotient + chunk_count;
+	end_while;
+end
+
+(*{doc Convert a time value to text in the form of a duration literal of IEC 61131-3.
+The form is "T#[-][<d>d][<h>h][<m>m][<s>s][<ms>ms]", for example
+"T#1h30m5s250ms"; a part that is 0 is left out, and 0 is "T#0s". A fraction of
+a millisecond is written with a decimal point, down to nanoseconds
+("T#250.123456ms"); the units us and ns are not used. Unlike a conversion
+through an integer of microseconds, long durations are not cut off.
 @input in The time value to convert.
-@return The string representation of the time value in seconds.}*)
-function time_to_string_sec: string[64]
+@return The text.}*)
+function time_to_literal: string[64]
 	_PROLOGUE_OF_FUNCTION_FOR_SYS_();
 	var_input
 		(*{doc The time value to convert.}*)
 		in: time;
 	end
 	var_temp
-		usec_raw: dint;
-		sec_rem_raw: dint;
-		sec_int_raw: dint;
-		sec_rem_str: string[16];
-		sign: string[2] := '';
+		remaining: time;
+		days: dint;
+		seconds: dint;
+		usec: dint;
+		nsec: dint;
+		fraction: dint;
+		fraction_str: string[16];
+		text: string[64];
 	end
-	usec_raw := time_to_usec_dint(in);
-
-	sec_rem_raw := usec_raw mod dint#1_000_000;
-	sec_int_raw := (usec_raw - sec_rem_raw) / dint#1_000_000;
-
-	if usec_raw < 0 then
-		sign := '-';
-		sec_rem_raw := -sec_rem_raw;
-		sec_int_raw := -sec_int_raw;
+	text := 'T#';
+	remaining := in;
+	if in < time#0s then
+		text := 'T#-';
+		remaining := time#0s - in;
+	end_if;
+	if remaining = time#0s then
+		time_to_literal := 'T#0s';
+		return;
 	end_if;
 
-	sec_rem_str := dint_to_string(sec_rem_raw);
-	while len(sec_rem_str) <> 6 do
-		sec_rem_str := jiec_concat('0', sec_rem_str);
-	end_while;
-	while len(sec_rem_str) > 0 do
-		if right(sec_rem_str, 1) <> '0' then
-			exit;
+	days := jiec_time_quotient(remaining, time#1d);
+	if days > 0 then
+		remaining := remaining - time#1d * days;
+		text := jiec_concat(text, dint_to_string(days), 'd');
+	end_if;
+	// Less than a day is left.
+	seconds := jiec_time_quotient(remaining, time#1s);
+	remaining := remaining - time#1s * seconds;
+	if seconds >= 3600 then
+		text := jiec_concat(text, dint_to_string(seconds / 3600), 'h');
+		seconds := seconds mod 3600;
+	end_if;
+	if seconds >= 60 then
+		text := jiec_concat(text, dint_to_string(seconds / 60), 'm');
+		seconds := seconds mod 60;
+	end_if;
+	if seconds > 0 then
+		text := jiec_concat(text, dint_to_string(seconds), 's');
+	end_if;
+	// Less than a second is left: it fits in a DINT of microseconds. What is
+	// left below a microsecond is read as nanoseconds after multiplying it.
+	usec := time_to_usec_dint(remaining);
+	remaining := remaining - (time#1ms * usec) / 1000;
+	nsec := time_to_usec_dint(remaining * 1000);
+	fraction := (usec mod 1000) * 1000 + nsec;
+	if (usec >= 1000) or (fraction > 0) then
+		text := jiec_concat(text, dint_to_string(usec / 1000));
+		if fraction > 0 then
+			fraction_str := dint_to_string(fraction);
+			while len(fraction_str) < 6 do
+				fraction_str := jiec_concat('0', fraction_str);
+			end_while;
+			while right(fraction_str, 1) = '0' do
+				fraction_str := left(fraction_str, len(fraction_str) - 1);
+			end_while;
+			text := jiec_concat(text, '.', fraction_str);
 		end_if;
-		sec_rem_str := delete(sec_rem_str, 1, len(sec_rem_str));
-	end_while;
-
-	if sec_rem_str <> '' then
-		time_to_string_sec := jiec_concat(sign, dint_to_string(sec_int_raw), '.', sec_rem_str, 's');
-	else
-		time_to_string_sec := jiec_concat(sign, dint_to_string(sec_int_raw), 's');
+		text := jiec_concat(text, 'ms');
 	end_if;
+	time_to_literal := text;
 end
 {#elif _MITSUBISHI}
 	// TODO:

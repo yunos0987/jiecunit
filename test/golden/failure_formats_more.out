@@ -36,9 +36,9 @@ Expected: (s) < ('a'), actual: 'a$'b$$c' vs 'a'
 test/golden/failure_formats_more.iec:40: Failure
 Expected equality of these values:
   time#2s
-    Which is: 2s
+    Which is: T#2s
   t
-    Which is: 1.5s
+    Which is: T#1s500ms
 test/golden/failure_formats_more.iec:41: Failure
 Expected: (3) > (u), actual: 3 vs 7
 test/golden/failure_formats_more.iec:42: Failure

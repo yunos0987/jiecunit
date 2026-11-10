@@ -150,6 +150,7 @@ END_TEST_S
 
 * 表の `EXPECT_` で始まるものは、`EXPECT_FATAL_FAILURE` / `EXPECT_NONFATAL_FAILURE` を除き、`ASSERT_` でも書けます（`FAIL` / `ADD_FAILURE` / `HAS_*` は表のとおりです）。ターゲットごとに使える型は、[ターゲットごとのアサーションの対応](#ターゲットごとのアサーションの対応)を参照してください。
 * `<T>` は `SINT` `INT` `DINT` `LINT` `USINT` `UINT` `UDINT` `ULINT` `INT32` `INT64` `UINT32` `UINT64` `REAL` `FLOAT` `LREAL` `DOUBLE` `BOOL` `BYTE` `WORD` `DWORD` `LWORD` `BIT32` `BIT64` `TIME` `DATE` `TOD` `DT` `STRING` です。整数とビット列は 32bit か 64bit の型に広げて比べます。`REAL` / `FLOAT` は REAL のまま、`LREAL` / `DOUBLE` は LREAL で比べます（どちらも厳密な比較です。丸め誤差を許すときは `EXPECT_FLOAT_EQ` / `EXPECT_DOUBLE_EQ` か `EXPECT_NEAR` を使います）。
+* `TIME` の値は、時間リテラルの形（`T#1h30m5s250ms`、1 ms 未満は `T#250.123456ms` のように小数）で表示します。
 * `EXPECT_EQ_ARRAY_<T>` の配列は添字 0 から始まる必要があり、`n` は配列の長さ以下にします。`n` と配列の式は何度も評価されるので、副作用のない式にしてください。
 
 #### ヘルパー

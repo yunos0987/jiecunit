@@ -25,7 +25,7 @@ pragma, so the doc text in the macro bodies does not name the datatype.
 	{#define _JIECTEST_UNLESS_KEYENCE_MITSUBISHI_(...)}
 {#endif}
 
-// Wraps the TIME comparison validators, which need time_to_string_sec;
+// Wraps the TIME comparison validators, which need time_to_literal;
 // sys_conv.iec does not define it for MITSUBISHI.
 {#if not _MITSUBISHI}
 	{#define _JIECTEST_UNLESS_MITSUBISHI_(...) __VA_ARGS__}
@@ -47,7 +47,7 @@ pragma, so the doc text in the macro bodies does not name the datatype.
 	M(BOOL, bool, bool_to_string)
 	M(BIT32, dword, dword_to_string)
 	_JIECTEST_UNLESS_KEYENCE_MITSUBISHI_(M(BIT64, lword, lword_to_string))
-	_JIECTEST_UNLESS_KEYENCE_MITSUBISHI_(M(TIME, time, time_to_string_sec))
+	_JIECTEST_UNLESS_KEYENCE_MITSUBISHI_(M(TIME, time, time_to_literal))
 	_JIECTEST_UNLESS_KEYENCE_MITSUBISHI_(M(DATE, date, date_to_string))
 	_JIECTEST_UNLESS_KEYENCE_MITSUBISHI_(M(TOD, time_of_day, tod_to_string))
 	_JIECTEST_UNLESS_KEYENCE_MITSUBISHI_(M(DT, date_and_time, dt_to_string))
@@ -109,7 +109,7 @@ end$n$
 	_JIECTEST_UNLESS_KEYENCE_MITSUBISHI_(_JIECTEST_DEFINE_VALIDATE_CMP_(CMP, OP, LABEL, UINT64, ulint, ulint_to_string))
 	_JIECTEST_DEFINE_VALIDATE_CMP_(CMP, OP, LABEL, DOUBLE, lreal, lreal_to_string)
 	_JIECTEST_DEFINE_VALIDATE_CMP_(CMP, OP, LABEL, FLOAT, real, _JIECTEST_REAL_TO_STRING_)
-	_JIECTEST_UNLESS_MITSUBISHI_(_JIECTEST_DEFINE_VALIDATE_CMP_(CMP, OP, LABEL, TIME, time, time_to_string_sec))
+	_JIECTEST_UNLESS_MITSUBISHI_(_JIECTEST_DEFINE_VALIDATE_CMP_(CMP, OP, LABEL, TIME, time, time_to_literal))
 	_JIECTEST_UNLESS_KEYENCE_MITSUBISHI_(_JIECTEST_DEFINE_VALIDATE_CMP_(CMP, OP, LABEL, DATE, date, date_to_string))
 	_JIECTEST_UNLESS_KEYENCE_MITSUBISHI_(_JIECTEST_DEFINE_VALIDATE_CMP_(CMP, OP, LABEL, TOD, time_of_day, tod_to_string))
 	_JIECTEST_UNLESS_KEYENCE_MITSUBISHI_(_JIECTEST_DEFINE_VALIDATE_CMP_(CMP, OP, LABEL, DT, date_and_time, dt_to_string))
