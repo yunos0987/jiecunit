@@ -10,6 +10,7 @@
 
 - `JiecTest_t` のフィールドを変えました。`tmp_is_test_available` を削除し、`tmp_is_active`・`tmp_exec_count`・`tmp_is_single_cycle`・`tmp_max_cycles`・`tmp_test_file`・`tmp_test_line` を追加しました。テストが動いているかどうかは `tmp_is_active` で表し、`JiecTest_deactivate` はサイクル数（`tmp_cycle`）を変えません（従来は `DINT` の最小値にしていました）。初期化直後の `tmp_cycle` は 0 です。`JiecTest_nextCycle` は、テストが動いていないときと上限に達したときはサイクル数を変えません。
 - 時計の無いターゲット（jier・CODESYS・MITSUBISHI）では、所要時間を `(0us)` ではなく `(n/a)` と表示します。
+- `DEFINE_CONFIGURATION(_JIEC_TESTNAMES_LIST_(...))` は、すべての `TEST_S` / `TEST_M` の定義の**後ろ**に置く必要があります。前処理の時点で、定義の数と一覧の名前の数を比べるためです（新機能を参照）。従来の `samples/sample.iec` のように一覧を定義より前に置いていると、前処理がエラー（`PP91`）で止まります。一覧を定義の後ろへ移すか、`JIECUNIT_NO_TEST_COUNT_CHECK` を定義して照合を止めてください。
 
 ### 不具合の修正 / Bug fixes
 
@@ -28,8 +29,11 @@
 - 設定値を `-D NAME=VALUE` で上書きできるようにしました（従来は再定義の警告 PP35 が出て、`-Werror` では失敗していました）。対象は `MAX_TESTS`・`TESTNAME_MAX_SIZE`・`FILENAME_MAX_SIZE`・`JIECUNIT_MAX_CYCLES_PER_TEST`・`EXPRESSION_MAX_SIZE`（新設。既定 128）と、`sys/sys_config.iec` の `STRING_MAX_SIZE`・`CONSOLE_MAX_ROWS`・`CONSOLE_MAX_COLS` です。`MAX_TESTS` が 512（`src/jiecunit_macros.iec` の上限）を超えるとき、`TESTNAME_MAX_SIZE`・`FILENAME_MAX_SIZE`・`EXPRESSION_MAX_SIZE` が `STRING_MAX_SIZE` を超えるときは、前処理をエラーで止めます。`CONSOLE_MAX_COLS` より長い行は、従来どおりコンソールの行バッファでは切れます。
 - コンソール（`g_console`）の行バッファが一巡して古い行が上書きされうるとき、集計の最後に `[ WARNING] The console buffer is full (CONSOLE_MAX_ROWS=N); older lines may have been overwritten.` と出します。集計の後だけでなく、登録時の致命的エラーで終わるときも出します。`Console_t` に `wrapped` を追加しました。
 
+- テストを `_JIEC_TESTNAMES_LIST_` に書き忘れると、そのテストは黙って実行されませんでした。`TEST_S` / `TEST_M` の定義の数を jiepp の名前付きカウンタで数え、一覧の名前の数と違えば前処理をエラーで止めます。比べるのは数だけです。一覧に同じ名前を 2 回書いたときは、jier ではコンパイル時の `DUPLICATE_SYMBOL`、PLC では登録時の `Fatal error: ... already registered.` で検出されます。名前の綴りの誤りは、jier では未定義のプログラム、PLC では実行時の `[  ERROR ] ... was not found in active tasks.` で検出されます。一覧は 1 回だけ展開してください（カウンタは戻らないので、2 回目は必ず不一致になります）。`JIECUNIT_NO_TEST_COUNT_CHECK` を定義すると照合しません。完全な自動登録は、jiepp がマクロからディレクティブを作れないこと、構成（configuration）とベンダーのタスク割付にプログラム名の列挙が要ることから、行っていません。
+
 ### その他 / Other
 
+- `samples/sample.iec` の一覧を、テストの定義の後ろへ移しました。
 - 検証関数の `message` 引数の長さを `string[128]` から `string[STRING_MAX_SIZE]` にそろえました（失敗の出力を行う `JiecTest_failure` と同じ長さです）。
 - `scripts/check_golden.py` を追加しました。`test/golden/*.iec` を `jiecc --run` で実行し、標準出力と終了コードを `test/golden/*.out` と比べます。所要時間の表示とパスの区切りは比べる前に正規化します。`--update` で期待値を作り直します。`scripts/run_tests.py` は、この検査を `golden` フェーズとして実行します（`--skip-golden` で省略できます。`--compile-only`・`--run-only` のときも実行しません）。CI でも、jier の実行と同じく任意のステップとして実行します。
 - `scripts/run_tests.py` の `--max-cycles` の既定値を 200 から 100000 に変えました。jier の実行は集計の後の `halt` で止まるので、この値は集計に達しない実行を打ち切るときだけ効きます。

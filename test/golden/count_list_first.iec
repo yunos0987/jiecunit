@@ -1,0 +1,12 @@
+// A list placed before the test definitions stops the preprocessor too.
+{#include <jiecunit.iec>}
+
+DEFINE_CONFIGURATION(
+	_JIEC_TESTNAMES_LIST_(
+		test_one
+	)
+)
+
+TEST_S(test_one)
+	EXPECT_TRUE(true);
+END_TEST_S

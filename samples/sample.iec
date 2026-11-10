@@ -5,14 +5,6 @@
 
 {#include "sample_pous.iec"}
 
-// List test program names.
-DEFINE_CONFIGURATION(
-	_JIEC_TESTNAMES_LIST_(
-		test_mean,
-		test_RunningMean
-	)
-)
-
 (*{doc A single-cycle test sample of the mean function.}*)
 TEST_S(test_mean)
 	var
@@ -58,3 +50,11 @@ TEST_M(test_RunningMean)
 		EOT();
 	end_case;
 END_TEST_M
+
+// List the test program names, after all test definitions.
+DEFINE_CONFIGURATION(
+	_JIEC_TESTNAMES_LIST_(
+		test_mean,
+		test_RunningMean
+	)
+)

@@ -1,0 +1,6 @@
+[========] Running 1 tests.
+[ RUN    ] test_listed
+[     OK ] test_listed (<time>)
+[========] 1 tests ran. (<time>)
+[ PASSED ] 1 tests.
+[exit code: 0]

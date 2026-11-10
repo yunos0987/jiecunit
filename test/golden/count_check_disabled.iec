@@ -1,0 +1,17 @@
+// golden-args: -D JIECUNIT_NO_TEST_COUNT_CHECK
+// With JIECUNIT_NO_TEST_COUNT_CHECK, an unlisted test is allowed (and does not run).
+{#include <jiecunit.iec>}
+
+TEST_S(test_listed)
+	EXPECT_TRUE(true);
+END_TEST_S
+
+TEST_S(test_not_listed)
+	FAIL('must not run');
+END_TEST_S
+
+DEFINE_CONFIGURATION(
+	_JIEC_TESTNAMES_LIST_(
+		test_listed
+	)
+)

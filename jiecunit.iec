@@ -875,7 +875,26 @@
 
 
 
+// The number of TEST_S/TEST_M definitions is counted with the named counter
+// _jiecunit_tests (the __assert in the test headers only advances it), and
+// _JIEC_TESTNAMES_LIST_ compares it with the number of listed names, so that
+// a test missing from the list stops the preprocessor instead of silently not
+// running. The list must therefore come after all test definitions, and be
+// expanded only once (the counter is not reset). Only the numbers are
+// compared: a name listed twice is reported when the tests are registered
+// (jier: DUPLICATE_SYMBOL; PLC: "Fatal error: ... already registered"), and a
+// misspelled name is reported as an undefined program (jier) or as "was not
+// found in active tasks" (PLC). Define JIECUNIT_NO_TEST_COUNT_CHECK to turn
+// the check off.
+{#define _JIECUNIT_COUNT_TEST() __assert(__counter(_jiecunit_tests) >= 0, '')}
+{#ifndef JIECUNIT_NO_TEST_COUNT_CHECK}
+	{#define _JIECUNIT_CHECK_TEST_COUNT(n) __assert(__counter_peek(_jiecunit_tests) = n, 'JiecUnit: the number of TEST_S/TEST_M definitions differs from the number of names in _JIEC_TESTNAMES_LIST_. List every test exactly once (look for a missing, removed or extra name), and place DEFINE_CONFIGURATION(_JIEC_TESTNAMES_LIST_(...)) once, after all test definitions (or define JIECUNIT_NO_TEST_COUNT_CHECK to turn this check off).')}
+{#else}
+	{#define _JIECUNIT_CHECK_TEST_COUNT(n)}
+{#endif}
+
 {#define _JIEC_TESTNAMES_LIST_(...)
+	_JIECUNIT_CHECK_TEST_COUNT(__VA_ARGC__)
 	var_global
 		_JIECTESTNAMES_: array[MAX_TESTS] of string[TESTNAME_MAX_SIZE] := [_STRINGIFY_(__VA_ARGS__), (MAX_TESTS - __VA_ARGC__)('')];
 		_JIECTEST_: JiecTest_t;
@@ -888,6 +907,7 @@
 // Test for a single-cycle test. The test ends at END_TEST_S, or at the end of
 // its first cycle if the body returns before END_TEST_S.
 {#define TEST_S(test_name)
+	_JIECUNIT_COUNT_TEST()
 	program ${single-body:true$} ${__func__:TestName$} test_name
 	_DECLARE_EXTERNAL_JIEC_TEST();
 	if (not JiecTest_isActive(_JIECTEST_)) or (JiecTest_activeTestname(_JIECTEST_) <> @test_name) then
@@ -903,6 +923,7 @@ end}
 // calls EOT(), or fails when it reaches the maximum number of cycles
 // (JIECUNIT_MAX_CYCLES_PER_TEST, or SET_TEST_MAX_CYCLES(n) in the test).
 {#define TEST_M(test_name)
+	_JIECUNIT_COUNT_TEST()
 	program ${single-body:true$} ${__func__:TestName$} test_name
 	_DECLARE_EXTERNAL_JIEC_TEST();
 	if (not JiecTest_isActive(_JIECTEST_)) or (JiecTest_activeTestname(_JIECTEST_) <> @test_name) then
