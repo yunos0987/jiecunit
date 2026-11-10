@@ -19,6 +19,7 @@
 - `*_REAL` / `*_FLOAT` のアサーション（`EXPECT_EQ_REAL`・`EXPECT_NE_FLOAT`・`EXPECT_LT_REAL` など、`ASSERT_*` と `_MSG` 形を含む 48 個）は、値を LREAL に広げずに REAL のまま比べます。従来は LREAL に広げていたので、`r: real := 0.1` を `EXPECT_EQ_REAL(0.1, r)` と比べると失敗していました（`0.1` と `0.10000000149011612`）。LREAL の値を渡しているコードは、`*_LREAL` / `*_DOUBLE` か `EXPECT_DOUBLE_EQ` に変えてください。jier はこの縮小を型エラーにしますが、ベンダーによっては黙って REAL に丸めて比べます。`*_LREAL` / `*_DOUBLE` は従来どおり LREAL で比べます。
 - `[ RUN    ]` の行は、JiecUnitMain ではなくテストプログラムが最初に実行されたときに出します（タスクに割り付けられていないテストでは、従来どおり JiecUnitMain が `[  ERROR ]` の前に出します。表示名はテストプログラムが実行されて初めて分かるので、この場合はプログラム名で表示します）。`JiecTest_enterTest` は、テストの最初の実行で true を返します。
 - `TEST_S` / `TEST_M` の外（ヘルパーの関数・FB・プログラム）でアサーションを使うときは、その POU の宣言に `JIECUNIT_DECLARE_HELPER();` を書く必要があります。アサーションが参照する変数 `jiecunit_in_helper` を宣言するためです（従来は `TestName` と `g_jiectest` の宣言が要り、事実上ヘルパーでは使えませんでした）。
+- `_JIEC_TESTNAMES_LIST_` は、グローバル変数 `g_jiecunit_result` と `g_jiecunit_rerun` も宣言します。構成（configuration）を手で書いているときは、この 2 つを宣言に加えてください（JiecUnitMain が `var_external` で参照します）。
 - `JiecTest_t` に、テストごとの致命的・非致命的な失敗の数と、失敗の捕捉のためのフィールドを追加しました。
 - `DEFINE_CONFIGURATION(_JIEC_TESTNAMES_LIST_(...))` は、すべての `TEST_S` / `TEST_M` の定義の**後ろ**に置く必要があります。前処理の時点で、定義の数と一覧の名前の数を比べるためです（新機能を参照）。従来の `samples/sample.iec` のように一覧を定義より前に置いていると、前処理がエラー（`PP91`）で止まります。一覧を定義の後ろへ移すか、`JIECUNIT_NO_TEST_COUNT_CHECK` を定義して照合を止めてください。
 
@@ -40,6 +41,10 @@
   - `EXPECT_FATAL_FAILURE(statement, substr)`・`EXPECT_NONFATAL_FAILURE(statement, substr)`: 文がその種類の失敗をちょうど 1 つ起こし、その行（位置の行を除く）のどれかに `substr` を含むことを確かめます（Google Test の gtest-spi.h）。確かめた失敗は表示も集計もしません。アサーションやヘルパー自体のテストに使います。`EXPECT_FATAL_FAILURE` の文はヘルパーの呼び出しにしてください。文の中に直接 `ASSERT_*` を書くとテストから戻ってしまうので、次のサイクルの始めにその旨の失敗を出してテストを終えます（`TEST_M` も終えます）。入れ子にはできません。`substr` が空なら、どの失敗にも含まれるとみなします。`EXPECT_FATAL_FAILURE` の中の `EXPECT_NO_FATAL_FAILURE` は捕捉した致命的失敗を数え、`EXPECT_NO_FATAL_FAILURE` の中の `EXPECT_FATAL_FAILURE` が捕捉した失敗は新しい致命的失敗に数えません（Google Test と同じ）。
 - テストスイート: `TEST_S(suite, name)`・`TEST_M(suite, name)` と書けます（引数 1 個の従来の形もそのまま使えます）。プログラム名は `suite_name` で（`_JIEC_TESTNAMES_LIST_` にはこの名前を書きます）、結果の行には `suite.name` と表示します。
 - フィクスチャ（Google Test の `TEST_F`）: `TEST_F_S(F, name)`（単一サイクル）と `TEST_F_M(F, name)`（複数サイクル）を追加しました。終わりは `END_TEST_S` / `END_TEST_M` です。フィクスチャ `F` は、構造体型 `F` と、関数 `F_SetUp` / `F_TearDown`（どちらも `var_in_out fixture: F` を受け取り、`JIECUNIT_DECLARE_HELPER()` で宣言する）で定義します。テストは変数 `fixture` を使えます。`fixture` はテストを実行するたびに `F` の初期値に戻り、`F_SetUp` を呼んでから本体を実行します。SetUp が致命的に失敗するか、スキップ・`EOT()` したときは、本体を実行しません。テストが終わった後（`EOT()`・`ASSERT`・`SKIP_TEST`・サイクルの上限のいずれでも）、JiecUnitMain が 1 サイクル待つ間に `F_TearDown` を実行し、TearDown の失敗もそのテストに数えます。TearDown が実行されなかったときは `[  ERROR ]` にします。
+- 実行結果をグローバル変数 `g_jiecunit_result`（`JiecUnitResult_t`）に公開します。`state`（0: 未実行、1: 実行中、2: 完了）・`num_of_tests`・`num_of_passed`・`num_of_failed`・`num_of_skipped`（テストが終わるたびに更新）・`elapsed_us`・`all_passed`・`run_count` です。PLC のツールで、コンソールを読まずに合否が分かります。
+- 再実行: 完了した後（`g_jiecunit_result.state` が 2 のとき）に `g_jiecunit_rerun` を true にすると、JiecUnitMain がそれを false に戻して、すべてのテストをもう一度実行します（PLC をダウンロードし直す必要がありません）。実行中に立てた要求は、完了の時点で捨てます。テストプログラムの変数は初期化されないので、テストごとに初期化したい状態はフィクスチャ（`TEST_F_*`）に置いてください。フィクスチャは実行のたびに初期値に戻ります。
+- `DECLARE_EXTERNAL_JIECUNIT_RESULT()` で、`g_jiecunit_result` と `g_jiecunit_rerun` の `var_external` を宣言できます。
+- `JIECUNIT_NO_HALT` を定義すると、jier でも集計の後に `halt` せず、PLC と同じく動き続けます（再実行の確認などに使います）。この場合、jier の終了は `--max-cycles` か、利用者のプログラムの `halt` によります。
 - `SET_TEST_MAX_CYCLES(n)` を追加しました。実行中のテストのサイクル数の上限を変えます（0 なら無制限）。次のテストでは `JIECUNIT_MAX_CYCLES_PER_TEST` に戻ります。`JIECUNIT_MAX_CYCLES_PER_TEST` は `-D` で上書きできます。
 - テストプログラムが JiecUnitMain の 1 サイクルの間に 1 回も実行されなかったとき、または 2 回以上実行されたとき（別の周期のタスクに割り付けたときなど）、`[  ERROR ]` を出して失敗にします。JiecUnitMain は、従来どおりタスクの先頭に置くほか、末尾に置いても動きます。
 

@@ -1,0 +1,86 @@
+// golden-args: -D JIECUNIT_NO_HALT --max-cycles 200
+// g_jiecunit_result publishes the result, and g_jiecunit_rerun runs every test
+// again. A monitor program (as the PLC tools would do) requests one rerun.
+{#include <jiecunit.iec>}
+
+type
+	Fx: struct
+		value: dint;
+	end
+end
+
+function Fx_SetUp
+	JIECUNIT_DECLARE_HELPER();
+	var_in_out
+		fixture: Fx;
+	end
+	EXPECT_EQ_INT(0, fixture.value, 'the fixture starts from its initial value in every run');
+end
+
+function Fx_TearDown
+	JIECUNIT_DECLARE_HELPER();
+	var_in_out
+		fixture: Fx;
+	end
+	fixture.value := fixture.value + 1;
+end
+
+TEST_F_S(Fx, fixture_is_reset)
+	fixture.value := 5;
+END_TEST_S
+
+TEST_S(local_variables_are_kept)
+	var
+		runs: dint;
+	end
+	runs := runs + 1;
+	// The variables of a test program keep their values from the previous run.
+	EXPECT_EQ_INT(1, runs, 'fails in the second run');
+END_TEST_S
+
+TEST_S(skipped)
+	SKIP_TEST('always skipped');
+END_TEST_S
+
+// Stands for the PLC tools: prints the result and requests one rerun.
+program monitor
+	DECLARE_EXTERNAL_JIECUNIT_RESULT();
+	_DECLARE_CONSOLE_IN_POU_();
+	var
+		finished_runs: dint;
+		was_finished: bool;
+	end
+	// A request made while the tests run is discarded at the end of the run.
+	if (_JIECUNIT_RESULT_.state = 1) and (_JIECUNIT_RESULT_.run_count = 1) and (finished_runs = 0) then
+		_JIECUNIT_RERUN_ := true;
+	end_if;
+	if (_JIECUNIT_RESULT_.state = 2) and (not was_finished) then
+		puts(jiec_concat('monitor: g_jiecunit_rerun at the end of the run = ', bool_to_string(_JIECUNIT_RERUN_)));
+		was_finished := true;
+		finished_runs := finished_runs + 1;
+		puts(jiec_concat('monitor: run ', dint_to_string(_JIECUNIT_RESULT_.run_count), ' finished: tests=', dint_to_string(_JIECUNIT_RESULT_.num_of_tests), ' passed=', dint_to_string(_JIECUNIT_RESULT_.num_of_passed), ' failed=', dint_to_string(_JIECUNIT_RESULT_.num_of_failed), ' skipped=', dint_to_string(_JIECUNIT_RESULT_.num_of_skipped), ' all_passed=', bool_to_string(_JIECUNIT_RESULT_.all_passed)));
+		if finished_runs = 1 then
+			_JIECUNIT_RERUN_ := true;
+		else
+			halt(code := 0);
+		end_if;
+	elsif _JIECUNIT_RESULT_.state = 1 then
+		was_finished := false;
+	end_if;
+end
+
+{#define _GOLDEN_GLOBALS_AND_TASKS()
+	var_global
+		_JIECTESTNAMES_: array[MAX_TESTS] of string[TESTNAME_MAX_SIZE] := ['Fx_fixture_is_reset', 'local_variables_are_kept', 'skipped', (MAX_TESTS - 3)('')];
+		_JIECTEST_: JiecTest_t;
+		_JIECUNIT_RESULT_: JiecUnitResult_t;
+		_JIECUNIT_RERUN_: bool;
+	end
+	task JiecUnitTask(priority := 0);
+	program JiecUnitMain with JiecUnitTask: JiecUnitMain();
+	program Fx_fixture_is_reset with JiecUnitTask: Fx_fixture_is_reset();
+	program local_variables_are_kept with JiecUnitTask: local_variables_are_kept();
+	program skipped with JiecUnitTask: skipped();
+	program monitor with JiecUnitTask: monitor();
+}
+DEFINE_CONFIGURATION(_GOLDEN_GLOBALS_AND_TASKS())

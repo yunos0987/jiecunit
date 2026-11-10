@@ -52,6 +52,8 @@ END_TEST_M
 	var_global
 		_JIECTESTNAMES_: array[MAX_TESTS] of string[TESTNAME_MAX_SIZE] := ['test_single', 'test_multi', 'test_failing', 'Fx_with_fixture', (MAX_TESTS - 4)('')];
 		_JIECTEST_: JiecTest_t;
+		_JIECUNIT_RESULT_: JiecUnitResult_t;
+		_JIECUNIT_RERUN_: bool;
 	end
 	task JiecUnitTask(priority := 0);
 	program test_single with JiecUnitTask: test_single();

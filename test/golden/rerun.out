@@ -1,0 +1,35 @@
+[========] Running 3 tests.
+[ RUN    ] Fx.fixture_is_reset
+[     OK ] Fx.fixture_is_reset (<time>)
+[ RUN    ] local_variables_are_kept
+[     OK ] local_variables_are_kept (<time>)
+[ RUN    ] skipped
+Skipped: always skipped
+[ SKIPPED] skipped (<time>)
+[========] 3 tests ran. (<time>)
+[ PASSED ] 2 tests.
+[ SKIPPED] 1 tests.
+monitor: g_jiecunit_rerun at the end of the run = false
+monitor: run 1 finished: tests=3 passed=2 failed=0 skipped=1 all_passed=true
+[========] Running 3 tests.
+[ RUN    ] Fx.fixture_is_reset
+[     OK ] Fx.fixture_is_reset (<time>)
+[ RUN    ] local_variables_are_kept
+test/golden/rerun.iec:38: Failure
+Expected equality of these values:
+  1
+  runs
+    Which is: 2
+fails in the second run
+[ FAILED ] local_variables_are_kept (<time>)
+[ RUN    ] skipped
+Skipped: always skipped
+[ SKIPPED] skipped (<time>)
+[========] 3 tests ran. (<time>)
+[ PASSED ] 1 tests.
+[ SKIPPED] 1 tests.
+[ FAILED ] 1 tests, listed below.
+[ FAILED ] local_variables_are_kept
+monitor: g_jiecunit_rerun at the end of the run = false
+monitor: run 2 finished: tests=3 passed=1 failed=1 skipped=1 all_passed=false
+[exit code: 0]

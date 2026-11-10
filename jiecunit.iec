@@ -921,6 +921,8 @@
 	var_global
 		_JIECTESTNAMES_: array[MAX_TESTS] of string[TESTNAME_MAX_SIZE] := [_STRINGIFY_(__VA_ARGS__), (MAX_TESTS - __VA_ARGC__)('')];
 		_JIECTEST_: JiecTest_t;
+		_JIECUNIT_RESULT_: JiecUnitResult_t;
+		_JIECUNIT_RERUN_: bool := false;
 	end
 	_JIECUNIT_DEFINE_TASKS(__VA_ARGS__)
 }

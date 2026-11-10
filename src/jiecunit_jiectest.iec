@@ -68,6 +68,28 @@ type
 	end
 end
 
+type
+	(*{doc The result of the test run, published in the global variable g_jiecunit_result for the PLC tools.}*)
+	JiecUnitResult_t: struct
+		(*{doc 0: not started, 1: running, 2: finished.}*)
+		state: dint;
+		(*{doc The number of registered tests.}*)
+		num_of_tests: dint;
+		(*{doc The number of tests that passed so far.}*)
+		num_of_passed: dint;
+		(*{doc The number of tests that failed so far.}*)
+		num_of_failed: dint;
+		(*{doc The number of tests that were skipped so far.}*)
+		num_of_skipped: dint;
+		(*{doc The elapsed time of the finished tests in microseconds (0 on targets without a clock).}*)
+		elapsed_us: udint;
+		(*{doc True when the run has finished (state = 2) without a failure.}*)
+		all_passed: bool;
+		(*{doc The number of runs started since the PLC started (1 for the first run, 2 after the first rerun, ...).}*)
+		run_count: dint;
+	end
+end
+
 (*{doc Reset the per-test fields for a new test.
 Clears the cycle counter, the active and skipped flags, the execution count,
 the single-cycle flag, the definition position, the fatal and non-fatal
