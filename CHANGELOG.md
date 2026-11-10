@@ -10,6 +10,12 @@
 
 - `JiecTest_t` のフィールドを変えました。`tmp_is_test_available` を削除し、`tmp_is_active`・`tmp_exec_count`・`tmp_is_single_cycle`・`tmp_max_cycles`・`tmp_test_file`・`tmp_test_line` を追加しました。テストが動いているかどうかは `tmp_is_active` で表し、`JiecTest_deactivate` はサイクル数（`tmp_cycle`）を変えません（従来は `DINT` の最小値にしていました）。初期化直後の `tmp_cycle` は 0 です。`JiecTest_nextCycle` は、テストが動いていないときと上限に達したときはサイクル数を変えません。
 - 時計の無いターゲット（jier・CODESYS・MITSUBISHI）では、所要時間を `(0us)` ではなく `(n/a)` と表示します。
+- 失敗の出力を Google Test の形式に変えました。出力を解析しているツールに影響します。
+  - 位置の行を詳細より先に出し、`<ファイル>:<行>: Failure` の形にしました（従来は詳細の後に `<テスト名>:<行>@<サイクル>`）。ファイルは `__FILE__`（jiecc に渡した、またはインクルードに書いたパス）です。複数サイクルのテスト（`TEST_M`）では末尾に ` (cycle N)` を付けます。
+  - 値だけでなく、テストに書いた式のテキストも出します。等値は `Expected equality of these values:` に続けて式ごとに `  <式>` と `    Which is: <値>`（式と値の表示が同じリテラルのときは省略）、不等と大小は `Expected: (<式1>) <op> (<式2>), actual: <値1> vs <値2>`、`EXPECT_TRUE`/`EXPECT_FALSE` は `Value of: <式>` / `  Actual: <値>` / `Expected: <値>`、`EXPECT_NEAR`/`EXPECT_NEAR_REL` は `The difference between ... which exceeds ..., where` と各式の値、`FAIL`/`ADD_FAILURE` は `Failed` です。メッセージは最後の行に出します。
+  - STRING の値は `'...'` で囲み、`'` と `$` を ST のリテラルと同じく `$'`・`$$` と書きます（末尾の空白などの違いが見えます）。
+  - 検証関数（`JiecTest_validate*`）に、式のテキストを受け取る省略可能な入力（`expected_text` など）を追加しました。位置引数（informal call）で呼んでいるコードは、引数を追加する必要があります。`EXPECT_TRUE`/`EXPECT_FALSE` は新しい `JiecTest_validateBOOL` を使います。
+  - 式のテキストは公開マクロの中で文字列化するので、マクロを引数に書くと、展開後の値ではなく書いたとおりの名前が出ます。`JIECUNIT_NO_EXPRESSION_TEXT` を定義すると、式のテキストを渡しません（PLC のメモリとスキャン時間を減らすとき）。
 - `DEFINE_CONFIGURATION(_JIEC_TESTNAMES_LIST_(...))` は、すべての `TEST_S` / `TEST_M` の定義の**後ろ**に置く必要があります。前処理の時点で、定義の数と一覧の名前の数を比べるためです（新機能を参照）。従来の `samples/sample.iec` のように一覧を定義より前に置いていると、前処理がエラー（`PP91`）で止まります。一覧を定義の後ろへ移すか、`JIECUNIT_NO_TEST_COUNT_CHECK` を定義して照合を止めてください。
 
 ### 不具合の修正 / Bug fixes
@@ -29,10 +35,15 @@
 - 設定値を `-D NAME=VALUE` で上書きできるようにしました（従来は再定義の警告 PP35 が出て、`-Werror` では失敗していました）。対象は `MAX_TESTS`・`TESTNAME_MAX_SIZE`・`FILENAME_MAX_SIZE`・`JIECUNIT_MAX_CYCLES_PER_TEST`・`EXPRESSION_MAX_SIZE`（新設。既定 128）と、`sys/sys_config.iec` の `STRING_MAX_SIZE`・`CONSOLE_MAX_ROWS`・`CONSOLE_MAX_COLS` です。`MAX_TESTS` が 512（`src/jiecunit_macros.iec` の上限）を超えるとき、`TESTNAME_MAX_SIZE`・`FILENAME_MAX_SIZE`・`EXPRESSION_MAX_SIZE` が `STRING_MAX_SIZE` を超えるときは、前処理をエラーで止めます。`CONSOLE_MAX_COLS` より長い行は、従来どおりコンソールの行バッファでは切れます。
 - コンソール（`g_console`）の行バッファが一巡して古い行が上書きされうるとき、集計の最後に `[ WARNING] The console buffer is full (CONSOLE_MAX_ROWS=N); older lines may have been overwritten.` と出します。集計の後だけでなく、登録時の致命的エラーで終わるときも出します。`Console_t` に `wrapped` を追加しました。
 
+- `EXPECT_NEAR`・`EXPECT_NEAR_REL` に NaN を渡したとき、jier では成功していました（jier の `abs` は NaN に 0.0 を返します）。NaN は明示的に判定して失敗にし、`A NaN is never near any value.` と出します。同じ値（同符号の無限大どうしを含む）は、差を計算せずに近いとみなします。
 - テストを `_JIEC_TESTNAMES_LIST_` に書き忘れると、そのテストは黙って実行されませんでした。`TEST_S` / `TEST_M` の定義の数を jiepp の名前付きカウンタで数え、一覧の名前の数と違えば前処理をエラーで止めます。比べるのは数だけです。一覧に同じ名前を 2 回書いたときは、jier ではコンパイル時の `DUPLICATE_SYMBOL`、PLC では登録時の `Fatal error: ... already registered.` で検出されます。名前の綴りの誤りは、jier では未定義のプログラム、PLC では実行時の `[  ERROR ] ... was not found in active tasks.` で検出されます。一覧は 1 回だけ展開してください（カウンタは戻らないので、2 回目は必ず不一致になります）。`JIECUNIT_NO_TEST_COUNT_CHECK` を定義すると照合しません。完全な自動登録は、jiepp がマクロからディレクティブを作れないこと、構成（configuration）とベンダーのタスク割付にプログラム名の列挙が要ることから、行っていません。
 
 ### その他 / Other
 
+- `sys/sys.iec` に `jiec_find`（標準の `find`）と `jiec_quote`（文字列を ST のリテラルの形にする。`STRING_MAX_SIZE` に収まらなければ切って、閉じの `'` の後ろに `...` を付ける）を追加しました。
+- 失敗に関する出力は `JiecTest_print` を通して出します。位置・詳細・メッセージを出す `JiecTest_beginFailure`・`JiecTest_printValue`・`JiecTest_printComparison`・`JiecTest_endFailure` を追加しました。
+- `scripts/check_macro_expansion.py` は、各公開マクロが値の引数の式のテキストを引数の順に渡していることも検査します。
+- `src/jiecunit_core.iec` から、使われていなかった内部マクロ（`_MSG` の付かない `_VALIDATE_*`）を削除しました。
 - `samples/sample.iec` の一覧を、テストの定義の後ろへ移しました。
 - 検証関数の `message` 引数の長さを `string[128]` から `string[STRING_MAX_SIZE]` にそろえました（失敗の出力を行う `JiecTest_failure` と同じ長さです）。
 - `scripts/check_golden.py` を追加しました。`test/golden/*.iec` を `jiecc --run` で実行し、標準出力と終了コードを `test/golden/*.out` と比べます。所要時間の表示とパスの区切りは比べる前に正規化します。`--update` で期待値を作り直します。`scripts/run_tests.py` は、この検査を `golden` フェーズとして実行します（`--skip-golden` で省略できます。`--compile-only`・`--run-only` のときも実行しません）。CI でも、jier の実行と同じく任意のステップとして実行します。

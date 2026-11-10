@@ -220,4 +220,54 @@ function Console_puts: dint
 	Console_puts := self.row_index;
 end
 
+// The position (1-based) of the first occurrence of needle in haystack, or 0
+// if there is none. An empty needle is found at position 1.
+// This is the standard FIND; a target that names it differently can change
+// this one macro.
+{#define jiec_find(haystack, needle) find(haystack, needle)}
+
+(*{doc Quote a string the way it is written as an ST literal.
+Encloses the string in quote characters, and escapes every quote character and
+every dollar sign in it with a dollar sign. If the result does not fit in
+STRING_MAX_SIZE characters, the quoted part is cut off and followed by three
+dots after the closing quote character.
+@input s The string to quote.
+@return The quoted string.}*)
+function jiec_quote: string[STRING_MAX_SIZE]
+	_PROLOGUE_OF_FUNCTION_FOR_SYS_();
+	var_input
+		(*{doc The string to quote.}*)
+		s: string[STRING_MAX_SIZE];
+	end
+	var_temp
+		index: dint;
+		size: dint;
+		piece: string[2];
+		quoted: string[STRING_MAX_SIZE];
+		cut: bool;
+	end
+	quoted := '$'';
+	cut := false;
+	size := len(s);
+	for index := 1 to size do
+		piece := mid(s, 1, index);
+		if piece = '$'' then
+			piece := '$$$'';
+		elsif piece = '$$' then
+			piece := '$$$$';
+		end_if;
+		// Keep room for the closing quote and the three dots.
+		if len(quoted) + len(piece) > STRING_MAX_SIZE - 4 then
+			cut := true;
+			exit;
+		end_if;
+		quoted := concat(quoted, piece);
+	end_for;
+	quoted := concat(quoted, '$'');
+	if cut then
+		quoted := concat(quoted, '...');
+	end_if;
+	jiec_quote := quoted;
+end
+
 {#endif}

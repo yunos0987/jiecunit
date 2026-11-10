@@ -27,12 +27,26 @@
 // Every public macro follows this template:
 //   #define NAME(<required args>, ...)
 //       <base>_MSG(<die>, [<fixed>,] <required args>,
-//                  _JIECUNIT_OPTMSG_N(__VA_ARGC__, <lo>, <hi>, __VA_ARGS__))
+//                  _JIECUNIT_OPTMSG_N(__VA_ARGC__, <lo>, <hi>, __VA_ARGS__),
+//                  _JIECUNIT_TEXT(@<required arg 1>), ...)
 // (written inside the usual preprocessor directive braces, i.e. wrapped as
 // open-brace + the lines above + close-brace.) <fixed> is only present for
 // TRUE/FALSE: a BOOL literal the public macro itself bakes in (true for
 // EXPECT_TRUE, false for EXPECT_FALSE). FAIL/ADD_FAILURE use
 // _VALIDATE_FAILURE_(<die>, <message>) in place of <base>_MSG(...).
+//
+// The trailing _JIECUNIT_TEXT(@arg) arguments are the source texts of the
+// value arguments, which a failure prints (Google Test's "Which is:"). They
+// must be stringified here, in the public macro: an argument passed on to
+// another macro is macro-expanded first, so @arg there would show the
+// expansion (e.g. 100) instead of what the test wrote (e.g. BUFFER_SIZE).
+// Define JIECUNIT_NO_EXPRESSION_TEXT to pass '' instead (less memory and
+// scan time on a PLC; the failures then show only the values).
+{#ifdef JIECUNIT_NO_EXPRESSION_TEXT}
+	{#define _JIECUNIT_TEXT(text) ''}
+{#else}
+	{#define _JIECUNIT_TEXT(text) text}
+{#endif}
 //
 // Only bucket _1 receives the message as a named parameter; every other
 // bucket keeps a trailing `...` instead, for two different reasons. Bucket
@@ -98,780 +112,780 @@
 // These *_MSG macros are kept for backward compatibility. New code should
 // pass the message as the optional last argument of the plain macro, e.g.
 // EXPECT_EQ_INT(expected, actual, message).
-{#define EXPECT_FALSE_MSG(condition, message)   _VALIDATE_EQ_BOOL_MSG(false, false, condition, message)}
-{#define EXPECT_TRUE_MSG(condition, message)    _VALIDATE_EQ_BOOL_MSG(false, true, condition, message)}
-
-
-{#define EXPECT_EQ_SINT_MSG(expected, actual, message)      _VALIDATE_EQ_INT32_MSG(false, expected, actual, message)}
-{#define EXPECT_EQ_INT_MSG(expected, actual, message)       _VALIDATE_EQ_INT32_MSG(false, expected, actual, message)}
-{#define EXPECT_EQ_DINT_MSG(expected, actual, message)      _VALIDATE_EQ_INT32_MSG(false, expected, actual, message)}
-{#define EXPECT_EQ_LINT_MSG(expected, actual, message)      _VALIDATE_EQ_INT64_MSG(false, expected, actual, message)}
-{#define EXPECT_EQ_INT32_MSG(expected, actual, message)     _VALIDATE_EQ_INT32_MSG(false, expected, actual, message)}
-{#define EXPECT_EQ_INT64_MSG(expected, actual, message)     _VALIDATE_EQ_INT64_MSG(false, expected, actual, message)}
-
-{#define EXPECT_EQ_USINT_MSG(expected, actual, message)     _VALIDATE_EQ_UINT32_MSG(false, expected, actual, message)}
-{#define EXPECT_EQ_UINT_MSG(expected, actual, message)      _VALIDATE_EQ_UINT32_MSG(false, expected, actual, message)}
-{#define EXPECT_EQ_UDINT_MSG(expected, actual, message)     _VALIDATE_EQ_UINT32_MSG(false, expected, actual, message)}
-{#define EXPECT_EQ_ULINT_MSG(expected, actual, message)     _VALIDATE_EQ_UINT64_MSG(false, expected, actual, message)}
-{#define EXPECT_EQ_UINT32_MSG(expected, actual, message)    _VALIDATE_EQ_UINT32_MSG(false, expected, actual, message)}
-{#define EXPECT_EQ_UINT64_MSG(expected, actual, message)    _VALIDATE_EQ_UINT64_MSG(false, expected, actual, message)}
-
-{#define EXPECT_EQ_REAL_MSG(expected, actual, message)      _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, message)} (* Deprecated, use EXPECT_NEAR *)
-{#define EXPECT_EQ_LREAL_MSG(expected, actual, message)     _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, message)} (* Deprecated, use EXPECT_NEAR *)
-{#define EXPECT_EQ_FLOAT_MSG(expected, actual, message)     _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, message)} (* Deprecated, use EXPECT_NEAR *)
-{#define EXPECT_EQ_DOUBLE_MSG(expected, actual, message)    _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, message)} (* Deprecated, use EXPECT_NEAR *)
-
-{#define EXPECT_EQ_BOOL_MSG(expected, actual, message)      _VALIDATE_EQ_BOOL_MSG(false, expected, actual, message)}
-
-{#define EXPECT_EQ_BYTE_MSG(expected, actual, message)      _VALIDATE_EQ_BIT32_MSG(false, expected, actual, message)}
-{#define EXPECT_EQ_WORD_MSG(expected, actual, message)      _VALIDATE_EQ_BIT32_MSG(false, expected, actual, message)}
-{#define EXPECT_EQ_DWORD_MSG(expected, actual, message)     _VALIDATE_EQ_BIT32_MSG(false, expected, actual, message)}
-{#define EXPECT_EQ_LWORD_MSG(expected, actual, message)     _VALIDATE_EQ_BIT64_MSG(false, expected, actual, message)}
-{#define EXPECT_EQ_BIT32_MSG(expected, actual, message)     _VALIDATE_EQ_BIT32_MSG(false, expected, actual, message)}
-{#define EXPECT_EQ_BIT64_MSG(expected, actual, message)     _VALIDATE_EQ_BIT64_MSG(false, expected, actual, message)}
-
-{#define EXPECT_EQ_TIME_MSG(expected, actual, message)      _VALIDATE_EQ_TIME_MSG(false, expected, actual, message)}
-
-{#define EXPECT_EQ_DATE_MSG(expected, actual, message)      _VALIDATE_EQ_DATE_MSG(false, expected, actual, message)}
-{#define EXPECT_EQ_TOD_MSG(expected, actual, message)       _VALIDATE_EQ_TOD_MSG(false, expected, actual, message)}
-{#define EXPECT_EQ_DT_MSG(expected, actual, message)        _VALIDATE_EQ_DT_MSG(false, expected, actual, message)}
-
-{#define EXPECT_EQ_STRING_MSG(expected, actual, message)    _VALIDATE_EQ_STRING_MSG(false, expected, actual, message)}
-
-
-{#define EXPECT_NE_SINT_MSG(expected, actual, message)      _VALIDATE_NE_INT32_MSG(false, expected, actual, message)}
-{#define EXPECT_NE_INT_MSG(expected, actual, message)       _VALIDATE_NE_INT32_MSG(false, expected, actual, message)}
-{#define EXPECT_NE_DINT_MSG(expected, actual, message)      _VALIDATE_NE_INT32_MSG(false, expected, actual, message)}
-{#define EXPECT_NE_LINT_MSG(expected, actual, message)      _VALIDATE_NE_INT64_MSG(false, expected, actual, message)}
-{#define EXPECT_NE_INT32_MSG(expected, actual, message)     _VALIDATE_NE_INT32_MSG(false, expected, actual, message)}
-{#define EXPECT_NE_INT64_MSG(expected, actual, message)     _VALIDATE_NE_INT64_MSG(false, expected, actual, message)}
-
-{#define EXPECT_NE_USINT_MSG(expected, actual, message)     _VALIDATE_NE_UINT32_MSG(false, expected, actual, message)}
-{#define EXPECT_NE_UINT_MSG(expected, actual, message)      _VALIDATE_NE_UINT32_MSG(false, expected, actual, message)}
-{#define EXPECT_NE_UDINT_MSG(expected, actual, message)     _VALIDATE_NE_UINT32_MSG(false, expected, actual, message)}
-{#define EXPECT_NE_ULINT_MSG(expected, actual, message)     _VALIDATE_NE_UINT64_MSG(false, expected, actual, message)}
-{#define EXPECT_NE_UINT32_MSG(expected, actual, message)    _VALIDATE_NE_UINT32_MSG(false, expected, actual, message)}
-{#define EXPECT_NE_UINT64_MSG(expected, actual, message)    _VALIDATE_NE_UINT64_MSG(false, expected, actual, message)}
-
-{#define EXPECT_NE_REAL_MSG(expected, actual, message)      _VALIDATE_NE_DOUBLE_MSG(false, expected, actual, message)}
-{#define EXPECT_NE_LREAL_MSG(expected, actual, message)     _VALIDATE_NE_DOUBLE_MSG(false, expected, actual, message)}
-{#define EXPECT_NE_FLOAT_MSG(expected, actual, message)     _VALIDATE_NE_DOUBLE_MSG(false, expected, actual, message)}
-{#define EXPECT_NE_DOUBLE_MSG(expected, actual, message)    _VALIDATE_NE_DOUBLE_MSG(false, expected, actual, message)}
-
-{#define EXPECT_NE_BOOL_MSG(expected, actual, message)      _VALIDATE_NE_BOOL_MSG(false, expected, actual, message)}
-
-{#define EXPECT_NE_BYTE_MSG(expected, actual, message)      _VALIDATE_NE_BIT32_MSG(false, expected, actual, message)}
-{#define EXPECT_NE_WORD_MSG(expected, actual, message)      _VALIDATE_NE_BIT32_MSG(false, expected, actual, message)}
-{#define EXPECT_NE_DWORD_MSG(expected, actual, message)     _VALIDATE_NE_BIT32_MSG(false, expected, actual, message)}
-{#define EXPECT_NE_LWORD_MSG(expected, actual, message)     _VALIDATE_NE_BIT64_MSG(false, expected, actual, message)}
-{#define EXPECT_NE_BIT32_MSG(expected, actual, message)     _VALIDATE_NE_BIT32_MSG(false, expected, actual, message)}
-{#define EXPECT_NE_BIT64_MSG(expected, actual, message)     _VALIDATE_NE_BIT64_MSG(false, expected, actual, message)}
-
-{#define EXPECT_NE_TIME_MSG(expected, actual, message)      _VALIDATE_NE_TIME_MSG(false, expected, actual, message)}
-
-{#define EXPECT_NE_DATE_MSG(expected, actual, message)      _VALIDATE_NE_DATE_MSG(false, expected, actual, message)}
-{#define EXPECT_NE_TOD_MSG(expected, actual, message)       _VALIDATE_NE_TOD_MSG(false, expected, actual, message)}
-{#define EXPECT_NE_DT_MSG(expected, actual, message)        _VALIDATE_NE_DT_MSG(false, expected, actual, message)}
-{#define EXPECT_NE_STRING_MSG(expected, actual, message)    _VALIDATE_NE_STRING_MSG(false, expected, actual, message)}
-
-
-{#define EXPECT_LT_SINT_MSG(lval, rval, message)    _VALIDATE_LT_INT32_MSG(false, lval, rval, message)}
-{#define EXPECT_LT_INT_MSG(lval, rval, message)     _VALIDATE_LT_INT32_MSG(false, lval, rval, message)}
-{#define EXPECT_LT_DINT_MSG(lval, rval, message)    _VALIDATE_LT_INT32_MSG(false, lval, rval, message)}
-{#define EXPECT_LT_LINT_MSG(lval, rval, message)    _VALIDATE_LT_INT64_MSG(false, lval, rval, message)}
-{#define EXPECT_LT_INT32_MSG(lval, rval, message)   _VALIDATE_LT_INT32_MSG(false, lval, rval, message)}
-{#define EXPECT_LT_INT64_MSG(lval, rval, message)   _VALIDATE_LT_INT64_MSG(false, lval, rval, message)}
-
-{#define EXPECT_LT_USINT_MSG(lval, rval, message)   _VALIDATE_LT_UINT32_MSG(false, lval, rval, message)}
-{#define EXPECT_LT_UINT_MSG(lval, rval, message)    _VALIDATE_LT_UINT32_MSG(false, lval, rval, message)}
-{#define EXPECT_LT_UDINT_MSG(lval, rval, message)   _VALIDATE_LT_UINT32_MSG(false, lval, rval, message)}
-{#define EXPECT_LT_ULINT_MSG(lval, rval, message)   _VALIDATE_LT_UINT64_MSG(false, lval, rval, message)}
-{#define EXPECT_LT_UINT32_MSG(lval, rval, message)  _VALIDATE_LT_UINT32_MSG(false, lval, rval, message)}
-{#define EXPECT_LT_UINT64_MSG(lval, rval, message)  _VALIDATE_LT_UINT64_MSG(false, lval, rval, message)}
-
-{#define EXPECT_LT_REAL_MSG(lval, rval, message)    _VALIDATE_LT_DOUBLE_MSG(false, lval, rval, message)}
-{#define EXPECT_LT_LREAL_MSG(lval, rval, message)   _VALIDATE_LT_DOUBLE_MSG(false, lval, rval, message)}
-{#define EXPECT_LT_FLOAT_MSG(lval, rval, message)   _VALIDATE_LT_DOUBLE_MSG(false, lval, rval, message)}
-{#define EXPECT_LT_DOUBLE_MSG(lval, rval, message)  _VALIDATE_LT_DOUBLE_MSG(false, lval, rval, message)}
+{#define EXPECT_FALSE_MSG(condition, message)   _VALIDATE_BOOL_MSG(false, false, condition, message, _JIECUNIT_TEXT(@condition))}
+{#define EXPECT_TRUE_MSG(condition, message)    _VALIDATE_BOOL_MSG(false, true, condition, message, _JIECUNIT_TEXT(@condition))}
+
+
+{#define EXPECT_EQ_SINT_MSG(expected, actual, message)      _VALIDATE_EQ_INT32_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_INT_MSG(expected, actual, message)       _VALIDATE_EQ_INT32_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_DINT_MSG(expected, actual, message)      _VALIDATE_EQ_INT32_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_LINT_MSG(expected, actual, message)      _VALIDATE_EQ_INT64_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_INT32_MSG(expected, actual, message)     _VALIDATE_EQ_INT32_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_INT64_MSG(expected, actual, message)     _VALIDATE_EQ_INT64_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+
+{#define EXPECT_EQ_USINT_MSG(expected, actual, message)     _VALIDATE_EQ_UINT32_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_UINT_MSG(expected, actual, message)      _VALIDATE_EQ_UINT32_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_UDINT_MSG(expected, actual, message)     _VALIDATE_EQ_UINT32_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_ULINT_MSG(expected, actual, message)     _VALIDATE_EQ_UINT64_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_UINT32_MSG(expected, actual, message)    _VALIDATE_EQ_UINT32_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_UINT64_MSG(expected, actual, message)    _VALIDATE_EQ_UINT64_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+
+{#define EXPECT_EQ_REAL_MSG(expected, actual, message)      _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Deprecated, use EXPECT_NEAR *)
+{#define EXPECT_EQ_LREAL_MSG(expected, actual, message)     _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Deprecated, use EXPECT_NEAR *)
+{#define EXPECT_EQ_FLOAT_MSG(expected, actual, message)     _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Deprecated, use EXPECT_NEAR *)
+{#define EXPECT_EQ_DOUBLE_MSG(expected, actual, message)    _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Deprecated, use EXPECT_NEAR *)
+
+{#define EXPECT_EQ_BOOL_MSG(expected, actual, message)      _VALIDATE_EQ_BOOL_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+
+{#define EXPECT_EQ_BYTE_MSG(expected, actual, message)      _VALIDATE_EQ_BIT32_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_WORD_MSG(expected, actual, message)      _VALIDATE_EQ_BIT32_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_DWORD_MSG(expected, actual, message)     _VALIDATE_EQ_BIT32_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_LWORD_MSG(expected, actual, message)     _VALIDATE_EQ_BIT64_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_BIT32_MSG(expected, actual, message)     _VALIDATE_EQ_BIT32_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_BIT64_MSG(expected, actual, message)     _VALIDATE_EQ_BIT64_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+
+{#define EXPECT_EQ_TIME_MSG(expected, actual, message)      _VALIDATE_EQ_TIME_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+
+{#define EXPECT_EQ_DATE_MSG(expected, actual, message)      _VALIDATE_EQ_DATE_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_TOD_MSG(expected, actual, message)       _VALIDATE_EQ_TOD_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_DT_MSG(expected, actual, message)        _VALIDATE_EQ_DT_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+
+{#define EXPECT_EQ_STRING_MSG(expected, actual, message)    _VALIDATE_EQ_STRING_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+
+
+{#define EXPECT_NE_SINT_MSG(expected, actual, message)      _VALIDATE_NE_INT32_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_INT_MSG(expected, actual, message)       _VALIDATE_NE_INT32_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_DINT_MSG(expected, actual, message)      _VALIDATE_NE_INT32_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_LINT_MSG(expected, actual, message)      _VALIDATE_NE_INT64_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_INT32_MSG(expected, actual, message)     _VALIDATE_NE_INT32_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_INT64_MSG(expected, actual, message)     _VALIDATE_NE_INT64_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+
+{#define EXPECT_NE_USINT_MSG(expected, actual, message)     _VALIDATE_NE_UINT32_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_UINT_MSG(expected, actual, message)      _VALIDATE_NE_UINT32_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_UDINT_MSG(expected, actual, message)     _VALIDATE_NE_UINT32_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_ULINT_MSG(expected, actual, message)     _VALIDATE_NE_UINT64_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_UINT32_MSG(expected, actual, message)    _VALIDATE_NE_UINT32_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_UINT64_MSG(expected, actual, message)    _VALIDATE_NE_UINT64_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+
+{#define EXPECT_NE_REAL_MSG(expected, actual, message)      _VALIDATE_NE_DOUBLE_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_LREAL_MSG(expected, actual, message)     _VALIDATE_NE_DOUBLE_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_FLOAT_MSG(expected, actual, message)     _VALIDATE_NE_DOUBLE_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_DOUBLE_MSG(expected, actual, message)    _VALIDATE_NE_DOUBLE_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+
+{#define EXPECT_NE_BOOL_MSG(expected, actual, message)      _VALIDATE_NE_BOOL_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+
+{#define EXPECT_NE_BYTE_MSG(expected, actual, message)      _VALIDATE_NE_BIT32_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_WORD_MSG(expected, actual, message)      _VALIDATE_NE_BIT32_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_DWORD_MSG(expected, actual, message)     _VALIDATE_NE_BIT32_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_LWORD_MSG(expected, actual, message)     _VALIDATE_NE_BIT64_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_BIT32_MSG(expected, actual, message)     _VALIDATE_NE_BIT32_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_BIT64_MSG(expected, actual, message)     _VALIDATE_NE_BIT64_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+
+{#define EXPECT_NE_TIME_MSG(expected, actual, message)      _VALIDATE_NE_TIME_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+
+{#define EXPECT_NE_DATE_MSG(expected, actual, message)      _VALIDATE_NE_DATE_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_TOD_MSG(expected, actual, message)       _VALIDATE_NE_TOD_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_DT_MSG(expected, actual, message)        _VALIDATE_NE_DT_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_STRING_MSG(expected, actual, message)    _VALIDATE_NE_STRING_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+
+
+{#define EXPECT_LT_SINT_MSG(lval, rval, message)    _VALIDATE_LT_INT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LT_INT_MSG(lval, rval, message)     _VALIDATE_LT_INT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LT_DINT_MSG(lval, rval, message)    _VALIDATE_LT_INT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LT_LINT_MSG(lval, rval, message)    _VALIDATE_LT_INT64_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LT_INT32_MSG(lval, rval, message)   _VALIDATE_LT_INT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LT_INT64_MSG(lval, rval, message)   _VALIDATE_LT_INT64_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+
+{#define EXPECT_LT_USINT_MSG(lval, rval, message)   _VALIDATE_LT_UINT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LT_UINT_MSG(lval, rval, message)    _VALIDATE_LT_UINT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LT_UDINT_MSG(lval, rval, message)   _VALIDATE_LT_UINT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LT_ULINT_MSG(lval, rval, message)   _VALIDATE_LT_UINT64_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LT_UINT32_MSG(lval, rval, message)  _VALIDATE_LT_UINT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LT_UINT64_MSG(lval, rval, message)  _VALIDATE_LT_UINT64_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+
+{#define EXPECT_LT_REAL_MSG(lval, rval, message)    _VALIDATE_LT_DOUBLE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LT_LREAL_MSG(lval, rval, message)   _VALIDATE_LT_DOUBLE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LT_FLOAT_MSG(lval, rval, message)   _VALIDATE_LT_DOUBLE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LT_DOUBLE_MSG(lval, rval, message)  _VALIDATE_LT_DOUBLE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_LT_TIME_MSG(lval, rval, message)    _VALIDATE_LT_TIME_MSG(false, lval, rval, message)}
+{#define EXPECT_LT_TIME_MSG(lval, rval, message)    _VALIDATE_LT_TIME_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_LT_DATE_MSG(lval, rval, message)    _VALIDATE_LT_DATE_MSG(false, lval, rval, message)}
-{#define EXPECT_LT_TOD_MSG(lval, rval, message)     _VALIDATE_LT_TOD_MSG(false, lval, rval, message)}
-{#define EXPECT_LT_DT_MSG(lval, rval, message)      _VALIDATE_LT_DT_MSG(false, lval, rval, message)}
+{#define EXPECT_LT_DATE_MSG(lval, rval, message)    _VALIDATE_LT_DATE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LT_TOD_MSG(lval, rval, message)     _VALIDATE_LT_TOD_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LT_DT_MSG(lval, rval, message)      _VALIDATE_LT_DT_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_LT_STRING_MSG(lval, rval, message)  _VALIDATE_LT_STRING_MSG(false, lval, rval, message)}
+{#define EXPECT_LT_STRING_MSG(lval, rval, message)  _VALIDATE_LT_STRING_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
 
-{#define EXPECT_LE_SINT_MSG(lval, rval, message)    _VALIDATE_LE_INT32_MSG(false, lval, rval, message)}
-{#define EXPECT_LE_INT_MSG(lval, rval, message)     _VALIDATE_LE_INT32_MSG(false, lval, rval, message)}
-{#define EXPECT_LE_DINT_MSG(lval, rval, message)    _VALIDATE_LE_INT32_MSG(false, lval, rval, message)}
-{#define EXPECT_LE_LINT_MSG(lval, rval, message)    _VALIDATE_LE_INT64_MSG(false, lval, rval, message)}
-{#define EXPECT_LE_INT32_MSG(lval, rval, message)   _VALIDATE_LE_INT32_MSG(false, lval, rval, message)}
-{#define EXPECT_LE_INT64_MSG(lval, rval, message)   _VALIDATE_LE_INT64_MSG(false, lval, rval, message)}
+{#define EXPECT_LE_SINT_MSG(lval, rval, message)    _VALIDATE_LE_INT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LE_INT_MSG(lval, rval, message)     _VALIDATE_LE_INT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LE_DINT_MSG(lval, rval, message)    _VALIDATE_LE_INT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LE_LINT_MSG(lval, rval, message)    _VALIDATE_LE_INT64_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LE_INT32_MSG(lval, rval, message)   _VALIDATE_LE_INT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LE_INT64_MSG(lval, rval, message)   _VALIDATE_LE_INT64_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_LE_USINT_MSG(lval, rval, message)   _VALIDATE_LE_UINT32_MSG(false, lval, rval, message)}
-{#define EXPECT_LE_UINT_MSG(lval, rval, message)    _VALIDATE_LE_UINT32_MSG(false, lval, rval, message)}
-{#define EXPECT_LE_UDINT_MSG(lval, rval, message)   _VALIDATE_LE_UINT32_MSG(false, lval, rval, message)}
-{#define EXPECT_LE_ULINT_MSG(lval, rval, message)   _VALIDATE_LE_UINT64_MSG(false, lval, rval, message)}
-{#define EXPECT_LE_UINT32_MSG(lval, rval, message)  _VALIDATE_LE_UINT32_MSG(false, lval, rval, message)}
-{#define EXPECT_LE_UINT64_MSG(lval, rval, message)  _VALIDATE_LE_UINT64_MSG(false, lval, rval, message)}
+{#define EXPECT_LE_USINT_MSG(lval, rval, message)   _VALIDATE_LE_UINT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LE_UINT_MSG(lval, rval, message)    _VALIDATE_LE_UINT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LE_UDINT_MSG(lval, rval, message)   _VALIDATE_LE_UINT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LE_ULINT_MSG(lval, rval, message)   _VALIDATE_LE_UINT64_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LE_UINT32_MSG(lval, rval, message)  _VALIDATE_LE_UINT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LE_UINT64_MSG(lval, rval, message)  _VALIDATE_LE_UINT64_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_LE_REAL_MSG(lval, rval, message)    _VALIDATE_LE_DOUBLE_MSG(false, lval, rval, message)}
-{#define EXPECT_LE_LREAL_MSG(lval, rval, message)   _VALIDATE_LE_DOUBLE_MSG(false, lval, rval, message)}
-{#define EXPECT_LE_FLOAT_MSG(lval, rval, message)   _VALIDATE_LE_DOUBLE_MSG(false, lval, rval, message)}
-{#define EXPECT_LE_DOUBLE_MSG(lval, rval, message)  _VALIDATE_LE_DOUBLE_MSG(false, lval, rval, message)}
+{#define EXPECT_LE_REAL_MSG(lval, rval, message)    _VALIDATE_LE_DOUBLE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LE_LREAL_MSG(lval, rval, message)   _VALIDATE_LE_DOUBLE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LE_FLOAT_MSG(lval, rval, message)   _VALIDATE_LE_DOUBLE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LE_DOUBLE_MSG(lval, rval, message)  _VALIDATE_LE_DOUBLE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_LE_TIME_MSG(lval, rval, message)    _VALIDATE_LE_TIME_MSG(false, lval, rval, message)}
+{#define EXPECT_LE_TIME_MSG(lval, rval, message)    _VALIDATE_LE_TIME_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_LE_DATE_MSG(lval, rval, message)    _VALIDATE_LE_DATE_MSG(false, lval, rval, message)}
-{#define EXPECT_LE_TOD_MSG(lval, rval, message)     _VALIDATE_LE_TOD_MSG(false, lval, rval, message)}
-{#define EXPECT_LE_DT_MSG(lval, rval, message)      _VALIDATE_LE_DT_MSG(false, lval, rval, message)}
+{#define EXPECT_LE_DATE_MSG(lval, rval, message)    _VALIDATE_LE_DATE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LE_TOD_MSG(lval, rval, message)     _VALIDATE_LE_TOD_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LE_DT_MSG(lval, rval, message)      _VALIDATE_LE_DT_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_LE_STRING_MSG(lval, rval, message)  _VALIDATE_LE_STRING_MSG(false, lval, rval, message)}
+{#define EXPECT_LE_STRING_MSG(lval, rval, message)  _VALIDATE_LE_STRING_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
 
-{#define EXPECT_GE_SINT_MSG(lval, rval, message)    _VALIDATE_GE_INT32_MSG(false, lval, rval, message)}
-{#define EXPECT_GE_INT_MSG(lval, rval, message)     _VALIDATE_GE_INT32_MSG(false, lval, rval, message)}
-{#define EXPECT_GE_DINT_MSG(lval, rval, message)    _VALIDATE_GE_INT32_MSG(false, lval, rval, message)}
-{#define EXPECT_GE_LINT_MSG(lval, rval, message)    _VALIDATE_GE_INT64_MSG(false, lval, rval, message)}
-{#define EXPECT_GE_INT32_MSG(lval, rval, message)   _VALIDATE_GE_INT32_MSG(false, lval, rval, message)}
-{#define EXPECT_GE_INT64_MSG(lval, rval, message)   _VALIDATE_GE_INT64_MSG(false, lval, rval, message)}
+{#define EXPECT_GE_SINT_MSG(lval, rval, message)    _VALIDATE_GE_INT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GE_INT_MSG(lval, rval, message)     _VALIDATE_GE_INT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GE_DINT_MSG(lval, rval, message)    _VALIDATE_GE_INT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GE_LINT_MSG(lval, rval, message)    _VALIDATE_GE_INT64_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GE_INT32_MSG(lval, rval, message)   _VALIDATE_GE_INT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GE_INT64_MSG(lval, rval, message)   _VALIDATE_GE_INT64_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_GE_USINT_MSG(lval, rval, message)   _VALIDATE_GE_UINT32_MSG(false, lval, rval, message)}
-{#define EXPECT_GE_UINT_MSG(lval, rval, message)    _VALIDATE_GE_UINT32_MSG(false, lval, rval, message)}
-{#define EXPECT_GE_UDINT_MSG(lval, rval, message)   _VALIDATE_GE_UINT32_MSG(false, lval, rval, message)}
-{#define EXPECT_GE_ULINT_MSG(lval, rval, message)   _VALIDATE_GE_UINT64_MSG(false, lval, rval, message)}
-{#define EXPECT_GE_UINT32_MSG(lval, rval, message)  _VALIDATE_GE_UINT32_MSG(false, lval, rval, message)}
-{#define EXPECT_GE_UINT64_MSG(lval, rval, message)  _VALIDATE_GE_UINT64_MSG(false, lval, rval, message)}
+{#define EXPECT_GE_USINT_MSG(lval, rval, message)   _VALIDATE_GE_UINT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GE_UINT_MSG(lval, rval, message)    _VALIDATE_GE_UINT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GE_UDINT_MSG(lval, rval, message)   _VALIDATE_GE_UINT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GE_ULINT_MSG(lval, rval, message)   _VALIDATE_GE_UINT64_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GE_UINT32_MSG(lval, rval, message)  _VALIDATE_GE_UINT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GE_UINT64_MSG(lval, rval, message)  _VALIDATE_GE_UINT64_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_GE_REAL_MSG(lval, rval, message)    _VALIDATE_GE_DOUBLE_MSG(false, lval, rval, message)}
-{#define EXPECT_GE_LREAL_MSG(lval, rval, message)   _VALIDATE_GE_DOUBLE_MSG(false, lval, rval, message)}
-{#define EXPECT_GE_FLOAT_MSG(lval, rval, message)   _VALIDATE_GE_DOUBLE_MSG(false, lval, rval, message)}
-{#define EXPECT_GE_DOUBLE_MSG(lval, rval, message)  _VALIDATE_GE_DOUBLE_MSG(false, lval, rval, message)}
+{#define EXPECT_GE_REAL_MSG(lval, rval, message)    _VALIDATE_GE_DOUBLE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GE_LREAL_MSG(lval, rval, message)   _VALIDATE_GE_DOUBLE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GE_FLOAT_MSG(lval, rval, message)   _VALIDATE_GE_DOUBLE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GE_DOUBLE_MSG(lval, rval, message)  _VALIDATE_GE_DOUBLE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_GE_TIME_MSG(lval, rval, message)    _VALIDATE_GE_TIME_MSG(false, lval, rval, message)}
+{#define EXPECT_GE_TIME_MSG(lval, rval, message)    _VALIDATE_GE_TIME_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_GE_DATE_MSG(lval, rval, message)    _VALIDATE_GE_DATE_MSG(false, lval, rval, message)}
-{#define EXPECT_GE_TOD_MSG(lval, rval, message)     _VALIDATE_GE_TOD_MSG(false, lval, rval, message)}
-{#define EXPECT_GE_DT_MSG(lval, rval, message)      _VALIDATE_GE_DT_MSG(false, lval, rval, message)}
+{#define EXPECT_GE_DATE_MSG(lval, rval, message)    _VALIDATE_GE_DATE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GE_TOD_MSG(lval, rval, message)     _VALIDATE_GE_TOD_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GE_DT_MSG(lval, rval, message)      _VALIDATE_GE_DT_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_GE_STRING_MSG(lval, rval, message)  _VALIDATE_GE_STRING_MSG(false, lval, rval, message)}
+{#define EXPECT_GE_STRING_MSG(lval, rval, message)  _VALIDATE_GE_STRING_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
 
-{#define EXPECT_GT_SINT_MSG(lval, rval, message)    _VALIDATE_GT_INT32_MSG(false, lval, rval, message)}
-{#define EXPECT_GT_INT_MSG(lval, rval, message)     _VALIDATE_GT_INT32_MSG(false, lval, rval, message)}
-{#define EXPECT_GT_DINT_MSG(lval, rval, message)    _VALIDATE_GT_INT32_MSG(false, lval, rval, message)}
-{#define EXPECT_GT_LINT_MSG(lval, rval, message)    _VALIDATE_GT_INT64_MSG(false, lval, rval, message)}
-{#define EXPECT_GT_INT32_MSG(lval, rval, message)   _VALIDATE_GT_INT32_MSG(false, lval, rval, message)}
-{#define EXPECT_GT_INT64_MSG(lval, rval, message)   _VALIDATE_GT_INT64_MSG(false, lval, rval, message)}
+{#define EXPECT_GT_SINT_MSG(lval, rval, message)    _VALIDATE_GT_INT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GT_INT_MSG(lval, rval, message)     _VALIDATE_GT_INT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GT_DINT_MSG(lval, rval, message)    _VALIDATE_GT_INT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GT_LINT_MSG(lval, rval, message)    _VALIDATE_GT_INT64_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GT_INT32_MSG(lval, rval, message)   _VALIDATE_GT_INT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GT_INT64_MSG(lval, rval, message)   _VALIDATE_GT_INT64_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_GT_USINT_MSG(lval, rval, message)   _VALIDATE_GT_UINT32_MSG(false, lval, rval, message)}
-{#define EXPECT_GT_UINT_MSG(lval, rval, message)    _VALIDATE_GT_UINT32_MSG(false, lval, rval, message)}
-{#define EXPECT_GT_UDINT_MSG(lval, rval, message)   _VALIDATE_GT_UINT32_MSG(false, lval, rval, message)}
-{#define EXPECT_GT_ULINT_MSG(lval, rval, message)   _VALIDATE_GT_UINT64_MSG(false, lval, rval, message)}
-{#define EXPECT_GT_UINT32_MSG(lval, rval, message)  _VALIDATE_GT_UINT32_MSG(false, lval, rval, message)}
-{#define EXPECT_GT_UINT64_MSG(lval, rval, message)  _VALIDATE_GT_UINT64_MSG(false, lval, rval, message)}
+{#define EXPECT_GT_USINT_MSG(lval, rval, message)   _VALIDATE_GT_UINT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GT_UINT_MSG(lval, rval, message)    _VALIDATE_GT_UINT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GT_UDINT_MSG(lval, rval, message)   _VALIDATE_GT_UINT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GT_ULINT_MSG(lval, rval, message)   _VALIDATE_GT_UINT64_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GT_UINT32_MSG(lval, rval, message)  _VALIDATE_GT_UINT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GT_UINT64_MSG(lval, rval, message)  _VALIDATE_GT_UINT64_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_GT_REAL_MSG(lval, rval, message)    _VALIDATE_GT_DOUBLE_MSG(false, lval, rval, message)}
-{#define EXPECT_GT_LREAL_MSG(lval, rval, message)   _VALIDATE_GT_DOUBLE_MSG(false, lval, rval, message)}
-{#define EXPECT_GT_FLOAT_MSG(lval, rval, message)   _VALIDATE_GT_DOUBLE_MSG(false, lval, rval, message)}
-{#define EXPECT_GT_DOUBLE_MSG(lval, rval, message)  _VALIDATE_GT_DOUBLE_MSG(false, lval, rval, message)}
+{#define EXPECT_GT_REAL_MSG(lval, rval, message)    _VALIDATE_GT_DOUBLE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GT_LREAL_MSG(lval, rval, message)   _VALIDATE_GT_DOUBLE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GT_FLOAT_MSG(lval, rval, message)   _VALIDATE_GT_DOUBLE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GT_DOUBLE_MSG(lval, rval, message)  _VALIDATE_GT_DOUBLE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_GT_TIME_MSG(lval, rval, message)    _VALIDATE_GT_TIME_MSG(false, lval, rval, message)}
+{#define EXPECT_GT_TIME_MSG(lval, rval, message)    _VALIDATE_GT_TIME_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_GT_DATE_MSG(lval, rval, message)    _VALIDATE_GT_DATE_MSG(false, lval, rval, message)}
-{#define EXPECT_GT_TOD_MSG(lval, rval, message)     _VALIDATE_GT_TOD_MSG(false, lval, rval, message)}
-{#define EXPECT_GT_DT_MSG(lval, rval, message)      _VALIDATE_GT_DT_MSG(false, lval, rval, message)}
+{#define EXPECT_GT_DATE_MSG(lval, rval, message)    _VALIDATE_GT_DATE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GT_TOD_MSG(lval, rval, message)     _VALIDATE_GT_TOD_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GT_DT_MSG(lval, rval, message)      _VALIDATE_GT_DT_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_GT_STRING_MSG(lval, rval, message)  _VALIDATE_GT_STRING_MSG(false, lval, rval, message)}
+{#define EXPECT_GT_STRING_MSG(lval, rval, message)  _VALIDATE_GT_STRING_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_NEAR_MSG(val1, val2, abs_error, message)    _VALIDATE_NEAR_MSG(false, val1, val2, abs_error, message)}
-{#define EXPECT_NEAR_REL_MSG(val1, val2, rel_error, message)   _VALIDATE_NEAR_REL_MSG(false, val1, val2, rel_error, message)}
+{#define EXPECT_NEAR_MSG(val1, val2, abs_error, message)    _VALIDATE_NEAR_MSG(false, val1, val2, abs_error, message, _JIECUNIT_TEXT(@val1), _JIECUNIT_TEXT(@val2), _JIECUNIT_TEXT(@abs_error))}
+{#define EXPECT_NEAR_REL_MSG(val1, val2, rel_error, message)   _VALIDATE_NEAR_REL_MSG(false, val1, val2, rel_error, message, _JIECUNIT_TEXT(@val1), _JIECUNIT_TEXT(@val2), _JIECUNIT_TEXT(@rel_error))}
 
 
 
-{#define EXPECT_FALSE(condition, ...)                   _VALIDATE_EQ_BOOL_MSG(false, false, condition, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 1, 2, __VA_ARGS__))}
-{#define EXPECT_TRUE(condition, ...)                    _VALIDATE_EQ_BOOL_MSG(false, true, condition, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 1, 2, __VA_ARGS__))}
+{#define EXPECT_FALSE(condition, ...)                   _VALIDATE_BOOL_MSG(false, false, condition, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 1, 2, __VA_ARGS__), _JIECUNIT_TEXT(@condition))}
+{#define EXPECT_TRUE(condition, ...)                    _VALIDATE_BOOL_MSG(false, true, condition, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 1, 2, __VA_ARGS__), _JIECUNIT_TEXT(@condition))}
 
 
 
-{#define EXPECT_EQ_SINT(expected, actual, ...)          _VALIDATE_EQ_INT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_EQ_INT(expected, actual, ...)           _VALIDATE_EQ_INT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_EQ_DINT(expected, actual, ...)          _VALIDATE_EQ_INT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_EQ_LINT(expected, actual, ...)          _VALIDATE_EQ_INT64_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_EQ_INT32(expected, actual, ...)         _VALIDATE_EQ_INT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_EQ_INT64(expected, actual, ...)         _VALIDATE_EQ_INT64_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_EQ_SINT(expected, actual, ...)          _VALIDATE_EQ_INT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_INT(expected, actual, ...)           _VALIDATE_EQ_INT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_DINT(expected, actual, ...)          _VALIDATE_EQ_INT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_LINT(expected, actual, ...)          _VALIDATE_EQ_INT64_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_INT32(expected, actual, ...)         _VALIDATE_EQ_INT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_INT64(expected, actual, ...)         _VALIDATE_EQ_INT64_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
-{#define EXPECT_EQ_USINT(expected, actual, ...)         _VALIDATE_EQ_UINT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_EQ_UINT(expected, actual, ...)          _VALIDATE_EQ_UINT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_EQ_UDINT(expected, actual, ...)         _VALIDATE_EQ_UINT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_EQ_ULINT(expected, actual, ...)         _VALIDATE_EQ_UINT64_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_EQ_UINT32(expected, actual, ...)        _VALIDATE_EQ_UINT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_EQ_UINT64(expected, actual, ...)        _VALIDATE_EQ_UINT64_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_EQ_USINT(expected, actual, ...)         _VALIDATE_EQ_UINT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_UINT(expected, actual, ...)          _VALIDATE_EQ_UINT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_UDINT(expected, actual, ...)         _VALIDATE_EQ_UINT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_ULINT(expected, actual, ...)         _VALIDATE_EQ_UINT64_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_UINT32(expected, actual, ...)        _VALIDATE_EQ_UINT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_UINT64(expected, actual, ...)        _VALIDATE_EQ_UINT64_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
-{#define EXPECT_EQ_REAL(expected, actual, ...)          _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))} (* Deprecated, use EXPECT_NEAR *)
-{#define EXPECT_EQ_LREAL(expected, actual, ...)         _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))} (* Deprecated, use EXPECT_NEAR *)
-{#define EXPECT_EQ_FLOAT(expected, actual, ...)         _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))} (* Deprecated, use EXPECT_NEAR *)
-{#define EXPECT_EQ_DOUBLE(expected, actual, ...)        _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))} (* Deprecated, use EXPECT_NEAR *)
+{#define EXPECT_EQ_REAL(expected, actual, ...)          _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Deprecated, use EXPECT_NEAR *)
+{#define EXPECT_EQ_LREAL(expected, actual, ...)         _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Deprecated, use EXPECT_NEAR *)
+{#define EXPECT_EQ_FLOAT(expected, actual, ...)         _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Deprecated, use EXPECT_NEAR *)
+{#define EXPECT_EQ_DOUBLE(expected, actual, ...)        _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Deprecated, use EXPECT_NEAR *)
 
-{#define EXPECT_EQ_BOOL(expected, actual, ...)          _VALIDATE_EQ_BOOL_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_EQ_BOOL(expected, actual, ...)          _VALIDATE_EQ_BOOL_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
-{#define EXPECT_EQ_BYTE(expected, actual, ...)          _VALIDATE_EQ_BIT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_EQ_WORD(expected, actual, ...)          _VALIDATE_EQ_BIT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_EQ_DWORD(expected, actual, ...)         _VALIDATE_EQ_BIT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_EQ_LWORD(expected, actual, ...)         _VALIDATE_EQ_BIT64_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_EQ_BIT32(expected, actual, ...)         _VALIDATE_EQ_BIT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_EQ_BIT64(expected, actual, ...)         _VALIDATE_EQ_BIT64_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_EQ_BYTE(expected, actual, ...)          _VALIDATE_EQ_BIT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_WORD(expected, actual, ...)          _VALIDATE_EQ_BIT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_DWORD(expected, actual, ...)         _VALIDATE_EQ_BIT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_LWORD(expected, actual, ...)         _VALIDATE_EQ_BIT64_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_BIT32(expected, actual, ...)         _VALIDATE_EQ_BIT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_BIT64(expected, actual, ...)         _VALIDATE_EQ_BIT64_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
-{#define EXPECT_EQ_TIME(expected, actual, ...)          _VALIDATE_EQ_TIME_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_EQ_TIME(expected, actual, ...)          _VALIDATE_EQ_TIME_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
-{#define EXPECT_EQ_DATE(expected, actual, ...)          _VALIDATE_EQ_DATE_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_EQ_TOD(expected, actual, ...)           _VALIDATE_EQ_TOD_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_EQ_DT(expected, actual, ...)            _VALIDATE_EQ_DT_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_EQ_DATE(expected, actual, ...)          _VALIDATE_EQ_DATE_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_TOD(expected, actual, ...)           _VALIDATE_EQ_TOD_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_DT(expected, actual, ...)            _VALIDATE_EQ_DT_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
-{#define EXPECT_EQ_STRING(expected, actual, ...)        _VALIDATE_EQ_STRING_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_EQ_STRING(expected, actual, ...)        _VALIDATE_EQ_STRING_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
 
-{#define EXPECT_NE_SINT(expected, actual, ...)          _VALIDATE_NE_INT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_NE_INT(expected, actual, ...)           _VALIDATE_NE_INT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_NE_DINT(expected, actual, ...)          _VALIDATE_NE_INT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_NE_LINT(expected, actual, ...)          _VALIDATE_NE_INT64_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_NE_INT32(expected, actual, ...)         _VALIDATE_NE_INT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_NE_INT64(expected, actual, ...)         _VALIDATE_NE_INT64_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_NE_SINT(expected, actual, ...)          _VALIDATE_NE_INT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_INT(expected, actual, ...)           _VALIDATE_NE_INT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_DINT(expected, actual, ...)          _VALIDATE_NE_INT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_LINT(expected, actual, ...)          _VALIDATE_NE_INT64_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_INT32(expected, actual, ...)         _VALIDATE_NE_INT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_INT64(expected, actual, ...)         _VALIDATE_NE_INT64_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
-{#define EXPECT_NE_USINT(expected, actual, ...)         _VALIDATE_NE_UINT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_NE_UINT(expected, actual, ...)          _VALIDATE_NE_UINT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_NE_UDINT(expected, actual, ...)         _VALIDATE_NE_UINT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_NE_ULINT(expected, actual, ...)         _VALIDATE_NE_UINT64_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_NE_UINT32(expected, actual, ...)        _VALIDATE_NE_UINT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_NE_UINT64(expected, actual, ...)        _VALIDATE_NE_UINT64_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_NE_USINT(expected, actual, ...)         _VALIDATE_NE_UINT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_UINT(expected, actual, ...)          _VALIDATE_NE_UINT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_UDINT(expected, actual, ...)         _VALIDATE_NE_UINT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_ULINT(expected, actual, ...)         _VALIDATE_NE_UINT64_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_UINT32(expected, actual, ...)        _VALIDATE_NE_UINT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_UINT64(expected, actual, ...)        _VALIDATE_NE_UINT64_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
-{#define EXPECT_NE_REAL(expected, actual, ...)          _VALIDATE_NE_DOUBLE_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_NE_LREAL(expected, actual, ...)         _VALIDATE_NE_DOUBLE_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_NE_FLOAT(expected, actual, ...)         _VALIDATE_NE_DOUBLE_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_NE_DOUBLE(expected, actual, ...)        _VALIDATE_NE_DOUBLE_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_NE_REAL(expected, actual, ...)          _VALIDATE_NE_DOUBLE_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_LREAL(expected, actual, ...)         _VALIDATE_NE_DOUBLE_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_FLOAT(expected, actual, ...)         _VALIDATE_NE_DOUBLE_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_DOUBLE(expected, actual, ...)        _VALIDATE_NE_DOUBLE_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
-{#define EXPECT_NE_BOOL(expected, actual, ...)          _VALIDATE_NE_BOOL_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_NE_BOOL(expected, actual, ...)          _VALIDATE_NE_BOOL_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
-{#define EXPECT_NE_BYTE(expected, actual, ...)          _VALIDATE_NE_BIT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_NE_WORD(expected, actual, ...)          _VALIDATE_NE_BIT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_NE_DWORD(expected, actual, ...)         _VALIDATE_NE_BIT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_NE_LWORD(expected, actual, ...)         _VALIDATE_NE_BIT64_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_NE_BIT32(expected, actual, ...)         _VALIDATE_NE_BIT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_NE_BIT64(expected, actual, ...)         _VALIDATE_NE_BIT64_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_NE_BYTE(expected, actual, ...)          _VALIDATE_NE_BIT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_WORD(expected, actual, ...)          _VALIDATE_NE_BIT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_DWORD(expected, actual, ...)         _VALIDATE_NE_BIT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_LWORD(expected, actual, ...)         _VALIDATE_NE_BIT64_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_BIT32(expected, actual, ...)         _VALIDATE_NE_BIT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_BIT64(expected, actual, ...)         _VALIDATE_NE_BIT64_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
-{#define EXPECT_NE_TIME(expected, actual, ...)          _VALIDATE_NE_TIME_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_NE_TIME(expected, actual, ...)          _VALIDATE_NE_TIME_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
-{#define EXPECT_NE_DATE(expected, actual, ...)          _VALIDATE_NE_DATE_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_NE_TOD(expected, actual, ...)           _VALIDATE_NE_TOD_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_NE_DT(expected, actual, ...)            _VALIDATE_NE_DT_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_NE_DATE(expected, actual, ...)          _VALIDATE_NE_DATE_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_TOD(expected, actual, ...)           _VALIDATE_NE_TOD_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_DT(expected, actual, ...)            _VALIDATE_NE_DT_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
-{#define EXPECT_NE_STRING(expected, actual, ...)        _VALIDATE_NE_STRING_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_NE_STRING(expected, actual, ...)        _VALIDATE_NE_STRING_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
 
-{#define EXPECT_LT_SINT(lval, rval, ...)                _VALIDATE_LT_INT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_LT_INT(lval, rval, ...)                 _VALIDATE_LT_INT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_LT_DINT(lval, rval, ...)                _VALIDATE_LT_INT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_LT_LINT(lval, rval, ...)                _VALIDATE_LT_INT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_LT_INT32(lval, rval, ...)               _VALIDATE_LT_INT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_LT_INT64(lval, rval, ...)               _VALIDATE_LT_INT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_LT_SINT(lval, rval, ...)                _VALIDATE_LT_INT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LT_INT(lval, rval, ...)                 _VALIDATE_LT_INT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LT_DINT(lval, rval, ...)                _VALIDATE_LT_INT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LT_LINT(lval, rval, ...)                _VALIDATE_LT_INT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LT_INT32(lval, rval, ...)               _VALIDATE_LT_INT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LT_INT64(lval, rval, ...)               _VALIDATE_LT_INT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_LT_USINT(lval, rval, ...)               _VALIDATE_LT_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_LT_UINT(lval, rval, ...)                _VALIDATE_LT_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_LT_UDINT(lval, rval, ...)               _VALIDATE_LT_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_LT_ULINT(lval, rval, ...)               _VALIDATE_LT_UINT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_LT_UINT32(lval, rval, ...)              _VALIDATE_LT_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_LT_UINT64(lval, rval, ...)              _VALIDATE_LT_UINT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_LT_USINT(lval, rval, ...)               _VALIDATE_LT_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LT_UINT(lval, rval, ...)                _VALIDATE_LT_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LT_UDINT(lval, rval, ...)               _VALIDATE_LT_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LT_ULINT(lval, rval, ...)               _VALIDATE_LT_UINT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LT_UINT32(lval, rval, ...)              _VALIDATE_LT_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LT_UINT64(lval, rval, ...)              _VALIDATE_LT_UINT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_LT_REAL(lval, rval, ...)                _VALIDATE_LT_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_LT_LREAL(lval, rval, ...)               _VALIDATE_LT_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_LT_FLOAT(lval, rval, ...)               _VALIDATE_LT_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_LT_DOUBLE(lval, rval, ...)              _VALIDATE_LT_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_LT_REAL(lval, rval, ...)                _VALIDATE_LT_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LT_LREAL(lval, rval, ...)               _VALIDATE_LT_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LT_FLOAT(lval, rval, ...)               _VALIDATE_LT_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LT_DOUBLE(lval, rval, ...)              _VALIDATE_LT_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_LT_TIME(lval, rval, ...)                _VALIDATE_LT_TIME_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_LT_TIME(lval, rval, ...)                _VALIDATE_LT_TIME_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_LT_DATE(lval, rval, ...)                _VALIDATE_LT_DATE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_LT_TOD(lval, rval, ...)                 _VALIDATE_LT_TOD_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_LT_DT(lval, rval, ...)                  _VALIDATE_LT_DT_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_LT_DATE(lval, rval, ...)                _VALIDATE_LT_DATE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LT_TOD(lval, rval, ...)                 _VALIDATE_LT_TOD_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LT_DT(lval, rval, ...)                  _VALIDATE_LT_DT_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_LT_STRING(lval, rval, ...)              _VALIDATE_LT_STRING_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_LT_STRING(lval, rval, ...)              _VALIDATE_LT_STRING_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_LE_SINT(lval, rval, ...)                _VALIDATE_LE_INT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_LE_INT(lval, rval, ...)                 _VALIDATE_LE_INT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_LE_DINT(lval, rval, ...)                _VALIDATE_LE_INT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_LE_LINT(lval, rval, ...)                _VALIDATE_LE_INT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_LE_INT32(lval, rval, ...)               _VALIDATE_LE_INT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_LE_INT64(lval, rval, ...)               _VALIDATE_LE_INT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_LE_SINT(lval, rval, ...)                _VALIDATE_LE_INT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LE_INT(lval, rval, ...)                 _VALIDATE_LE_INT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LE_DINT(lval, rval, ...)                _VALIDATE_LE_INT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LE_LINT(lval, rval, ...)                _VALIDATE_LE_INT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LE_INT32(lval, rval, ...)               _VALIDATE_LE_INT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LE_INT64(lval, rval, ...)               _VALIDATE_LE_INT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_LE_USINT(lval, rval, ...)               _VALIDATE_LE_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_LE_UINT(lval, rval, ...)                _VALIDATE_LE_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_LE_UDINT(lval, rval, ...)               _VALIDATE_LE_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_LE_ULINT(lval, rval, ...)               _VALIDATE_LE_UINT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_LE_UINT32(lval, rval, ...)              _VALIDATE_LE_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_LE_UINT64(lval, rval, ...)              _VALIDATE_LE_UINT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_LE_USINT(lval, rval, ...)               _VALIDATE_LE_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LE_UINT(lval, rval, ...)                _VALIDATE_LE_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LE_UDINT(lval, rval, ...)               _VALIDATE_LE_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LE_ULINT(lval, rval, ...)               _VALIDATE_LE_UINT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LE_UINT32(lval, rval, ...)              _VALIDATE_LE_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LE_UINT64(lval, rval, ...)              _VALIDATE_LE_UINT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_LE_REAL(lval, rval, ...)                _VALIDATE_LE_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_LE_LREAL(lval, rval, ...)               _VALIDATE_LE_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_LE_FLOAT(lval, rval, ...)               _VALIDATE_LE_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_LE_DOUBLE(lval, rval, ...)              _VALIDATE_LE_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_LE_REAL(lval, rval, ...)                _VALIDATE_LE_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LE_LREAL(lval, rval, ...)               _VALIDATE_LE_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LE_FLOAT(lval, rval, ...)               _VALIDATE_LE_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LE_DOUBLE(lval, rval, ...)              _VALIDATE_LE_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_LE_TIME(lval, rval, ...)                _VALIDATE_LE_TIME_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_LE_TIME(lval, rval, ...)                _VALIDATE_LE_TIME_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_LE_DATE(lval, rval, ...)                _VALIDATE_LE_DATE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_LE_TOD(lval, rval, ...)                 _VALIDATE_LE_TOD_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_LE_DT(lval, rval, ...)                  _VALIDATE_LE_DT_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_LE_DATE(lval, rval, ...)                _VALIDATE_LE_DATE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LE_TOD(lval, rval, ...)                 _VALIDATE_LE_TOD_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LE_DT(lval, rval, ...)                  _VALIDATE_LE_DT_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_LE_STRING(lval, rval, ...)              _VALIDATE_LE_STRING_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_LE_STRING(lval, rval, ...)              _VALIDATE_LE_STRING_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
 
-{#define EXPECT_GE_SINT(lval, rval, ...)                _VALIDATE_GE_INT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_GE_INT(lval, rval, ...)                 _VALIDATE_GE_INT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_GE_DINT(lval, rval, ...)                _VALIDATE_GE_INT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_GE_LINT(lval, rval, ...)                _VALIDATE_GE_INT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_GE_INT32(lval, rval, ...)               _VALIDATE_GE_INT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_GE_INT64(lval, rval, ...)               _VALIDATE_GE_INT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_GE_SINT(lval, rval, ...)                _VALIDATE_GE_INT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GE_INT(lval, rval, ...)                 _VALIDATE_GE_INT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GE_DINT(lval, rval, ...)                _VALIDATE_GE_INT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GE_LINT(lval, rval, ...)                _VALIDATE_GE_INT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GE_INT32(lval, rval, ...)               _VALIDATE_GE_INT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GE_INT64(lval, rval, ...)               _VALIDATE_GE_INT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_GE_USINT(lval, rval, ...)               _VALIDATE_GE_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_GE_UINT(lval, rval, ...)                _VALIDATE_GE_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_GE_UDINT(lval, rval, ...)               _VALIDATE_GE_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_GE_ULINT(lval, rval, ...)               _VALIDATE_GE_UINT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_GE_UINT32(lval, rval, ...)              _VALIDATE_GE_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_GE_UINT64(lval, rval, ...)              _VALIDATE_GE_UINT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_GE_USINT(lval, rval, ...)               _VALIDATE_GE_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GE_UINT(lval, rval, ...)                _VALIDATE_GE_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GE_UDINT(lval, rval, ...)               _VALIDATE_GE_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GE_ULINT(lval, rval, ...)               _VALIDATE_GE_UINT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GE_UINT32(lval, rval, ...)              _VALIDATE_GE_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GE_UINT64(lval, rval, ...)              _VALIDATE_GE_UINT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_GE_REAL(lval, rval, ...)                _VALIDATE_GE_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_GE_LREAL(lval, rval, ...)               _VALIDATE_GE_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_GE_FLOAT(lval, rval, ...)               _VALIDATE_GE_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_GE_DOUBLE(lval, rval, ...)              _VALIDATE_GE_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_GE_REAL(lval, rval, ...)                _VALIDATE_GE_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GE_LREAL(lval, rval, ...)               _VALIDATE_GE_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GE_FLOAT(lval, rval, ...)               _VALIDATE_GE_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GE_DOUBLE(lval, rval, ...)              _VALIDATE_GE_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_GE_TIME(lval, rval, ...)                _VALIDATE_GE_TIME_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_GE_TIME(lval, rval, ...)                _VALIDATE_GE_TIME_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_GE_DATE(lval, rval, ...)                _VALIDATE_GE_DATE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_GE_TOD(lval, rval, ...)                 _VALIDATE_GE_TOD_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_GE_DT(lval, rval, ...)                  _VALIDATE_GE_DT_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_GE_DATE(lval, rval, ...)                _VALIDATE_GE_DATE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GE_TOD(lval, rval, ...)                 _VALIDATE_GE_TOD_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GE_DT(lval, rval, ...)                  _VALIDATE_GE_DT_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_GE_STRING(lval, rval, ...)              _VALIDATE_GE_STRING_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_GE_STRING(lval, rval, ...)              _VALIDATE_GE_STRING_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
 
-{#define EXPECT_GT_SINT(lval, rval, ...)                _VALIDATE_GT_INT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_GT_INT(lval, rval, ...)                 _VALIDATE_GT_INT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_GT_DINT(lval, rval, ...)                _VALIDATE_GT_INT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_GT_LINT(lval, rval, ...)                _VALIDATE_GT_INT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_GT_INT32(lval, rval, ...)               _VALIDATE_GT_INT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_GT_INT64(lval, rval, ...)               _VALIDATE_GT_INT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_GT_SINT(lval, rval, ...)                _VALIDATE_GT_INT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GT_INT(lval, rval, ...)                 _VALIDATE_GT_INT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GT_DINT(lval, rval, ...)                _VALIDATE_GT_INT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GT_LINT(lval, rval, ...)                _VALIDATE_GT_INT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GT_INT32(lval, rval, ...)               _VALIDATE_GT_INT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GT_INT64(lval, rval, ...)               _VALIDATE_GT_INT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_GT_USINT(lval, rval, ...)               _VALIDATE_GT_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_GT_UINT(lval, rval, ...)                _VALIDATE_GT_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_GT_UDINT(lval, rval, ...)               _VALIDATE_GT_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_GT_ULINT(lval, rval, ...)               _VALIDATE_GT_UINT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_GT_UINT32(lval, rval, ...)              _VALIDATE_GT_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_GT_UINT64(lval, rval, ...)              _VALIDATE_GT_UINT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_GT_USINT(lval, rval, ...)               _VALIDATE_GT_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GT_UINT(lval, rval, ...)                _VALIDATE_GT_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GT_UDINT(lval, rval, ...)               _VALIDATE_GT_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GT_ULINT(lval, rval, ...)               _VALIDATE_GT_UINT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GT_UINT32(lval, rval, ...)              _VALIDATE_GT_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GT_UINT64(lval, rval, ...)              _VALIDATE_GT_UINT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_GT_REAL(lval, rval, ...)                _VALIDATE_GT_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_GT_LREAL(lval, rval, ...)               _VALIDATE_GT_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_GT_FLOAT(lval, rval, ...)               _VALIDATE_GT_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_GT_DOUBLE(lval, rval, ...)              _VALIDATE_GT_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_GT_REAL(lval, rval, ...)                _VALIDATE_GT_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GT_LREAL(lval, rval, ...)               _VALIDATE_GT_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GT_FLOAT(lval, rval, ...)               _VALIDATE_GT_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GT_DOUBLE(lval, rval, ...)              _VALIDATE_GT_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_GT_TIME(lval, rval, ...)                _VALIDATE_GT_TIME_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_GT_TIME(lval, rval, ...)                _VALIDATE_GT_TIME_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_GT_DATE(lval, rval, ...)                _VALIDATE_GT_DATE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_GT_TOD(lval, rval, ...)                 _VALIDATE_GT_TOD_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define EXPECT_GT_DT(lval, rval, ...)                  _VALIDATE_GT_DT_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_GT_DATE(lval, rval, ...)                _VALIDATE_GT_DATE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GT_TOD(lval, rval, ...)                 _VALIDATE_GT_TOD_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GT_DT(lval, rval, ...)                  _VALIDATE_GT_DT_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_GT_STRING(lval, rval, ...)              _VALIDATE_GT_STRING_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define EXPECT_GT_STRING(lval, rval, ...)              _VALIDATE_GT_STRING_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_NEAR(val1, val2, abs_error, ...)        _VALIDATE_NEAR_MSG(false, val1, val2, abs_error, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__))}
-{#define EXPECT_NEAR_REL(val1, val2, rel_error, ...)    _VALIDATE_NEAR_REL_MSG(false, val1, val2, rel_error, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__))}
+{#define EXPECT_NEAR(val1, val2, abs_error, ...)        _VALIDATE_NEAR_MSG(false, val1, val2, abs_error, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@val1), _JIECUNIT_TEXT(@val2), _JIECUNIT_TEXT(@abs_error))}
+{#define EXPECT_NEAR_REL(val1, val2, rel_error, ...)    _VALIDATE_NEAR_REL_MSG(false, val1, val2, rel_error, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@val1), _JIECUNIT_TEXT(@val2), _JIECUNIT_TEXT(@rel_error))}
 
 
 
 // These *_MSG macros are kept for backward compatibility. New code should
 // pass the message as the optional last argument of the plain macro, e.g.
 // EXPECT_EQ_INT(expected, actual, message).
-{#define ASSERT_FALSE_MSG(condition, message)   _VALIDATE_EQ_BOOL_MSG(true, false, condition, message)}
-{#define ASSERT_TRUE_MSG(condition, message)    _VALIDATE_EQ_BOOL_MSG(true, true, condition, message)}
-
-
-{#define ASSERT_EQ_SINT_MSG(expected, actual, message)      _VALIDATE_EQ_INT32_MSG(true, expected, actual, message)}
-{#define ASSERT_EQ_INT_MSG(expected, actual, message)       _VALIDATE_EQ_INT32_MSG(true, expected, actual, message)}
-{#define ASSERT_EQ_DINT_MSG(expected, actual, message)      _VALIDATE_EQ_INT32_MSG(true, expected, actual, message)}
-{#define ASSERT_EQ_LINT_MSG(expected, actual, message)      _VALIDATE_EQ_INT64_MSG(true, expected, actual, message)}
-{#define ASSERT_EQ_INT32_MSG(expected, actual, message)     _VALIDATE_EQ_INT32_MSG(true, expected, actual, message)}
-{#define ASSERT_EQ_INT64_MSG(expected, actual, message)     _VALIDATE_EQ_INT64_MSG(true, expected, actual, message)}
-
-{#define ASSERT_EQ_USINT_MSG(expected, actual, message)     _VALIDATE_EQ_UINT32_MSG(true, expected, actual, message)}
-{#define ASSERT_EQ_UINT_MSG(expected, actual, message)      _VALIDATE_EQ_UINT32_MSG(true, expected, actual, message)}
-{#define ASSERT_EQ_UDINT_MSG(expected, actual, message)     _VALIDATE_EQ_UINT32_MSG(true, expected, actual, message)}
-{#define ASSERT_EQ_ULINT_MSG(expected, actual, message)     _VALIDATE_EQ_UINT64_MSG(true, expected, actual, message)}
-{#define ASSERT_EQ_UINT32_MSG(expected, actual, message)    _VALIDATE_EQ_UINT32_MSG(true, expected, actual, message)}
-{#define ASSERT_EQ_UINT64_MSG(expected, actual, message)    _VALIDATE_EQ_UINT64_MSG(true, expected, actual, message)}
-
-{#define ASSERT_EQ_REAL_MSG(expected, actual, message)      _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, message)} (* Deprecated, use ASSERT_NEAR *)
-{#define ASSERT_EQ_LREAL_MSG(expected, actual, message)     _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, message)} (* Deprecated, use ASSERT_NEAR *)
-{#define ASSERT_EQ_FLOAT_MSG(expected, actual, message)     _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, message)} (* Deprecated, use ASSERT_NEAR *)
-{#define ASSERT_EQ_DOUBLE_MSG(expected, actual, message)    _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, message)} (* Deprecated, use ASSERT_NEAR *)
-
-{#define ASSERT_EQ_BOOL_MSG(expected, actual, message)      _VALIDATE_EQ_BOOL_MSG(true, expected, actual, message)}
-
-{#define ASSERT_EQ_BYTE_MSG(expected, actual, message)      _VALIDATE_EQ_BIT32_MSG(true, expected, actual, message)}
-{#define ASSERT_EQ_WORD_MSG(expected, actual, message)      _VALIDATE_EQ_BIT32_MSG(true, expected, actual, message)}
-{#define ASSERT_EQ_DWORD_MSG(expected, actual, message)     _VALIDATE_EQ_BIT32_MSG(true, expected, actual, message)}
-{#define ASSERT_EQ_LWORD_MSG(expected, actual, message)     _VALIDATE_EQ_BIT64_MSG(true, expected, actual, message)}
-{#define ASSERT_EQ_BIT32_MSG(expected, actual, message)     _VALIDATE_EQ_BIT32_MSG(true, expected, actual, message)}
-{#define ASSERT_EQ_BIT64_MSG(expected, actual, message)     _VALIDATE_EQ_BIT64_MSG(true, expected, actual, message)}
-
-{#define ASSERT_EQ_TIME_MSG(expected, actual, message)      _VALIDATE_EQ_TIME_MSG(true, expected, actual, message)}
-
-{#define ASSERT_EQ_DATE_MSG(expected, actual, message)      _VALIDATE_EQ_DATE_MSG(true, expected, actual, message)}
-{#define ASSERT_EQ_TOD_MSG(expected, actual, message)       _VALIDATE_EQ_TOD_MSG(true, expected, actual, message)}
-{#define ASSERT_EQ_DT_MSG(expected, actual, message)        _VALIDATE_EQ_DT_MSG(true, expected, actual, message)}
-
-{#define ASSERT_EQ_STRING_MSG(expected, actual, message)    _VALIDATE_EQ_STRING_MSG(true, expected, actual, message)}
-
-
-{#define ASSERT_NE_SINT_MSG(expected, actual, message)      _VALIDATE_NE_INT32_MSG(true, expected, actual, message)}
-{#define ASSERT_NE_INT_MSG(expected, actual, message)       _VALIDATE_NE_INT32_MSG(true, expected, actual, message)}
-{#define ASSERT_NE_DINT_MSG(expected, actual, message)      _VALIDATE_NE_INT32_MSG(true, expected, actual, message)}
-{#define ASSERT_NE_LINT_MSG(expected, actual, message)      _VALIDATE_NE_INT64_MSG(true, expected, actual, message)}
-{#define ASSERT_NE_INT32_MSG(expected, actual, message)     _VALIDATE_NE_INT32_MSG(true, expected, actual, message)}
-{#define ASSERT_NE_INT64_MSG(expected, actual, message)     _VALIDATE_NE_INT64_MSG(true, expected, actual, message)}
-
-{#define ASSERT_NE_USINT_MSG(expected, actual, message)     _VALIDATE_NE_UINT32_MSG(true, expected, actual, message)}
-{#define ASSERT_NE_UINT_MSG(expected, actual, message)      _VALIDATE_NE_UINT32_MSG(true, expected, actual, message)}
-{#define ASSERT_NE_UDINT_MSG(expected, actual, message)     _VALIDATE_NE_UINT32_MSG(true, expected, actual, message)}
-{#define ASSERT_NE_ULINT_MSG(expected, actual, message)     _VALIDATE_NE_UINT64_MSG(true, expected, actual, message)}
-{#define ASSERT_NE_UINT32_MSG(expected, actual, message)    _VALIDATE_NE_UINT32_MSG(true, expected, actual, message)}
-{#define ASSERT_NE_UINT64_MSG(expected, actual, message)    _VALIDATE_NE_UINT64_MSG(true, expected, actual, message)}
-
-{#define ASSERT_NE_REAL_MSG(expected, actual, message)      _VALIDATE_NE_DOUBLE_MSG(true, expected, actual, message)}
-{#define ASSERT_NE_LREAL_MSG(expected, actual, message)     _VALIDATE_NE_DOUBLE_MSG(true, expected, actual, message)}
-{#define ASSERT_NE_FLOAT_MSG(expected, actual, message)     _VALIDATE_NE_DOUBLE_MSG(true, expected, actual, message)}
-{#define ASSERT_NE_DOUBLE_MSG(expected, actual, message)    _VALIDATE_NE_DOUBLE_MSG(true, expected, actual, message)}
-
-{#define ASSERT_NE_BOOL_MSG(expected, actual, message)      _VALIDATE_NE_BOOL_MSG(true, expected, actual, message)}
-
-{#define ASSERT_NE_BYTE_MSG(expected, actual, message)      _VALIDATE_NE_BIT32_MSG(true, expected, actual, message)}
-{#define ASSERT_NE_WORD_MSG(expected, actual, message)      _VALIDATE_NE_BIT32_MSG(true, expected, actual, message)}
-{#define ASSERT_NE_DWORD_MSG(expected, actual, message)     _VALIDATE_NE_BIT32_MSG(true, expected, actual, message)}
-{#define ASSERT_NE_LWORD_MSG(expected, actual, message)     _VALIDATE_NE_BIT64_MSG(true, expected, actual, message)}
-{#define ASSERT_NE_BIT32_MSG(expected, actual, message)     _VALIDATE_NE_BIT32_MSG(true, expected, actual, message)}
-{#define ASSERT_NE_BIT64_MSG(expected, actual, message)     _VALIDATE_NE_BIT64_MSG(true, expected, actual, message)}
-
-{#define ASSERT_NE_TIME_MSG(expected, actual, message)      _VALIDATE_NE_TIME_MSG(true, expected, actual, message)}
-
-{#define ASSERT_NE_DATE_MSG(expected, actual, message)      _VALIDATE_NE_DATE_MSG(true, expected, actual, message)}
-{#define ASSERT_NE_TOD_MSG(expected, actual, message)       _VALIDATE_NE_TOD_MSG(true, expected, actual, message)}
-{#define ASSERT_NE_DT_MSG(expected, actual, message)        _VALIDATE_NE_DT_MSG(true, expected, actual, message)}
-
-{#define ASSERT_NE_STRING_MSG(expected, actual, message)    _VALIDATE_NE_STRING_MSG(true, expected, actual, message)}
-
-
-{#define ASSERT_LT_SINT_MSG(lval, rval, message)    _VALIDATE_LT_INT32_MSG(true, lval, rval, message)}
-{#define ASSERT_LT_INT_MSG(lval, rval, message)     _VALIDATE_LT_INT32_MSG(true, lval, rval, message)}
-{#define ASSERT_LT_DINT_MSG(lval, rval, message)    _VALIDATE_LT_INT32_MSG(true, lval, rval, message)}
-{#define ASSERT_LT_LINT_MSG(lval, rval, message)    _VALIDATE_LT_INT64_MSG(true, lval, rval, message)}
-{#define ASSERT_LT_INT32_MSG(lval, rval, message)   _VALIDATE_LT_INT32_MSG(true, lval, rval, message)}
-{#define ASSERT_LT_INT64_MSG(lval, rval, message)   _VALIDATE_LT_INT64_MSG(true, lval, rval, message)}
-
-{#define ASSERT_LT_USINT_MSG(lval, rval, message)   _VALIDATE_LT_UINT32_MSG(true, lval, rval, message)}
-{#define ASSERT_LT_UINT_MSG(lval, rval, message)    _VALIDATE_LT_UINT32_MSG(true, lval, rval, message)}
-{#define ASSERT_LT_UDINT_MSG(lval, rval, message)   _VALIDATE_LT_UINT32_MSG(true, lval, rval, message)}
-{#define ASSERT_LT_ULINT_MSG(lval, rval, message)   _VALIDATE_LT_UINT64_MSG(true, lval, rval, message)}
-{#define ASSERT_LT_UINT32_MSG(lval, rval, message)  _VALIDATE_LT_UINT32_MSG(true, lval, rval, message)}
-{#define ASSERT_LT_UINT64_MSG(lval, rval, message)  _VALIDATE_LT_UINT64_MSG(true, lval, rval, message)}
-
-{#define ASSERT_LT_REAL_MSG(lval, rval, message)    _VALIDATE_LT_DOUBLE_MSG(true, lval, rval, message)}
-{#define ASSERT_LT_LREAL_MSG(lval, rval, message)   _VALIDATE_LT_DOUBLE_MSG(true, lval, rval, message)}
-{#define ASSERT_LT_FLOAT_MSG(lval, rval, message)   _VALIDATE_LT_DOUBLE_MSG(true, lval, rval, message)}
-{#define ASSERT_LT_DOUBLE_MSG(lval, rval, message)  _VALIDATE_LT_DOUBLE_MSG(true, lval, rval, message)}
+{#define ASSERT_FALSE_MSG(condition, message)   _VALIDATE_BOOL_MSG(true, false, condition, message, _JIECUNIT_TEXT(@condition))}
+{#define ASSERT_TRUE_MSG(condition, message)    _VALIDATE_BOOL_MSG(true, true, condition, message, _JIECUNIT_TEXT(@condition))}
+
+
+{#define ASSERT_EQ_SINT_MSG(expected, actual, message)      _VALIDATE_EQ_INT32_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_INT_MSG(expected, actual, message)       _VALIDATE_EQ_INT32_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_DINT_MSG(expected, actual, message)      _VALIDATE_EQ_INT32_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_LINT_MSG(expected, actual, message)      _VALIDATE_EQ_INT64_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_INT32_MSG(expected, actual, message)     _VALIDATE_EQ_INT32_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_INT64_MSG(expected, actual, message)     _VALIDATE_EQ_INT64_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+
+{#define ASSERT_EQ_USINT_MSG(expected, actual, message)     _VALIDATE_EQ_UINT32_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_UINT_MSG(expected, actual, message)      _VALIDATE_EQ_UINT32_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_UDINT_MSG(expected, actual, message)     _VALIDATE_EQ_UINT32_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_ULINT_MSG(expected, actual, message)     _VALIDATE_EQ_UINT64_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_UINT32_MSG(expected, actual, message)    _VALIDATE_EQ_UINT32_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_UINT64_MSG(expected, actual, message)    _VALIDATE_EQ_UINT64_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+
+{#define ASSERT_EQ_REAL_MSG(expected, actual, message)      _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Deprecated, use ASSERT_NEAR *)
+{#define ASSERT_EQ_LREAL_MSG(expected, actual, message)     _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Deprecated, use ASSERT_NEAR *)
+{#define ASSERT_EQ_FLOAT_MSG(expected, actual, message)     _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Deprecated, use ASSERT_NEAR *)
+{#define ASSERT_EQ_DOUBLE_MSG(expected, actual, message)    _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Deprecated, use ASSERT_NEAR *)
+
+{#define ASSERT_EQ_BOOL_MSG(expected, actual, message)      _VALIDATE_EQ_BOOL_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+
+{#define ASSERT_EQ_BYTE_MSG(expected, actual, message)      _VALIDATE_EQ_BIT32_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_WORD_MSG(expected, actual, message)      _VALIDATE_EQ_BIT32_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_DWORD_MSG(expected, actual, message)     _VALIDATE_EQ_BIT32_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_LWORD_MSG(expected, actual, message)     _VALIDATE_EQ_BIT64_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_BIT32_MSG(expected, actual, message)     _VALIDATE_EQ_BIT32_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_BIT64_MSG(expected, actual, message)     _VALIDATE_EQ_BIT64_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+
+{#define ASSERT_EQ_TIME_MSG(expected, actual, message)      _VALIDATE_EQ_TIME_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+
+{#define ASSERT_EQ_DATE_MSG(expected, actual, message)      _VALIDATE_EQ_DATE_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_TOD_MSG(expected, actual, message)       _VALIDATE_EQ_TOD_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_DT_MSG(expected, actual, message)        _VALIDATE_EQ_DT_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+
+{#define ASSERT_EQ_STRING_MSG(expected, actual, message)    _VALIDATE_EQ_STRING_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+
+
+{#define ASSERT_NE_SINT_MSG(expected, actual, message)      _VALIDATE_NE_INT32_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_INT_MSG(expected, actual, message)       _VALIDATE_NE_INT32_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_DINT_MSG(expected, actual, message)      _VALIDATE_NE_INT32_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_LINT_MSG(expected, actual, message)      _VALIDATE_NE_INT64_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_INT32_MSG(expected, actual, message)     _VALIDATE_NE_INT32_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_INT64_MSG(expected, actual, message)     _VALIDATE_NE_INT64_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+
+{#define ASSERT_NE_USINT_MSG(expected, actual, message)     _VALIDATE_NE_UINT32_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_UINT_MSG(expected, actual, message)      _VALIDATE_NE_UINT32_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_UDINT_MSG(expected, actual, message)     _VALIDATE_NE_UINT32_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_ULINT_MSG(expected, actual, message)     _VALIDATE_NE_UINT64_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_UINT32_MSG(expected, actual, message)    _VALIDATE_NE_UINT32_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_UINT64_MSG(expected, actual, message)    _VALIDATE_NE_UINT64_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+
+{#define ASSERT_NE_REAL_MSG(expected, actual, message)      _VALIDATE_NE_DOUBLE_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_LREAL_MSG(expected, actual, message)     _VALIDATE_NE_DOUBLE_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_FLOAT_MSG(expected, actual, message)     _VALIDATE_NE_DOUBLE_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_DOUBLE_MSG(expected, actual, message)    _VALIDATE_NE_DOUBLE_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+
+{#define ASSERT_NE_BOOL_MSG(expected, actual, message)      _VALIDATE_NE_BOOL_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+
+{#define ASSERT_NE_BYTE_MSG(expected, actual, message)      _VALIDATE_NE_BIT32_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_WORD_MSG(expected, actual, message)      _VALIDATE_NE_BIT32_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_DWORD_MSG(expected, actual, message)     _VALIDATE_NE_BIT32_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_LWORD_MSG(expected, actual, message)     _VALIDATE_NE_BIT64_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_BIT32_MSG(expected, actual, message)     _VALIDATE_NE_BIT32_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_BIT64_MSG(expected, actual, message)     _VALIDATE_NE_BIT64_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+
+{#define ASSERT_NE_TIME_MSG(expected, actual, message)      _VALIDATE_NE_TIME_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+
+{#define ASSERT_NE_DATE_MSG(expected, actual, message)      _VALIDATE_NE_DATE_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_TOD_MSG(expected, actual, message)       _VALIDATE_NE_TOD_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_DT_MSG(expected, actual, message)        _VALIDATE_NE_DT_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+
+{#define ASSERT_NE_STRING_MSG(expected, actual, message)    _VALIDATE_NE_STRING_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+
+
+{#define ASSERT_LT_SINT_MSG(lval, rval, message)    _VALIDATE_LT_INT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LT_INT_MSG(lval, rval, message)     _VALIDATE_LT_INT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LT_DINT_MSG(lval, rval, message)    _VALIDATE_LT_INT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LT_LINT_MSG(lval, rval, message)    _VALIDATE_LT_INT64_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LT_INT32_MSG(lval, rval, message)   _VALIDATE_LT_INT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LT_INT64_MSG(lval, rval, message)   _VALIDATE_LT_INT64_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+
+{#define ASSERT_LT_USINT_MSG(lval, rval, message)   _VALIDATE_LT_UINT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LT_UINT_MSG(lval, rval, message)    _VALIDATE_LT_UINT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LT_UDINT_MSG(lval, rval, message)   _VALIDATE_LT_UINT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LT_ULINT_MSG(lval, rval, message)   _VALIDATE_LT_UINT64_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LT_UINT32_MSG(lval, rval, message)  _VALIDATE_LT_UINT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LT_UINT64_MSG(lval, rval, message)  _VALIDATE_LT_UINT64_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+
+{#define ASSERT_LT_REAL_MSG(lval, rval, message)    _VALIDATE_LT_DOUBLE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LT_LREAL_MSG(lval, rval, message)   _VALIDATE_LT_DOUBLE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LT_FLOAT_MSG(lval, rval, message)   _VALIDATE_LT_DOUBLE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LT_DOUBLE_MSG(lval, rval, message)  _VALIDATE_LT_DOUBLE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_LT_TIME_MSG(lval, rval, message)    _VALIDATE_LT_TIME_MSG(true, lval, rval, message)}
+{#define ASSERT_LT_TIME_MSG(lval, rval, message)    _VALIDATE_LT_TIME_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_LT_DATE_MSG(lval, rval, message)    _VALIDATE_LT_DATE_MSG(true, lval, rval, message)}
-{#define ASSERT_LT_TOD_MSG(lval, rval, message)     _VALIDATE_LT_TOD_MSG(true, lval, rval, message)}
-{#define ASSERT_LT_DT_MSG(lval, rval, message)      _VALIDATE_LT_DT_MSG(true, lval, rval, message)}
+{#define ASSERT_LT_DATE_MSG(lval, rval, message)    _VALIDATE_LT_DATE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LT_TOD_MSG(lval, rval, message)     _VALIDATE_LT_TOD_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LT_DT_MSG(lval, rval, message)      _VALIDATE_LT_DT_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_LT_STRING_MSG(lval, rval, message)  _VALIDATE_LT_STRING_MSG(true, lval, rval, message)}
+{#define ASSERT_LT_STRING_MSG(lval, rval, message)  _VALIDATE_LT_STRING_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
 
-{#define ASSERT_LE_SINT_MSG(lval, rval, message)    _VALIDATE_LE_INT32_MSG(true, lval, rval, message)}
-{#define ASSERT_LE_INT_MSG(lval, rval, message)     _VALIDATE_LE_INT32_MSG(true, lval, rval, message)}
-{#define ASSERT_LE_DINT_MSG(lval, rval, message)    _VALIDATE_LE_INT32_MSG(true, lval, rval, message)}
-{#define ASSERT_LE_LINT_MSG(lval, rval, message)    _VALIDATE_LE_INT64_MSG(true, lval, rval, message)}
-{#define ASSERT_LE_INT32_MSG(lval, rval, message)   _VALIDATE_LE_INT32_MSG(true, lval, rval, message)}
-{#define ASSERT_LE_INT64_MSG(lval, rval, message)   _VALIDATE_LE_INT64_MSG(true, lval, rval, message)}
+{#define ASSERT_LE_SINT_MSG(lval, rval, message)    _VALIDATE_LE_INT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LE_INT_MSG(lval, rval, message)     _VALIDATE_LE_INT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LE_DINT_MSG(lval, rval, message)    _VALIDATE_LE_INT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LE_LINT_MSG(lval, rval, message)    _VALIDATE_LE_INT64_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LE_INT32_MSG(lval, rval, message)   _VALIDATE_LE_INT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LE_INT64_MSG(lval, rval, message)   _VALIDATE_LE_INT64_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_LE_USINT_MSG(lval, rval, message)   _VALIDATE_LE_UINT32_MSG(true, lval, rval, message)}
-{#define ASSERT_LE_UINT_MSG(lval, rval, message)    _VALIDATE_LE_UINT32_MSG(true, lval, rval, message)}
-{#define ASSERT_LE_UDINT_MSG(lval, rval, message)   _VALIDATE_LE_UINT32_MSG(true, lval, rval, message)}
-{#define ASSERT_LE_ULINT_MSG(lval, rval, message)   _VALIDATE_LE_UINT64_MSG(true, lval, rval, message)}
-{#define ASSERT_LE_UINT32_MSG(lval, rval, message)  _VALIDATE_LE_UINT32_MSG(true, lval, rval, message)}
-{#define ASSERT_LE_UINT64_MSG(lval, rval, message)  _VALIDATE_LE_UINT64_MSG(true, lval, rval, message)}
+{#define ASSERT_LE_USINT_MSG(lval, rval, message)   _VALIDATE_LE_UINT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LE_UINT_MSG(lval, rval, message)    _VALIDATE_LE_UINT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LE_UDINT_MSG(lval, rval, message)   _VALIDATE_LE_UINT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LE_ULINT_MSG(lval, rval, message)   _VALIDATE_LE_UINT64_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LE_UINT32_MSG(lval, rval, message)  _VALIDATE_LE_UINT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LE_UINT64_MSG(lval, rval, message)  _VALIDATE_LE_UINT64_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_LE_REAL_MSG(lval, rval, message)    _VALIDATE_LE_DOUBLE_MSG(true, lval, rval, message)}
-{#define ASSERT_LE_LREAL_MSG(lval, rval, message)   _VALIDATE_LE_DOUBLE_MSG(true, lval, rval, message)}
-{#define ASSERT_LE_FLOAT_MSG(lval, rval, message)   _VALIDATE_LE_DOUBLE_MSG(true, lval, rval, message)}
-{#define ASSERT_LE_DOUBLE_MSG(lval, rval, message)  _VALIDATE_LE_DOUBLE_MSG(true, lval, rval, message)}
+{#define ASSERT_LE_REAL_MSG(lval, rval, message)    _VALIDATE_LE_DOUBLE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LE_LREAL_MSG(lval, rval, message)   _VALIDATE_LE_DOUBLE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LE_FLOAT_MSG(lval, rval, message)   _VALIDATE_LE_DOUBLE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LE_DOUBLE_MSG(lval, rval, message)  _VALIDATE_LE_DOUBLE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_LE_TIME_MSG(lval, rval, message)    _VALIDATE_LE_TIME_MSG(true, lval, rval, message)}
+{#define ASSERT_LE_TIME_MSG(lval, rval, message)    _VALIDATE_LE_TIME_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_LE_DATE_MSG(lval, rval, message)    _VALIDATE_LE_DATE_MSG(true, lval, rval, message)}
-{#define ASSERT_LE_TOD_MSG(lval, rval, message)     _VALIDATE_LE_TOD_MSG(true, lval, rval, message)}
-{#define ASSERT_LE_DT_MSG(lval, rval, message)      _VALIDATE_LE_DT_MSG(true, lval, rval, message)}
+{#define ASSERT_LE_DATE_MSG(lval, rval, message)    _VALIDATE_LE_DATE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LE_TOD_MSG(lval, rval, message)     _VALIDATE_LE_TOD_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LE_DT_MSG(lval, rval, message)      _VALIDATE_LE_DT_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_LE_STRING_MSG(lval, rval, message)  _VALIDATE_LE_STRING_MSG(true, lval, rval, message)}
+{#define ASSERT_LE_STRING_MSG(lval, rval, message)  _VALIDATE_LE_STRING_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
 
-{#define ASSERT_GE_SINT_MSG(lval, rval, message)    _VALIDATE_GE_INT32_MSG(true, lval, rval, message)}
-{#define ASSERT_GE_INT_MSG(lval, rval, message)     _VALIDATE_GE_INT32_MSG(true, lval, rval, message)}
-{#define ASSERT_GE_DINT_MSG(lval, rval, message)    _VALIDATE_GE_INT32_MSG(true, lval, rval, message)}
-{#define ASSERT_GE_LINT_MSG(lval, rval, message)    _VALIDATE_GE_INT64_MSG(true, lval, rval, message)}
-{#define ASSERT_GE_INT32_MSG(lval, rval, message)   _VALIDATE_GE_INT32_MSG(true, lval, rval, message)}
-{#define ASSERT_GE_INT64_MSG(lval, rval, message)   _VALIDATE_GE_INT64_MSG(true, lval, rval, message)}
+{#define ASSERT_GE_SINT_MSG(lval, rval, message)    _VALIDATE_GE_INT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GE_INT_MSG(lval, rval, message)     _VALIDATE_GE_INT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GE_DINT_MSG(lval, rval, message)    _VALIDATE_GE_INT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GE_LINT_MSG(lval, rval, message)    _VALIDATE_GE_INT64_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GE_INT32_MSG(lval, rval, message)   _VALIDATE_GE_INT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GE_INT64_MSG(lval, rval, message)   _VALIDATE_GE_INT64_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_GE_USINT_MSG(lval, rval, message)   _VALIDATE_GE_UINT32_MSG(true, lval, rval, message)}
-{#define ASSERT_GE_UINT_MSG(lval, rval, message)    _VALIDATE_GE_UINT32_MSG(true, lval, rval, message)}
-{#define ASSERT_GE_UDINT_MSG(lval, rval, message)   _VALIDATE_GE_UINT32_MSG(true, lval, rval, message)}
-{#define ASSERT_GE_ULINT_MSG(lval, rval, message)   _VALIDATE_GE_UINT64_MSG(true, lval, rval, message)}
-{#define ASSERT_GE_UINT32_MSG(lval, rval, message)  _VALIDATE_GE_UINT32_MSG(true, lval, rval, message)}
-{#define ASSERT_GE_UINT64_MSG(lval, rval, message)  _VALIDATE_GE_UINT64_MSG(true, lval, rval, message)}
+{#define ASSERT_GE_USINT_MSG(lval, rval, message)   _VALIDATE_GE_UINT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GE_UINT_MSG(lval, rval, message)    _VALIDATE_GE_UINT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GE_UDINT_MSG(lval, rval, message)   _VALIDATE_GE_UINT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GE_ULINT_MSG(lval, rval, message)   _VALIDATE_GE_UINT64_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GE_UINT32_MSG(lval, rval, message)  _VALIDATE_GE_UINT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GE_UINT64_MSG(lval, rval, message)  _VALIDATE_GE_UINT64_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_GE_REAL_MSG(lval, rval, message)    _VALIDATE_GE_DOUBLE_MSG(true, lval, rval, message)}
-{#define ASSERT_GE_LREAL_MSG(lval, rval, message)   _VALIDATE_GE_DOUBLE_MSG(true, lval, rval, message)}
-{#define ASSERT_GE_FLOAT_MSG(lval, rval, message)   _VALIDATE_GE_DOUBLE_MSG(true, lval, rval, message)}
-{#define ASSERT_GE_DOUBLE_MSG(lval, rval, message)  _VALIDATE_GE_DOUBLE_MSG(true, lval, rval, message)}
+{#define ASSERT_GE_REAL_MSG(lval, rval, message)    _VALIDATE_GE_DOUBLE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GE_LREAL_MSG(lval, rval, message)   _VALIDATE_GE_DOUBLE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GE_FLOAT_MSG(lval, rval, message)   _VALIDATE_GE_DOUBLE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GE_DOUBLE_MSG(lval, rval, message)  _VALIDATE_GE_DOUBLE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_GE_TIME_MSG(lval, rval, message)    _VALIDATE_GE_TIME_MSG(true, lval, rval, message)}
+{#define ASSERT_GE_TIME_MSG(lval, rval, message)    _VALIDATE_GE_TIME_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_GE_DATE_MSG(lval, rval, message)    _VALIDATE_GE_DATE_MSG(true, lval, rval, message)}
-{#define ASSERT_GE_TOD_MSG(lval, rval, message)     _VALIDATE_GE_TOD_MSG(true, lval, rval, message)}
-{#define ASSERT_GE_DT_MSG(lval, rval, message)      _VALIDATE_GE_DT_MSG(true, lval, rval, message)}
+{#define ASSERT_GE_DATE_MSG(lval, rval, message)    _VALIDATE_GE_DATE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GE_TOD_MSG(lval, rval, message)     _VALIDATE_GE_TOD_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GE_DT_MSG(lval, rval, message)      _VALIDATE_GE_DT_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_GE_STRING_MSG(lval, rval, message)  _VALIDATE_GE_STRING_MSG(true, lval, rval, message)}
+{#define ASSERT_GE_STRING_MSG(lval, rval, message)  _VALIDATE_GE_STRING_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-
-{#define ASSERT_GT_SINT_MSG(lval, rval, message)    _VALIDATE_GT_INT32_MSG(true, lval, rval, message)}
-{#define ASSERT_GT_INT_MSG(lval, rval, message)     _VALIDATE_GT_INT32_MSG(true, lval, rval, message)}
-{#define ASSERT_GT_DINT_MSG(lval, rval, message)    _VALIDATE_GT_INT32_MSG(true, lval, rval, message)}
-{#define ASSERT_GT_LINT_MSG(lval, rval, message)    _VALIDATE_GT_INT64_MSG(true, lval, rval, message)}
-{#define ASSERT_GT_INT32_MSG(lval, rval, message)   _VALIDATE_GT_INT32_MSG(true, lval, rval, message)}
-{#define ASSERT_GT_INT64_MSG(lval, rval, message)   _VALIDATE_GT_INT64_MSG(true, lval, rval, message)}
+
+{#define ASSERT_GT_SINT_MSG(lval, rval, message)    _VALIDATE_GT_INT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GT_INT_MSG(lval, rval, message)     _VALIDATE_GT_INT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GT_DINT_MSG(lval, rval, message)    _VALIDATE_GT_INT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GT_LINT_MSG(lval, rval, message)    _VALIDATE_GT_INT64_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GT_INT32_MSG(lval, rval, message)   _VALIDATE_GT_INT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GT_INT64_MSG(lval, rval, message)   _VALIDATE_GT_INT64_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_GT_USINT_MSG(lval, rval, message)   _VALIDATE_GT_UINT32_MSG(true, lval, rval, message)}
-{#define ASSERT_GT_UINT_MSG(lval, rval, message)    _VALIDATE_GT_UINT32_MSG(true, lval, rval, message)}
-{#define ASSERT_GT_UDINT_MSG(lval, rval, message)   _VALIDATE_GT_UINT32_MSG(true, lval, rval, message)}
-{#define ASSERT_GT_ULINT_MSG(lval, rval, message)   _VALIDATE_GT_UINT64_MSG(true, lval, rval, message)}
-{#define ASSERT_GT_UINT32_MSG(lval, rval, message)  _VALIDATE_GT_UINT32_MSG(true, lval, rval, message)}
-{#define ASSERT_GT_UINT64_MSG(lval, rval, message)  _VALIDATE_GT_UINT64_MSG(true, lval, rval, message)}
+{#define ASSERT_GT_USINT_MSG(lval, rval, message)   _VALIDATE_GT_UINT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GT_UINT_MSG(lval, rval, message)    _VALIDATE_GT_UINT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GT_UDINT_MSG(lval, rval, message)   _VALIDATE_GT_UINT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GT_ULINT_MSG(lval, rval, message)   _VALIDATE_GT_UINT64_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GT_UINT32_MSG(lval, rval, message)  _VALIDATE_GT_UINT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GT_UINT64_MSG(lval, rval, message)  _VALIDATE_GT_UINT64_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_GT_REAL_MSG(lval, rval, message)    _VALIDATE_GT_DOUBLE_MSG(true, lval, rval, message)}
-{#define ASSERT_GT_LREAL_MSG(lval, rval, message)   _VALIDATE_GT_DOUBLE_MSG(true, lval, rval, message)}
-{#define ASSERT_GT_FLOAT_MSG(lval, rval, message)   _VALIDATE_GT_DOUBLE_MSG(true, lval, rval, message)}
-{#define ASSERT_GT_DOUBLE_MSG(lval, rval, message)  _VALIDATE_GT_DOUBLE_MSG(true, lval, rval, message)}
+{#define ASSERT_GT_REAL_MSG(lval, rval, message)    _VALIDATE_GT_DOUBLE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GT_LREAL_MSG(lval, rval, message)   _VALIDATE_GT_DOUBLE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GT_FLOAT_MSG(lval, rval, message)   _VALIDATE_GT_DOUBLE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GT_DOUBLE_MSG(lval, rval, message)  _VALIDATE_GT_DOUBLE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_GT_TIME_MSG(lval, rval, message)    _VALIDATE_GT_TIME_MSG(true, lval, rval, message)}
+{#define ASSERT_GT_TIME_MSG(lval, rval, message)    _VALIDATE_GT_TIME_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_GT_DATE_MSG(lval, rval, message)    _VALIDATE_GT_DATE_MSG(true, lval, rval, message)}
-{#define ASSERT_GT_TOD_MSG(lval, rval, message)     _VALIDATE_GT_TOD_MSG(true, lval, rval, message)}
-{#define ASSERT_GT_DT_MSG(lval, rval, message)      _VALIDATE_GT_DT_MSG(true, lval, rval, message)}
+{#define ASSERT_GT_DATE_MSG(lval, rval, message)    _VALIDATE_GT_DATE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GT_TOD_MSG(lval, rval, message)     _VALIDATE_GT_TOD_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GT_DT_MSG(lval, rval, message)      _VALIDATE_GT_DT_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_GT_STRING_MSG(lval, rval, message)  _VALIDATE_GT_STRING_MSG(true, lval, rval, message)}
+{#define ASSERT_GT_STRING_MSG(lval, rval, message)  _VALIDATE_GT_STRING_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_NEAR_MSG(val1, val2, abs_error, message)    _VALIDATE_NEAR_MSG(true, val1, val2, abs_error, message)}
-{#define ASSERT_NEAR_REL_MSG(val1, val2, rel_error, message)   _VALIDATE_NEAR_REL_MSG(true, val1, val2, rel_error, message)}
+{#define ASSERT_NEAR_MSG(val1, val2, abs_error, message)    _VALIDATE_NEAR_MSG(true, val1, val2, abs_error, message, _JIECUNIT_TEXT(@val1), _JIECUNIT_TEXT(@val2), _JIECUNIT_TEXT(@abs_error))}
+{#define ASSERT_NEAR_REL_MSG(val1, val2, rel_error, message)   _VALIDATE_NEAR_REL_MSG(true, val1, val2, rel_error, message, _JIECUNIT_TEXT(@val1), _JIECUNIT_TEXT(@val2), _JIECUNIT_TEXT(@rel_error))}
 
 
 
-{#define ASSERT_FALSE(condition, ...)                   _VALIDATE_EQ_BOOL_MSG(true, false, condition, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 1, 2, __VA_ARGS__))}
-{#define ASSERT_TRUE(condition, ...)                    _VALIDATE_EQ_BOOL_MSG(true, true, condition, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 1, 2, __VA_ARGS__))}
+{#define ASSERT_FALSE(condition, ...)                   _VALIDATE_BOOL_MSG(true, false, condition, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 1, 2, __VA_ARGS__), _JIECUNIT_TEXT(@condition))}
+{#define ASSERT_TRUE(condition, ...)                    _VALIDATE_BOOL_MSG(true, true, condition, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 1, 2, __VA_ARGS__), _JIECUNIT_TEXT(@condition))}
 
-{#define ASSERT_EQ_SINT(expected, actual, ...)          _VALIDATE_EQ_INT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_EQ_INT(expected, actual, ...)           _VALIDATE_EQ_INT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_EQ_DINT(expected, actual, ...)          _VALIDATE_EQ_INT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_EQ_LINT(expected, actual, ...)          _VALIDATE_EQ_INT64_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_EQ_INT32(expected, actual, ...)         _VALIDATE_EQ_INT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_EQ_INT64(expected, actual, ...)         _VALIDATE_EQ_INT64_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_EQ_SINT(expected, actual, ...)          _VALIDATE_EQ_INT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_INT(expected, actual, ...)           _VALIDATE_EQ_INT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_DINT(expected, actual, ...)          _VALIDATE_EQ_INT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_LINT(expected, actual, ...)          _VALIDATE_EQ_INT64_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_INT32(expected, actual, ...)         _VALIDATE_EQ_INT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_INT64(expected, actual, ...)         _VALIDATE_EQ_INT64_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
-{#define ASSERT_EQ_USINT(expected, actual, ...)         _VALIDATE_EQ_UINT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_EQ_UINT(expected, actual, ...)          _VALIDATE_EQ_UINT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_EQ_UDINT(expected, actual, ...)         _VALIDATE_EQ_UINT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_EQ_ULINT(expected, actual, ...)         _VALIDATE_EQ_UINT64_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_EQ_UINT32(expected, actual, ...)        _VALIDATE_EQ_UINT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_EQ_UINT64(expected, actual, ...)        _VALIDATE_EQ_UINT64_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_EQ_USINT(expected, actual, ...)         _VALIDATE_EQ_UINT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_UINT(expected, actual, ...)          _VALIDATE_EQ_UINT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_UDINT(expected, actual, ...)         _VALIDATE_EQ_UINT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_ULINT(expected, actual, ...)         _VALIDATE_EQ_UINT64_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_UINT32(expected, actual, ...)        _VALIDATE_EQ_UINT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_UINT64(expected, actual, ...)        _VALIDATE_EQ_UINT64_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
-{#define ASSERT_EQ_REAL(expected, actual, ...)          _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))} (* Deprecated, use ASSERT_NEAR *)
-{#define ASSERT_EQ_LREAL(expected, actual, ...)         _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))} (* Deprecated, use ASSERT_NEAR *)
-{#define ASSERT_EQ_FLOAT(expected, actual, ...)         _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))} (* Deprecated, use ASSERT_NEAR *)
-{#define ASSERT_EQ_DOUBLE(expected, actual, ...)        _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))} (* Deprecated, use ASSERT_NEAR *)
+{#define ASSERT_EQ_REAL(expected, actual, ...)          _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Deprecated, use ASSERT_NEAR *)
+{#define ASSERT_EQ_LREAL(expected, actual, ...)         _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Deprecated, use ASSERT_NEAR *)
+{#define ASSERT_EQ_FLOAT(expected, actual, ...)         _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Deprecated, use ASSERT_NEAR *)
+{#define ASSERT_EQ_DOUBLE(expected, actual, ...)        _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Deprecated, use ASSERT_NEAR *)
 
-{#define ASSERT_EQ_BOOL(expected, actual, ...)          _VALIDATE_EQ_BOOL_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-
-{#define ASSERT_EQ_BYTE(expected, actual, ...)          _VALIDATE_EQ_BIT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_EQ_WORD(expected, actual, ...)          _VALIDATE_EQ_BIT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_EQ_DWORD(expected, actual, ...)         _VALIDATE_EQ_BIT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_EQ_LWORD(expected, actual, ...)         _VALIDATE_EQ_BIT64_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_EQ_BIT32(expected, actual, ...)         _VALIDATE_EQ_BIT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_EQ_BIT64(expected, actual, ...)         _VALIDATE_EQ_BIT64_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_EQ_BOOL(expected, actual, ...)          _VALIDATE_EQ_BOOL_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+
+{#define ASSERT_EQ_BYTE(expected, actual, ...)          _VALIDATE_EQ_BIT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_WORD(expected, actual, ...)          _VALIDATE_EQ_BIT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_DWORD(expected, actual, ...)         _VALIDATE_EQ_BIT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_LWORD(expected, actual, ...)         _VALIDATE_EQ_BIT64_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_BIT32(expected, actual, ...)         _VALIDATE_EQ_BIT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_BIT64(expected, actual, ...)         _VALIDATE_EQ_BIT64_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
-{#define ASSERT_EQ_TIME(expected, actual, ...)          _VALIDATE_EQ_TIME_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_EQ_TIME(expected, actual, ...)          _VALIDATE_EQ_TIME_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
-{#define ASSERT_EQ_DATE(expected, actual, ...)          _VALIDATE_EQ_DATE_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_EQ_TOD(expected, actual, ...)           _VALIDATE_EQ_TOD_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_EQ_DT(expected, actual, ...)            _VALIDATE_EQ_DT_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_EQ_DATE(expected, actual, ...)          _VALIDATE_EQ_DATE_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_TOD(expected, actual, ...)           _VALIDATE_EQ_TOD_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_DT(expected, actual, ...)            _VALIDATE_EQ_DT_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
-{#define ASSERT_EQ_STRING(expected, actual, ...)        _VALIDATE_EQ_STRING_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_EQ_STRING(expected, actual, ...)        _VALIDATE_EQ_STRING_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
 
-{#define ASSERT_NE_SINT(expected, actual, ...)          _VALIDATE_NE_INT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_NE_INT(expected, actual, ...)           _VALIDATE_NE_INT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_NE_DINT(expected, actual, ...)          _VALIDATE_NE_INT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_NE_LINT(expected, actual, ...)          _VALIDATE_NE_INT64_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_NE_INT32(expected, actual, ...)         _VALIDATE_NE_INT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_NE_INT64(expected, actual, ...)         _VALIDATE_NE_INT64_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_NE_SINT(expected, actual, ...)          _VALIDATE_NE_INT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_INT(expected, actual, ...)           _VALIDATE_NE_INT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_DINT(expected, actual, ...)          _VALIDATE_NE_INT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_LINT(expected, actual, ...)          _VALIDATE_NE_INT64_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_INT32(expected, actual, ...)         _VALIDATE_NE_INT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_INT64(expected, actual, ...)         _VALIDATE_NE_INT64_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
-{#define ASSERT_NE_USINT(expected, actual, ...)         _VALIDATE_NE_UINT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_NE_UINT(expected, actual, ...)          _VALIDATE_NE_UINT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_NE_UDINT(expected, actual, ...)         _VALIDATE_NE_UINT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_NE_ULINT(expected, actual, ...)         _VALIDATE_NE_UINT64_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_NE_UINT32(expected, actual, ...)        _VALIDATE_NE_UINT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_NE_UINT64(expected, actual, ...)        _VALIDATE_NE_UINT64_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_NE_USINT(expected, actual, ...)         _VALIDATE_NE_UINT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_UINT(expected, actual, ...)          _VALIDATE_NE_UINT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_UDINT(expected, actual, ...)         _VALIDATE_NE_UINT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_ULINT(expected, actual, ...)         _VALIDATE_NE_UINT64_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_UINT32(expected, actual, ...)        _VALIDATE_NE_UINT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_UINT64(expected, actual, ...)        _VALIDATE_NE_UINT64_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
-{#define ASSERT_NE_REAL(expected, actual, ...)          _VALIDATE_NE_DOUBLE_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_NE_LREAL(expected, actual, ...)         _VALIDATE_NE_DOUBLE_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_NE_FLOAT(expected, actual, ...)         _VALIDATE_NE_DOUBLE_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_NE_DOUBLE(expected, actual, ...)        _VALIDATE_NE_DOUBLE_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_NE_REAL(expected, actual, ...)          _VALIDATE_NE_DOUBLE_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_LREAL(expected, actual, ...)         _VALIDATE_NE_DOUBLE_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_FLOAT(expected, actual, ...)         _VALIDATE_NE_DOUBLE_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_DOUBLE(expected, actual, ...)        _VALIDATE_NE_DOUBLE_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
-{#define ASSERT_NE_BOOL(expected, actual, ...)          _VALIDATE_NE_BOOL_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_NE_BOOL(expected, actual, ...)          _VALIDATE_NE_BOOL_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
-{#define ASSERT_NE_BYTE(expected, actual, ...)          _VALIDATE_NE_BIT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_NE_WORD(expected, actual, ...)          _VALIDATE_NE_BIT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_NE_DWORD(expected, actual, ...)         _VALIDATE_NE_BIT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_NE_LWORD(expected, actual, ...)         _VALIDATE_NE_BIT64_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_NE_BIT32(expected, actual, ...)         _VALIDATE_NE_BIT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_NE_BIT64(expected, actual, ...)         _VALIDATE_NE_BIT64_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_NE_BYTE(expected, actual, ...)          _VALIDATE_NE_BIT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_WORD(expected, actual, ...)          _VALIDATE_NE_BIT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_DWORD(expected, actual, ...)         _VALIDATE_NE_BIT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_LWORD(expected, actual, ...)         _VALIDATE_NE_BIT64_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_BIT32(expected, actual, ...)         _VALIDATE_NE_BIT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_BIT64(expected, actual, ...)         _VALIDATE_NE_BIT64_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
-{#define ASSERT_NE_TIME(expected, actual, ...)          _VALIDATE_NE_TIME_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_NE_TIME(expected, actual, ...)          _VALIDATE_NE_TIME_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
-{#define ASSERT_NE_DATE(expected, actual, ...)          _VALIDATE_NE_DATE_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_NE_TOD(expected, actual, ...)           _VALIDATE_NE_TOD_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_NE_DT(expected, actual, ...)            _VALIDATE_NE_DT_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_NE_DATE(expected, actual, ...)          _VALIDATE_NE_DATE_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_TOD(expected, actual, ...)           _VALIDATE_NE_TOD_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_DT(expected, actual, ...)            _VALIDATE_NE_DT_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
-{#define ASSERT_NE_STRING(expected, actual, ...)        _VALIDATE_NE_STRING_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_NE_STRING(expected, actual, ...)        _VALIDATE_NE_STRING_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
 
-{#define ASSERT_LT_SINT(lval, rval, ...)                _VALIDATE_LT_INT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_LT_INT(lval, rval, ...)                 _VALIDATE_LT_INT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_LT_DINT(lval, rval, ...)                _VALIDATE_LT_INT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_LT_LINT(lval, rval, ...)                _VALIDATE_LT_INT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_LT_INT32(lval, rval, ...)               _VALIDATE_LT_INT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_LT_INT64(lval, rval, ...)               _VALIDATE_LT_INT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_LT_SINT(lval, rval, ...)                _VALIDATE_LT_INT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LT_INT(lval, rval, ...)                 _VALIDATE_LT_INT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LT_DINT(lval, rval, ...)                _VALIDATE_LT_INT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LT_LINT(lval, rval, ...)                _VALIDATE_LT_INT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LT_INT32(lval, rval, ...)               _VALIDATE_LT_INT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LT_INT64(lval, rval, ...)               _VALIDATE_LT_INT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_LT_USINT(lval, rval, ...)               _VALIDATE_LT_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_LT_UINT(lval, rval, ...)                _VALIDATE_LT_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_LT_UDINT(lval, rval, ...)               _VALIDATE_LT_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_LT_ULINT(lval, rval, ...)               _VALIDATE_LT_UINT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_LT_UINT32(lval, rval, ...)              _VALIDATE_LT_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_LT_UINT64(lval, rval, ...)              _VALIDATE_LT_UINT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_LT_USINT(lval, rval, ...)               _VALIDATE_LT_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LT_UINT(lval, rval, ...)                _VALIDATE_LT_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LT_UDINT(lval, rval, ...)               _VALIDATE_LT_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LT_ULINT(lval, rval, ...)               _VALIDATE_LT_UINT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LT_UINT32(lval, rval, ...)              _VALIDATE_LT_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LT_UINT64(lval, rval, ...)              _VALIDATE_LT_UINT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_LT_REAL(lval, rval, ...)                _VALIDATE_LT_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_LT_LREAL(lval, rval, ...)               _VALIDATE_LT_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_LT_FLOAT(lval, rval, ...)               _VALIDATE_LT_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_LT_DOUBLE(lval, rval, ...)              _VALIDATE_LT_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_LT_REAL(lval, rval, ...)                _VALIDATE_LT_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LT_LREAL(lval, rval, ...)               _VALIDATE_LT_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LT_FLOAT(lval, rval, ...)               _VALIDATE_LT_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LT_DOUBLE(lval, rval, ...)              _VALIDATE_LT_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_LT_TIME(lval, rval, ...)                _VALIDATE_LT_TIME_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_LT_TIME(lval, rval, ...)                _VALIDATE_LT_TIME_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_LT_DATE(lval, rval, ...)                _VALIDATE_LT_DATE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_LT_TOD(lval, rval, ...)                 _VALIDATE_LT_TOD_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_LT_DT(lval, rval, ...)                  _VALIDATE_LT_DT_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_LT_DATE(lval, rval, ...)                _VALIDATE_LT_DATE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LT_TOD(lval, rval, ...)                 _VALIDATE_LT_TOD_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LT_DT(lval, rval, ...)                  _VALIDATE_LT_DT_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_LT_STRING(lval, rval, ...)              _VALIDATE_LT_STRING_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_LT_STRING(lval, rval, ...)              _VALIDATE_LT_STRING_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
 
-{#define ASSERT_LE_SINT(lval, rval, ...)                _VALIDATE_LE_INT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_LE_INT(lval, rval, ...)                 _VALIDATE_LE_INT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_LE_DINT(lval, rval, ...)                _VALIDATE_LE_INT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_LE_LINT(lval, rval, ...)                _VALIDATE_LE_INT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_LE_INT32(lval, rval, ...)               _VALIDATE_LE_INT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_LE_INT64(lval, rval, ...)               _VALIDATE_LE_INT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_LE_SINT(lval, rval, ...)                _VALIDATE_LE_INT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LE_INT(lval, rval, ...)                 _VALIDATE_LE_INT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LE_DINT(lval, rval, ...)                _VALIDATE_LE_INT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LE_LINT(lval, rval, ...)                _VALIDATE_LE_INT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LE_INT32(lval, rval, ...)               _VALIDATE_LE_INT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LE_INT64(lval, rval, ...)               _VALIDATE_LE_INT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_LE_USINT(lval, rval, ...)               _VALIDATE_LE_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_LE_UINT(lval, rval, ...)                _VALIDATE_LE_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_LE_UDINT(lval, rval, ...)               _VALIDATE_LE_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_LE_ULINT(lval, rval, ...)               _VALIDATE_LE_UINT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_LE_UINT32(lval, rval, ...)              _VALIDATE_LE_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_LE_UINT64(lval, rval, ...)              _VALIDATE_LE_UINT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_LE_USINT(lval, rval, ...)               _VALIDATE_LE_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LE_UINT(lval, rval, ...)                _VALIDATE_LE_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LE_UDINT(lval, rval, ...)               _VALIDATE_LE_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LE_ULINT(lval, rval, ...)               _VALIDATE_LE_UINT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LE_UINT32(lval, rval, ...)              _VALIDATE_LE_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LE_UINT64(lval, rval, ...)              _VALIDATE_LE_UINT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_LE_REAL(lval, rval, ...)                _VALIDATE_LE_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_LE_LREAL(lval, rval, ...)               _VALIDATE_LE_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_LE_FLOAT(lval, rval, ...)               _VALIDATE_LE_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_LE_DOUBLE(lval, rval, ...)              _VALIDATE_LE_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_LE_REAL(lval, rval, ...)                _VALIDATE_LE_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LE_LREAL(lval, rval, ...)               _VALIDATE_LE_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LE_FLOAT(lval, rval, ...)               _VALIDATE_LE_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LE_DOUBLE(lval, rval, ...)              _VALIDATE_LE_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_LE_TIME(lval, rval, ...)                _VALIDATE_LE_TIME_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_LE_TIME(lval, rval, ...)                _VALIDATE_LE_TIME_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_LE_DATE(lval, rval, ...)                _VALIDATE_LE_DATE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_LE_TOD(lval, rval, ...)                 _VALIDATE_LE_TOD_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_LE_DT(lval, rval, ...)                  _VALIDATE_LE_DT_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_LE_DATE(lval, rval, ...)                _VALIDATE_LE_DATE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LE_TOD(lval, rval, ...)                 _VALIDATE_LE_TOD_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LE_DT(lval, rval, ...)                  _VALIDATE_LE_DT_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_LE_STRING(lval, rval, ...)              _VALIDATE_LE_STRING_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_LE_STRING(lval, rval, ...)              _VALIDATE_LE_STRING_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
 
-{#define ASSERT_GE_SINT(lval, rval, ...)                _VALIDATE_GE_INT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_GE_INT(lval, rval, ...)                 _VALIDATE_GE_INT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_GE_DINT(lval, rval, ...)                _VALIDATE_GE_INT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_GE_LINT(lval, rval, ...)                _VALIDATE_GE_INT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_GE_INT32(lval, rval, ...)               _VALIDATE_GE_INT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_GE_INT64(lval, rval, ...)               _VALIDATE_GE_INT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_GE_SINT(lval, rval, ...)                _VALIDATE_GE_INT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GE_INT(lval, rval, ...)                 _VALIDATE_GE_INT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GE_DINT(lval, rval, ...)                _VALIDATE_GE_INT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GE_LINT(lval, rval, ...)                _VALIDATE_GE_INT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GE_INT32(lval, rval, ...)               _VALIDATE_GE_INT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GE_INT64(lval, rval, ...)               _VALIDATE_GE_INT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_GE_USINT(lval, rval, ...)               _VALIDATE_GE_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_GE_UINT(lval, rval, ...)                _VALIDATE_GE_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_GE_UDINT(lval, rval, ...)               _VALIDATE_GE_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_GE_ULINT(lval, rval, ...)               _VALIDATE_GE_UINT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_GE_UINT32(lval, rval, ...)              _VALIDATE_GE_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_GE_UINT64(lval, rval, ...)              _VALIDATE_GE_UINT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_GE_USINT(lval, rval, ...)               _VALIDATE_GE_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GE_UINT(lval, rval, ...)                _VALIDATE_GE_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GE_UDINT(lval, rval, ...)               _VALIDATE_GE_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GE_ULINT(lval, rval, ...)               _VALIDATE_GE_UINT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GE_UINT32(lval, rval, ...)              _VALIDATE_GE_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GE_UINT64(lval, rval, ...)              _VALIDATE_GE_UINT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_GE_REAL(lval, rval, ...)                _VALIDATE_GE_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_GE_LREAL(lval, rval, ...)               _VALIDATE_GE_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_GE_FLOAT(lval, rval, ...)               _VALIDATE_GE_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_GE_DOUBLE(lval, rval, ...)              _VALIDATE_GE_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_GE_REAL(lval, rval, ...)                _VALIDATE_GE_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GE_LREAL(lval, rval, ...)               _VALIDATE_GE_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GE_FLOAT(lval, rval, ...)               _VALIDATE_GE_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GE_DOUBLE(lval, rval, ...)              _VALIDATE_GE_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_GE_TIME(lval, rval, ...)                _VALIDATE_GE_TIME_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_GE_TIME(lval, rval, ...)                _VALIDATE_GE_TIME_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_GE_DATE(lval, rval, ...)                _VALIDATE_GE_DATE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_GE_TOD(lval, rval, ...)                 _VALIDATE_GE_TOD_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_GE_DT(lval, rval, ...)                  _VALIDATE_GE_DT_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_GE_DATE(lval, rval, ...)                _VALIDATE_GE_DATE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GE_TOD(lval, rval, ...)                 _VALIDATE_GE_TOD_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GE_DT(lval, rval, ...)                  _VALIDATE_GE_DT_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_GE_STRING(lval, rval, ...)              _VALIDATE_GE_STRING_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_GE_STRING(lval, rval, ...)              _VALIDATE_GE_STRING_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
 
-{#define ASSERT_GT_SINT(lval, rval, ...)                _VALIDATE_GT_INT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_GT_INT(lval, rval, ...)                 _VALIDATE_GT_INT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_GT_DINT(lval, rval, ...)                _VALIDATE_GT_INT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_GT_LINT(lval, rval, ...)                _VALIDATE_GT_INT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_GT_INT32(lval, rval, ...)               _VALIDATE_GT_INT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_GT_INT64(lval, rval, ...)               _VALIDATE_GT_INT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_GT_SINT(lval, rval, ...)                _VALIDATE_GT_INT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GT_INT(lval, rval, ...)                 _VALIDATE_GT_INT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GT_DINT(lval, rval, ...)                _VALIDATE_GT_INT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GT_LINT(lval, rval, ...)                _VALIDATE_GT_INT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GT_INT32(lval, rval, ...)               _VALIDATE_GT_INT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GT_INT64(lval, rval, ...)               _VALIDATE_GT_INT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_GT_USINT(lval, rval, ...)               _VALIDATE_GT_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_GT_UINT(lval, rval, ...)                _VALIDATE_GT_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_GT_UDINT(lval, rval, ...)               _VALIDATE_GT_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_GT_ULINT(lval, rval, ...)               _VALIDATE_GT_UINT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_GT_UINT32(lval, rval, ...)              _VALIDATE_GT_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_GT_UINT64(lval, rval, ...)              _VALIDATE_GT_UINT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_GT_USINT(lval, rval, ...)               _VALIDATE_GT_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GT_UINT(lval, rval, ...)                _VALIDATE_GT_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GT_UDINT(lval, rval, ...)               _VALIDATE_GT_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GT_ULINT(lval, rval, ...)               _VALIDATE_GT_UINT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GT_UINT32(lval, rval, ...)              _VALIDATE_GT_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GT_UINT64(lval, rval, ...)              _VALIDATE_GT_UINT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_GT_REAL(lval, rval, ...)                _VALIDATE_GT_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_GT_LREAL(lval, rval, ...)               _VALIDATE_GT_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_GT_FLOAT(lval, rval, ...)               _VALIDATE_GT_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_GT_DOUBLE(lval, rval, ...)              _VALIDATE_GT_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_GT_REAL(lval, rval, ...)                _VALIDATE_GT_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GT_LREAL(lval, rval, ...)               _VALIDATE_GT_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GT_FLOAT(lval, rval, ...)               _VALIDATE_GT_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GT_DOUBLE(lval, rval, ...)              _VALIDATE_GT_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_GT_TIME(lval, rval, ...)                _VALIDATE_GT_TIME_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_GT_TIME(lval, rval, ...)                _VALIDATE_GT_TIME_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_GT_DATE(lval, rval, ...)                _VALIDATE_GT_DATE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_GT_TOD(lval, rval, ...)                 _VALIDATE_GT_TOD_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
-{#define ASSERT_GT_DT(lval, rval, ...)                  _VALIDATE_GT_DT_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_GT_DATE(lval, rval, ...)                _VALIDATE_GT_DATE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GT_TOD(lval, rval, ...)                 _VALIDATE_GT_TOD_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GT_DT(lval, rval, ...)                  _VALIDATE_GT_DT_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_GT_STRING(lval, rval, ...)              _VALIDATE_GT_STRING_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__))}
+{#define ASSERT_GT_STRING(lval, rval, ...)              _VALIDATE_GT_STRING_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_NEAR(val1, val2, abs_error, ...)        _VALIDATE_NEAR_MSG(true, val1, val2, abs_error, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__))}
-{#define ASSERT_NEAR_REL(val1, val2, rel_error, ...)    _VALIDATE_NEAR_REL_MSG(true, val1, val2, rel_error, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__))}
+{#define ASSERT_NEAR(val1, val2, abs_error, ...)        _VALIDATE_NEAR_MSG(true, val1, val2, abs_error, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@val1), _JIECUNIT_TEXT(@val2), _JIECUNIT_TEXT(@abs_error))}
+{#define ASSERT_NEAR_REL(val1, val2, rel_error, ...)    _VALIDATE_NEAR_REL_MSG(true, val1, val2, rel_error, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@val1), _JIECUNIT_TEXT(@val2), _JIECUNIT_TEXT(@rel_error))}
 
 
 

@@ -1,0 +1,21 @@
+// golden-args: -D JIECUNIT_NO_EXPRESSION_TEXT
+// With JIECUNIT_NO_EXPRESSION_TEXT, the failures show only the values.
+{#include <jiecunit.iec>}
+
+TEST_S(test_no_text)
+	var
+		a: dint := 4;
+		flag: bool := false;
+		x: lreal := 1.0;
+	end
+	EXPECT_EQ_INT(5, a);
+	EXPECT_LT_INT(a, 2);
+	EXPECT_TRUE(flag);
+	EXPECT_NEAR(1.5, x, 0.1);
+END_TEST_S
+
+DEFINE_CONFIGURATION(
+	_JIEC_TESTNAMES_LIST_(
+		test_no_text
+	)
+)

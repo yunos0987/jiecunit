@@ -34,6 +34,7 @@ DEFINE_CONFIGURATION(
 		test_console_initialize,
 		test_console_print,
 		test_console_puts,
+		test_jiec_quote,
 		// sys_conv.iec
 		test_udint_to_string,
 		test_dint_to_string,

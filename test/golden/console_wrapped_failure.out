@@ -1,8 +1,9 @@
 [========] Running 2 tests.
 [ RUN    ] test_fails
-Expected: 1
-Actual: 2
-test_fails:6@0
+test/golden/console_wrapped_failure.iec:6: Failure
+Expected equality of these values:
+  1
+  2
 [ FAILED ] test_fails (<time>)
 [ RUN    ] test_passes
 [     OK ] test_passes (<time>)

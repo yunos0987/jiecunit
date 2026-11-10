@@ -1,69 +1,87 @@
 [========] Running 6 tests.
 [ RUN    ] test_eq
-Expected: 5
-Actual: 4
-test_eq:11@0
-Expected: 100
-Actual: 5
-test_eq:12@0 with a message
-Expected: abc
-Actual: abd
-test_eq:13@0
-Expected: it's
-Actual: abd
-test_eq:14@0
+test/golden/failure_formats.iec:11: Failure
+Expected equality of these values:
+  5
+  a
+    Which is: 4
+test/golden/failure_formats.iec:12: Failure
+Expected equality of these values:
+  SZ
+    Which is: 100
+  a + 1
+    Which is: 5
+with a message
+test/golden/failure_formats.iec:13: Failure
+Expected equality of these values:
+  'abc'
+  s
+    Which is: 'abd'
+test/golden/failure_formats.iec:14: Failure
+Expected equality of these values:
+  'it$'s'
+  s
+    Which is: 'abd'
 [ FAILED ] test_eq (<time>)
 [ RUN    ] test_ne_and_cmp
-Expected NOT: 3
-Actual: 3
-test_ne_and_cmp:21@0
-Expected: lhs < rhs
-Actual: 3 vs 2
-test_ne_and_cmp:22@0
-Expected: lhs <= rhs
-Actual: 3 vs 2
-test_ne_and_cmp:23@0
-Expected: lhs >= rhs
-Actual: 3 vs 4
-test_ne_and_cmp:24@0
-Expected: lhs > rhs
-Actual: 3 vs 4
-test_ne_and_cmp:25@0
+test/golden/failure_formats.iec:21: Failure
+Expected: (3) <> (a), actual: 3 vs 3
+test/golden/failure_formats.iec:22: Failure
+Expected: (a) < (2), actual: 3 vs 2
+test/golden/failure_formats.iec:23: Failure
+Expected: (a) <= (2), actual: 3 vs 2
+test/golden/failure_formats.iec:24: Failure
+Expected: (a) >= (4), actual: 3 vs 4
+test/golden/failure_formats.iec:25: Failure
+Expected: (a) > (4), actual: 3 vs 4
 [ FAILED ] test_ne_and_cmp (<time>)
 [ RUN    ] test_bool
+test/golden/failure_formats.iec:32: Failure
+Value of: flag
+  Actual: false
 Expected: true
-Actual: false
-test_bool:32@0
+test/golden/failure_formats.iec:33: Failure
+Value of: not flag
+  Actual: true
 Expected: false
-Actual: true
-test_bool:33@0
 [ FAILED ] test_bool (<time>)
 [ RUN    ] test_float
-Expected: 0.1
-Actual: 0.10000000149011612
-test_float:41@0
-Expected: 0.3
-Actual: 0.30000000000000004
-test_float:42@0
-Value1: 1.5
-Value2: 1.0
-Value1 - Value2: 0.5
-test_float:43@0
-Value1: 1.5
-Value2: 1.0
-Value1 - Value2: 0.5
-Allowed: 0.15000000000000002
-test_float:44@0
+test/golden/failure_formats.iec:41: Failure
+Expected equality of these values:
+  0.1
+  r
+    Which is: 0.10000000149011612
+test/golden/failure_formats.iec:42: Failure
+Expected equality of these values:
+  0.3
+  0.1 + 0.2
+    Which is: 0.30000000000000004
+test/golden/failure_formats.iec:43: Failure
+The difference between 1.5 and x is 0.5, which exceeds 0.1, where
+1.5 evaluates to 1.5,
+x evaluates to 1.0, and
+0.1 evaluates to 0.1.
+test/golden/failure_formats.iec:44: Failure
+The difference between 1.5 and x is 0.5, which exceeds 0.1 * max(|1.5|, |x|) = 0.15000000000000002, where
+1.5 evaluates to 1.5,
+x evaluates to 1.0, and
+0.1 evaluates to 0.1.
 [ FAILED ] test_float (<time>)
 [ RUN    ] test_fail_and_add_failure
-test_fail_and_add_failure:48@0 first
-test_fail_and_add_failure:49@0
-test_fail_and_add_failure:50@0 stops here
+test/golden/failure_formats.iec:48: Failure
+Failed
+first
+test/golden/failure_formats.iec:49: Failure
+Failed
+test/golden/failure_formats.iec:50: Failure
+Failed
+stops here
 [ FAILED ] test_fail_and_add_failure (<time>)
 [ RUN    ] test_assert_in_multi_cycle
-Expected: 1
-Actual: 2
-test_assert_in_multi_cycle:59@1
+test/golden/failure_formats.iec:59: Failure (cycle 1)
+Expected equality of these values:
+  1
+  2
 [ FAILED ] test_assert_in_multi_cycle (<time>)
 [========] 6 tests ran. (<time>)
 [ PASSED ] 0 tests.

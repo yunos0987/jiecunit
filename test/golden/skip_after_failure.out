@@ -2,9 +2,10 @@
 [ RUN    ] test_passes
 [     OK ] test_passes (<time>)
 [ RUN    ] test_fails_then_skips
-Expected: 1
-Actual: 2
-test_fails_then_skips:9@0
+test/golden/skip_after_failure.iec:9: Failure
+Expected equality of these values:
+  1
+  2
 Skipped: skipped after a failure
 [ FAILED ] test_fails_then_skips (<time>)
 [ RUN    ] test_skips

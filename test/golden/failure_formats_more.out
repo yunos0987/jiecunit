@@ -1,0 +1,51 @@
+[========] Running 3 tests.
+[ RUN    ] test_near_nan
+test/golden/failure_formats_more.iec:12: Failure
+The difference between nan_value and 1.0 is nan, which exceeds 0.5, where
+nan_value evaluates to nan,
+1.0 evaluates to 1.0, and
+0.5 evaluates to 0.5.
+A NaN is never near any value.
+test/golden/failure_formats_more.iec:13: Failure
+The difference between big and -big is inf, which exceeds 0.5, where
+big evaluates to inf,
+-big evaluates to -inf, and
+0.5 evaluates to 0.5.
+test/golden/failure_formats_more.iec:17: Failure
+The absolute error must not be negative, but -0.5 was given.
+test/golden/failure_formats_more.iec:18: Failure
+The relative error must not be negative, but -0.5 was given.
+[ FAILED ] test_near_nan (<time>)
+[ RUN    ] test_string_quoting
+test/golden/failure_formats_more.iec:25: Failure
+Expected equality of these values:
+  ''
+  s
+    Which is: 'a$'b$$c'
+test/golden/failure_formats_more.iec:26: Failure
+Expected: ('a$'b$$c') <> (s), actual: 'a$'b$$c' vs 'a$'b$$c'
+test/golden/failure_formats_more.iec:27: Failure
+Expected: (s) < ('a'), actual: 'a$'b$$c' vs 'a'
+[ FAILED ] test_string_quoting (<time>)
+[ RUN    ] test_other_types
+test/golden/failure_formats_more.iec:36: Failure
+Expected equality of these values:
+  time#2s
+    Which is: 2s
+  t
+    Which is: 1.5s
+test/golden/failure_formats_more.iec:37: Failure
+Expected: (3) > (u), actual: 3 vs 7
+test/golden/failure_formats_more.iec:38: Failure
+Expected equality of these values:
+  false
+  b
+    Which is: true
+[ FAILED ] test_other_types (<time>)
+[========] 3 tests ran. (<time>)
+[ PASSED ] 0 tests.
+[ FAILED ] 3 tests, listed below.
+[ FAILED ] test_near_nan
+[ FAILED ] test_string_quoting
+[ FAILED ] test_other_types
+[exit code: 1]

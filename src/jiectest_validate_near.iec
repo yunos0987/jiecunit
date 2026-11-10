@@ -1,6 +1,74 @@
 {#ifndef __JIECTEST_VALIDATE_NEAR_IEC__}
 {#define __JIECTEST_VALIDATE_NEAR_IEC__}
 
+(*{doc Print the explanation of a failed NEAR or NEAR_REL assertion.
+Prints the lines that Google Test prints for EXPECT_NEAR:
+"The difference between <val1> and <val2> is <diff>, which exceeds <bound>, where",
+"<val1> evaluates to <value1>,", "<val2> evaluates to <value2>, and",
+"<error> evaluates to <error value>.", and a note when a value is NaN.
+A missing text is replaced with its value.
+@inout self The JiecTest_t structure.
+@input val1 The first value.
+@input val2 The second value.
+@input tolerance The allowed error (absolute, or relative for NEAR_REL).
+@input bound The text of the bound that the difference exceeds.
+@input val1_text The source text of the first value.
+@input val2_text The source text of the second value.
+@input tolerance_text The source text of the allowed error.
+@return Always returns true.}*)
+function JiecTest_printNearFailure
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc The first value.}*)
+		val1: lreal;
+		(*{doc The second value.}*)
+		val2: lreal;
+		(*{doc The allowed error (absolute, or relative for NEAR_REL).}*)
+		tolerance: lreal;
+		(*{doc The text of the bound that the difference exceeds.}*)
+		bound: string[STRING_MAX_SIZE];
+		(*{doc The source text of the first value.}*)
+		val1_text: string[EXPRESSION_MAX_SIZE];
+		(*{doc The source text of the second value.}*)
+		val2_text: string[EXPRESSION_MAX_SIZE];
+		(*{doc The source text of the allowed error.}*)
+		tolerance_text: string[EXPRESSION_MAX_SIZE];
+	end
+	var_temp
+		t1: string[STRING_MAX_SIZE];
+		t2: string[STRING_MAX_SIZE];
+		t3: string[STRING_MAX_SIZE];
+		difference: lreal;
+	end
+	// The magnitude of the difference, without abs(): a NaN must stay a NaN
+	// (jier returns 0.0 for abs of a NaN).
+	difference := val1 - val2;
+	if difference < 0.0 then
+		difference := -difference;
+	end_if;
+	t1 := val1_text;
+	if t1 = '' then
+		t1 := lreal_to_string(val1);
+	end_if;
+	t2 := val2_text;
+	if t2 = '' then
+		t2 := lreal_to_string(val2);
+	end_if;
+	t3 := tolerance_text;
+	if t3 = '' then
+		t3 := lreal_to_string(tolerance);
+	end_if;
+	JiecTest_print(self, jiec_concat('The difference between ', t1, ' and ', t2, ' is ', lreal_to_string(difference), ', which exceeds ', bound, ', where'));
+	JiecTest_print(self, jiec_concat(t1, ' evaluates to ', lreal_to_string(val1), ','));
+	JiecTest_print(self, jiec_concat(t2, ' evaluates to ', lreal_to_string(val2), ', and'));
+	JiecTest_print(self, jiec_concat(t3, ' evaluates to ', lreal_to_string(tolerance), '.'));
+	// A NaN is not equal to itself; it is never near any value.
+	if (val1 <> val1) or (val2 <> val2) then
+		JiecTest_print(self, 'A NaN is never near any value.');
+	end_if;
+end
+
 (*{doc Validate that two floating-point values are nearly equal within the specified absolute error tolerance.
 @inout self The JiecTest_t structure.
 @input val1 The first value.
@@ -10,10 +78,12 @@
 @input die Whether to abort the test on failure. Default: true
 @input file The source file name.
 @input line The line number.
+@input val1_text The source text of the first value (optional).
+@input val2_text The source text of the second value (optional).
+@input abs_error_text The source text of the allowed absolute error (optional).
 @return True if the values are equal within the tolerance, false otherwise.}*)
 function JiecTest_validateNEAR: bool
 	_PROLOGUE_OF_FUNCTION_()
-	_DECLARE_CONSOLE_IN_POU_()
 	var_in_out self: JiecTest_t; end
 	var_input
 		(*{doc The first value.}*)
@@ -30,23 +100,42 @@ function JiecTest_validateNEAR: bool
 		file: string[FILENAME_MAX_SIZE];
 		(*{doc The line number.}*)
 		line: dint;
+		(*{doc The source text of the first value (optional).}*)
+		val1_text: string[EXPRESSION_MAX_SIZE] := '';
+		(*{doc The source text of the second value (optional).}*)
+		val2_text: string[EXPRESSION_MAX_SIZE] := '';
+		(*{doc The source text of the allowed absolute error (optional).}*)
+		abs_error_text: string[EXPRESSION_MAX_SIZE] := '';
+	end
+	var_temp
+		bound: string[STRING_MAX_SIZE];
+		difference: lreal;
 	end
 	if abs_error < 0.0 then
-		JiecTest_failure(self:=self, message:='Absolute error cannot be negative.', die:=die, file:=file, line:=line);
+		JiecTest_beginFailure(self:=self, file:=file, line:=line);
+		JiecTest_print(self, jiec_concat('The absolute error must not be negative, but ', lreal_to_string(abs_error), ' was given.'));
+		JiecTest_endFailure(self:=self, message:=message, die:=die);
 		JiecTest_validateNEAR := false;
 		return;
 	end_if;
 
-	JiecTest_validateNEAR := abs(val1 - val2) <= abs_error;
+	// Equal values (including two infinities of the same sign) are near.
+	// Otherwise the difference must be a number within the tolerance; test
+	// for a NaN explicitly, because abs() of a NaN is not a NaN on every
+	// target (jier returns 0.0).
+	difference := val1 - val2;
+	JiecTest_validateNEAR := (val1 = val2) or ((difference = difference) and (abs(difference) <= abs_error));
 	if JiecTest_validateNEAR then
 		return;
 	end_if;
 
-	puts(jiec_concat('Value1: ', lreal_to_string(val1)));
-	puts(jiec_concat('Value2: ', lreal_to_string(val2)));
-	puts(jiec_concat('Value1 - Value2: ', lreal_to_string(val1 - val2)));
-
-	JiecTest_failure(self:=self, message:=message, die:=die, file:=file, line:=line);
+	bound := abs_error_text;
+	if bound = '' then
+		bound := lreal_to_string(abs_error);
+	end_if;
+	JiecTest_beginFailure(self:=self, file:=file, line:=line);
+	JiecTest_printNearFailure(self:=self, val1:=val1, val2:=val2, tolerance:=abs_error, bound:=bound, val1_text:=val1_text, val2_text:=val2_text, tolerance_text:=abs_error_text);
+	JiecTest_endFailure(self:=self, message:=message, die:=die);
 end
 
 {#endif}

@@ -4,9 +4,10 @@
 [ RUN    ] test_multi
 [     OK ] test_multi (<time>)
 [ RUN    ] test_failing
-Expected: 1
-Actual: 2
-test_failing:16@0
+test/golden/main_last.iec:16: Failure
+Expected equality of these values:
+  1
+  2
 [ FAILED ] test_failing (<time>)
 [========] 3 tests ran. (<time>)
 [ PASSED ] 2 tests.

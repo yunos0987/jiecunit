@@ -47,7 +47,7 @@ pragma, so the doc text in the macro bodies does not name the datatype.
 	_JIECTEST_UNLESS_KEYENCE_MITSUBISHI_(M(DATE, date, date_to_string))
 	_JIECTEST_UNLESS_KEYENCE_MITSUBISHI_(M(TOD, time_of_day, tod_to_string))
 	_JIECTEST_UNLESS_KEYENCE_MITSUBISHI_(M(DT, date_and_time, dt_to_string))
-	M(STRING, string[STRING_MAX_SIZE], )
+	M(STRING, string[STRING_MAX_SIZE], jiec_quote)
 }
 
 // Defines JiecTest_validate<CMP>_<DATATYPE> for LT/LE/GE/GT. OP is the ST
@@ -61,11 +61,12 @@ pragma, so the doc text in the macro bodies does not name the datatype.
 @input die Whether to abort the test on failure.$n$
 @input file The source file name.$n$
 @input line The line number.$n$
+@input lval_text The source text of the first value (optional).$n$
+@input rval_text The source text of the second value (optional).$n$
 @return True if the comparison holds, false otherwise.$n$
 $}*)$n$
 function JiecTest_validate@@CMP@@_@@DATATYPE: bool$n$
 	_PROLOGUE_OF_FUNCTION_()$n$
-	_DECLARE_CONSOLE_IN_POU_()$n$
 	var_in_out self: JiecTest_t; end$n$
 	var_input$n$
 		(*${doc The left-hand side value.$}*)$n$
@@ -80,16 +81,19 @@ function JiecTest_validate@@CMP@@_@@DATATYPE: bool$n$
 		file: string[FILENAME_MAX_SIZE];$n$
 		(*${doc The line number.$}*)$n$
 		line: dint;$n$
+		(*${doc The source text of the first value (optional).$}*)$n$
+		lval_text: string[EXPRESSION_MAX_SIZE] := '';$n$
+		(*${doc The source text of the second value (optional).$}*)$n$
+		rval_text: string[EXPRESSION_MAX_SIZE] := '';$n$
 	end$n$
 	JiecTest_validate@@CMP@@_@@DATATYPE := lval OP rval;$n$
 	if JiecTest_validate@@CMP@@_@@DATATYPE then$n$
 		return;$n$
 	end_if;$n$
 $n$
-	puts(jiec_concat('Expected: lhs ', LABEL, ' rhs'));$n$
-	puts(jiec_concat('Actual: ', TOSTR(lval), ' vs ', TOSTR(rval)));$n$
-$n$
-	JiecTest_failure(self:=self, message:=message, die:=die, file:=file, line:=line);$n$
+	JiecTest_beginFailure(self:=self, file:=file, line:=line);$n$
+	JiecTest_printComparison(self:=self, op:=LABEL, lhs_text:=lval_text, rhs_text:=rval_text, lhs_value:=TOSTR(lval), rhs_value:=TOSTR(rval));$n$
+	JiecTest_endFailure(self:=self, message:=message, die:=die);$n$
 end$n$
 }
 
@@ -104,7 +108,7 @@ end$n$
 	_JIECTEST_UNLESS_KEYENCE_MITSUBISHI_(_JIECTEST_DEFINE_VALIDATE_CMP_(CMP, OP, LABEL, DATE, date, date_to_string))
 	_JIECTEST_UNLESS_KEYENCE_MITSUBISHI_(_JIECTEST_DEFINE_VALIDATE_CMP_(CMP, OP, LABEL, TOD, time_of_day, tod_to_string))
 	_JIECTEST_UNLESS_KEYENCE_MITSUBISHI_(_JIECTEST_DEFINE_VALIDATE_CMP_(CMP, OP, LABEL, DT, date_and_time, dt_to_string))
-	_JIECTEST_DEFINE_VALIDATE_CMP_(CMP, OP, LABEL, STRING, string[STRING_MAX_SIZE], )
+	_JIECTEST_DEFINE_VALIDATE_CMP_(CMP, OP, LABEL, STRING, string[STRING_MAX_SIZE], jiec_quote)
 }
 
 {#endif}

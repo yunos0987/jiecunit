@@ -128,8 +128,76 @@ function JiecTest_currentCycle: dint
 	JiecTest_currentCycle := self.tmp_cycle;
 end
 
+(*{doc Print one line of the output of a failure.
+Every line that belongs to a failure goes through this function.
+@inout self The JiecTest_t structure.
+@input line The line to print.
+@return Always returns true.}*)
+function JiecTest_print
+	_PROLOGUE_OF_FUNCTION_()
+	_DECLARE_CONSOLE_IN_POU_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc The line to print.}*)
+		line: string[STRING_MAX_SIZE];
+	end
+	puts(line);
+end
+
+(*{doc Start the output of a failure: print its position.
+Prints "<file>:<line>: Failure", followed by " (cycle N)" in a multi-cycle test.
+Without a file name it prints only "Failure".
+@inout self The JiecTest_t structure.
+@input file The source file name.
+@input line The line number.
+@return Always returns true.}*)
+function JiecTest_beginFailure
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc The source file name.}*)
+		file: string[FILENAME_MAX_SIZE];
+		(*{doc The line number.}*)
+		line: dint;
+	end
+	var_temp
+		msg: string[STRING_MAX_SIZE];
+	end
+	if file <> '' then
+		msg := jiec_concat(file, ':', dint_to_string(line), ': Failure');
+	else
+		msg := 'Failure';
+	end_if;
+	if not self.tmp_is_single_cycle then
+		msg := jiec_concat(msg, ' (cycle ', dint_to_string(JiecTest_currentCycle(self)), ')');
+	end_if;
+	JiecTest_print(self, msg);
+end
+
+(*{doc Finish the output of a failure and count it.
+Prints the message, if any, and increments the failure counter.
+@inout self The JiecTest_t structure.
+@input message The failure message (optional).
+@input die Whether the failure aborts the test.
+@return Always returns true.}*)
+function JiecTest_endFailure
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc The failure message (optional).}*)
+		message: string[STRING_MAX_SIZE] := '';
+		(*{doc Whether the failure aborts the test.}*)
+		die: bool := true;
+	end
+	if message <> '' then
+		JiecTest_print(self, message);
+	end_if;
+	inc(self.num_of_failures);
+end
+
 (*{doc Report a test failure.
-Outputs failure information to the console and increments the failure counter.
+Prints the position of the failure, then the message, and increments the
+failure counter.
 @inout self The JiecTest_t structure.
 @input message The failure message (optional).
 @input die Whether to abort the test on failure. Default: true
@@ -138,7 +206,6 @@ Outputs failure information to the console and increments the failure counter.
 @return Always returns true.}*)
 function JiecTest_failure
 	_PROLOGUE_OF_FUNCTION_()
-	_DECLARE_CONSOLE_IN_POU_()
 	var_in_out self: JiecTest_t; end
 	var_input
 		(*{doc The failure message (optional).}*)
@@ -150,16 +217,75 @@ function JiecTest_failure
 		(*{doc The line number where the failure occurred.}*)
 		line: dint;
 	end
-	var_temp
-		msg: string[STRING_MAX_SIZE];
-	end
-	msg := jiec_concat(file, ':', dint_to_string(line), '@', dint_to_string(JiecTest_currentCycle(self)));
-	if message <> '' then
-		msg := jiec_concat(msg, ' ', message);
-	end_if;
-	puts(msg);
+	JiecTest_beginFailure(self:=self, file:=file, line:=line);
+	JiecTest_endFailure(self:=self, message:=message, die:=die);
+end
 
-	inc(self.num_of_failures);
+(*{doc Print an expression of a failure and, if it differs, its value.
+Prints "  <text>" and "    Which is: <value>". The second line is left out when
+the text is the same as the value (a literal), and only "  <value>" is printed
+when there is no text.
+@inout self The JiecTest_t structure.
+@input text The source text of the expression.
+@input value The value of the expression as text.
+@return Always returns true.}*)
+function JiecTest_printValue
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc The source text of the expression.}*)
+		text: string[EXPRESSION_MAX_SIZE];
+		(*{doc The value of the expression as text.}*)
+		value: string[STRING_MAX_SIZE];
+	end
+	if text = '' then
+		JiecTest_print(self, jiec_concat('  ', value));
+		return;
+	end_if;
+	JiecTest_print(self, jiec_concat('  ', text));
+	if text <> value then
+		JiecTest_print(self, jiec_concat('    Which is: ', value));
+	end_if;
+end
+
+(*{doc Print the comparison of a failed binary assertion.
+Prints "Expected: (<lhs>) <op> (<rhs>), actual: <lhs value> vs <rhs value>".
+A missing text is replaced with its value.
+@inout self The JiecTest_t structure.
+@input op The operator, as written in ST.
+@input lhs_text The source text of the left-hand side.
+@input rhs_text The source text of the right-hand side.
+@input lhs_value The value of the left-hand side as text.
+@input rhs_value The value of the right-hand side as text.
+@return Always returns true.}*)
+function JiecTest_printComparison
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc The operator, as written in ST.}*)
+		op: string[8];
+		(*{doc The source text of the left-hand side.}*)
+		lhs_text: string[EXPRESSION_MAX_SIZE];
+		(*{doc The source text of the right-hand side.}*)
+		rhs_text: string[EXPRESSION_MAX_SIZE];
+		(*{doc The value of the left-hand side as text.}*)
+		lhs_value: string[STRING_MAX_SIZE];
+		(*{doc The value of the right-hand side as text.}*)
+		rhs_value: string[STRING_MAX_SIZE];
+	end
+	var_temp
+		lhs: string[STRING_MAX_SIZE];
+		rhs: string[STRING_MAX_SIZE];
+	end
+	lhs := lhs_text;
+	if lhs = '' then
+		lhs := lhs_value;
+	end_if;
+	rhs := rhs_text;
+	if rhs = '' then
+		rhs := rhs_value;
+	end_if;
+	JiecTest_print(self, jiec_concat('Expected: (', lhs, ') ', op, ' (', rhs, '), actual: ', lhs_value, ' vs ', rhs_value));
 end
 
 (*{doc Mark the active test as skipped.
@@ -177,6 +303,7 @@ function JiecTest_skip
 		reason: string[STRING_MAX_SIZE] := '';
 	end
 	self.tmp_is_skipped := true;
+	// Not a failure, so not printed through JiecTest_print.
 	if reason <> '' then
 		puts(jiec_concat('Skipped: ', reason));
 	end_if;
@@ -306,6 +433,7 @@ end
 
 // ------------------------ Define validator functions ------------------------ //
 
+{#include "jiectest_validate_bool.iec"}
 {#include "jiectest_validate_eq.iec"}
 {#include "jiectest_validate_ne.iec"}
 {#include "jiectest_validate_lt.iec"}
