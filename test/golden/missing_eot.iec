@@ -1,0 +1,18 @@
+// golden-args: --max-cycles 20
+// A TEST_M without EOT() never ends by itself.
+{#include <jiecunit.iec>}
+
+TEST_M(test_without_eot)
+	EXPECT_TRUE(true);
+END_TEST_M
+
+TEST_S(test_after)
+	EXPECT_TRUE(true);
+END_TEST_S
+
+DEFINE_CONFIGURATION(
+	_JIEC_TESTNAMES_LIST_(
+		test_without_eot,
+		test_after
+	)
+)

@@ -1,0 +1,73 @@
+// The output of every kind of failing assertion.
+{#include <jiecunit.iec>}
+
+{#define SZ 100}
+
+TEST_S(test_eq)
+	var
+		a: dint := 4;
+		s: string[32] := 'abd';
+	end
+	EXPECT_EQ_INT(5, a);
+	EXPECT_EQ_INT(SZ, a + 1, 'with a message');
+	EXPECT_EQ_STRING('abc', s);
+	EXPECT_EQ_STRING('it$'s', s);
+END_TEST_S
+
+TEST_S(test_ne_and_cmp)
+	var
+		a: dint := 3;
+	end
+	EXPECT_NE_INT(3, a);
+	EXPECT_LT_INT(a, 2);
+	EXPECT_LE_INT(a, 2);
+	EXPECT_GE_INT(a, 4);
+	EXPECT_GT_INT(a, 4);
+END_TEST_S
+
+TEST_S(test_bool)
+	var
+		flag: bool := false;
+	end
+	EXPECT_TRUE(flag);
+	EXPECT_FALSE(not flag);
+END_TEST_S
+
+TEST_S(test_float)
+	var
+		r: real := 0.1;
+		x: lreal := 1.0;
+	end
+	EXPECT_EQ_REAL(0.1, r);
+	EXPECT_EQ_DOUBLE(0.3, 0.1 + 0.2);
+	EXPECT_NEAR(1.5, x, 0.1);
+	EXPECT_NEAR_REL(1.5, x, 0.1);
+END_TEST_S
+
+TEST_S(test_fail_and_add_failure)
+	ADD_FAILURE('first');
+	ADD_FAILURE();
+	FAIL('stops here');
+	ADD_FAILURE('not reached');
+END_TEST_S
+
+TEST_M(test_assert_in_multi_cycle)
+	case CURRENT_CYCLE() of
+	0:
+		EXPECT_EQ_INT(1, 1);
+	1:
+		ASSERT_EQ_INT(1, 2);
+		ADD_FAILURE('not reached');
+	end_case;
+END_TEST_M
+
+DEFINE_CONFIGURATION(
+	_JIEC_TESTNAMES_LIST_(
+		test_eq,
+		test_ne_and_cmp,
+		test_bool,
+		test_float,
+		test_fail_and_add_failure,
+		test_assert_in_multi_cycle
+	)
+)

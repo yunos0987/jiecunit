@@ -7,7 +7,9 @@ compile errors) and, separately, interprets and runs each suite with the
 jiecc jier interpreter (`jiecc --run`), parsing its stdout summary lines
 to determine pass/fail/skip counts. It also runs scripts/check_macro_expansion.py
 to verify that the optional-message assertion macros stay equivalent to their
-deprecated *_MSG aliases.
+deprecated *_MSG aliases, and scripts/check_golden.py to compare the output of
+the cases under test/golden/ with their expected output (the format of
+failures, the runner's handling of skips, timeouts and so on).
 
 JiecUnit requires Jiecc 9.4.0 or later (src/jiecunit_config.iec stops the
 preprocessor with {#error} on older compilers). The exit code of
@@ -25,9 +27,12 @@ output text is still possible, so this script also treats any "error: "
 line in the compile/run output as a failure, independent of the process
 exit code.
 
-The macro-check phase runs by default; pass --skip-macro-check to disable it.
---compile-only and --run-only both skip the macro-check phase as well, since
-it is neither a compile nor a run step.
+The macro-check and golden phases run by default; pass --skip-macro-check or
+--skip-golden to disable them. --compile-only and --run-only both skip these
+two phases as well, since they are neither a compile nor a run step.
+
+--max-cycles only bounds a run that never reaches the test summary: a run
+normally stops earlier, when JiecUnitMain calls halt after the summary.
 
 Usage:
   python scripts/run_tests.py
@@ -36,7 +41,7 @@ Usage:
   python scripts/run_tests.py --compile-only
   python scripts/run_tests.py --compile-only --jobs 2
   python scripts/run_tests.py --run-only --max-cycles 500
-  python scripts/run_tests.py --skip-macro-check
+  python scripts/run_tests.py --skip-macro-check --skip-golden
 """
 import argparse
 import concurrent.futures
@@ -217,6 +222,23 @@ def run_macro_check(jiecc, root, timeout):
     return True, output.strip().splitlines()[-1] if output.strip() else ''
 
 
+def run_golden(jiecc, root, timeout):
+    # type: (str, str, int) -> tuple
+    script = os.path.join(root, 'scripts', 'check_golden.py')
+    cmd = [sys.executable, script, '--jiecc', jiecc, '--timeout', str(timeout)]
+    try:
+        proc = subprocess.run(
+            cmd, cwd=root, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+            timeout=timeout * 20)
+    except subprocess.TimeoutExpired:
+        return False, 'timed out after {}s'.format(timeout * 20)
+    output = proc.stdout.decode('utf-8', errors='replace') if proc.stdout else ''
+    if proc.returncode != 0:
+        return False, output.strip() or 'exit code {}'.format(proc.returncode)
+    lines = output.strip().splitlines()
+    return True, lines[-1] if lines else ''
+
+
 def main():
     # type: () -> int
     parser = argparse.ArgumentParser(
@@ -234,8 +256,10 @@ def main():
                         help='Path to the jiecc executable. '
                              'Falls back to the JIECC environment variable, '
                              'then to jiecc/jiecc.exe on PATH.')
-    parser.add_argument('--max-cycles', type=int, default=200,
-                        help='Maximum scan cycles for jiecc --run (default: 200)')
+    parser.add_argument('--max-cycles', type=int, default=100000,
+                        help='Maximum scan cycles for jiecc --run (default: 100000). '
+                             'A run normally stops earlier, at the halt after the '
+                             'test summary.')
     parser.add_argument('--targets', default=','.join(_DEFAULT_TARGETS),
                         help='Comma-separated list of compile targets '
                              '(default: {})'.format(','.join(_DEFAULT_TARGETS)))
@@ -248,6 +272,10 @@ def main():
                         help='Only run the suites; do not compile them.')
     parser.add_argument('--skip-macro-check', action='store_true',
                         help='Skip the scripts/check_macro_expansion.py phase '
+                             '(also skipped automatically when --compile-only '
+                             'or --run-only is given).')
+    parser.add_argument('--skip-golden', action='store_true',
+                        help='Skip the scripts/check_golden.py phase '
                              '(also skipped automatically when --compile-only '
                              'or --run-only is given).')
     parser.add_argument('--timeout', type=int, default=600,
@@ -284,6 +312,7 @@ def main():
     do_compile = not args.run_only
     do_run = not args.compile_only
     do_macro_check = not args.run_only and not args.compile_only and not args.skip_macro_check
+    do_golden = not args.run_only and not args.compile_only and not args.skip_golden
 
     flags = list(_WARNING_FLAGS)
 
@@ -316,6 +345,11 @@ def main():
         if do_macro_check:
             ok, detail = run_macro_check(jiecc, root, args.timeout)
             results.append(('macro-check', 'jiecunit.iec', '-', ok, detail))
+            all_ok = all_ok and ok
+
+        if do_golden:
+            ok, detail = run_golden(jiecc, root, args.timeout)
+            results.append(('golden', 'test/golden', '-', ok, detail))
             all_ok = all_ok and ok
     finally:
         if cleanup_outdir:

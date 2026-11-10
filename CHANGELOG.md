@@ -2,6 +2,15 @@
 
 5.0.0 以降の変更を記録します。それ以前の変更は、Git の履歴と GitHub の Pull Request（https://github.com/yunos0987/jiecunit）を参照してください。
 
+## Unreleased
+
+7.0.0 からの変更です。
+
+### その他 / Other
+
+- `scripts/check_golden.py` を追加しました。`test/golden/*.iec` を `jiecc --run` で実行し、標準出力と終了コードを `test/golden/*.out` と比べます。所要時間の表示とパスの区切りは比べる前に正規化します。`--update` で期待値を作り直します。`scripts/run_tests.py` は、この検査を `golden` フェーズとして実行します（`--skip-golden` で省略できます。`--compile-only`・`--run-only` のときも実行しません）。CI でも、jier の実行と同じく任意のステップとして実行します。
+- `scripts/run_tests.py` の `--max-cycles` の既定値を 200 から 100000 に変えました。jier の実行は集計の後の `halt` で止まるので、この値は集計に達しない実行を打ち切るときだけ効きます。
+
 ## 7.0.0 (2026-11-08)
 
 6.0.0 からの変更です。

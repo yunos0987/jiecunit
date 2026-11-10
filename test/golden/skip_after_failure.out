@@ -1,0 +1,17 @@
+[========] Running 3 tests.
+[ RUN    ] test_passes
+[     OK ] test_passes (<time>)
+[ RUN    ] test_fails_then_skips
+Expected: 1
+Actual: 2
+test_fails_then_skips:9@0
+Skipped: skipped after a failure
+[ SKIPPED] test_fails_then_skips (<time>)
+[ RUN    ] test_skips
+Skipped: plain skip
+[ SKIPPED] test_skips (<time>)
+[========] 3 tests ran. (<time>)
+[ PASSED ] 1 tests.
+[ SKIPPED] 2 tests.
+[ FAILED ] 0 tests, listed below.
+[exit code: 1]

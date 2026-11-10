@@ -1,0 +1,77 @@
+[========] Running 6 tests.
+[ RUN    ] test_eq
+Expected: 5
+Actual: 4
+test_eq:11@0
+Expected: 100
+Actual: 5
+test_eq:12@0 with a message
+Expected: abc
+Actual: abd
+test_eq:13@0
+Expected: it's
+Actual: abd
+test_eq:14@0
+[ FAILED ] test_eq (<time>)
+[ RUN    ] test_ne_and_cmp
+Expected NOT: 3
+Actual: 3
+test_ne_and_cmp:21@0
+Expected: lhs < rhs
+Actual: 3 vs 2
+test_ne_and_cmp:22@0
+Expected: lhs <= rhs
+Actual: 3 vs 2
+test_ne_and_cmp:23@0
+Expected: lhs >= rhs
+Actual: 3 vs 4
+test_ne_and_cmp:24@0
+Expected: lhs > rhs
+Actual: 3 vs 4
+test_ne_and_cmp:25@0
+[ FAILED ] test_ne_and_cmp (<time>)
+[ RUN    ] test_bool
+Expected: true
+Actual: false
+test_bool:32@0
+Expected: false
+Actual: true
+test_bool:33@0
+[ FAILED ] test_bool (<time>)
+[ RUN    ] test_float
+Expected: 0.1
+Actual: 0.10000000149011612
+test_float:41@0
+Expected: 0.3
+Actual: 0.30000000000000004
+test_float:42@0
+Value1: 1.5
+Value2: 1.0
+Value1 - Value2: 0.5
+test_float:43@0
+Value1: 1.5
+Value2: 1.0
+Value1 - Value2: 0.5
+Allowed: 0.15000000000000002
+test_float:44@0
+[ FAILED ] test_float (<time>)
+[ RUN    ] test_fail_and_add_failure
+test_fail_and_add_failure:48@0 first
+test_fail_and_add_failure:49@0
+test_fail_and_add_failure:50@0 stops here
+[ FAILED ] test_fail_and_add_failure (<time>)
+[ RUN    ] test_assert_in_multi_cycle
+Expected: 1
+Actual: 2
+test_assert_in_multi_cycle:59@1
+[ FAILED ] test_assert_in_multi_cycle (<time>)
+[========] 6 tests ran. (<time>)
+[ PASSED ] 0 tests.
+[ FAILED ] 6 tests, listed below.
+[ FAILED ] test_eq
+[ FAILED ] test_ne_and_cmp
+[ FAILED ] test_bool
+[ FAILED ] test_float
+[ FAILED ] test_fail_and_add_failure
+[ FAILED ] test_assert_in_multi_cycle
+[exit code: 1]
