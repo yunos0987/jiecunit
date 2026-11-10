@@ -90,6 +90,7 @@ TEST_S(test_console_puts)
 	var
 		console: Console_t;
 		next_row: dint;
+		last_row: dint;
 	end
 	// Fact: Console_puts writes one line and advances row_index by one.
 		// Arrange
@@ -104,11 +105,13 @@ TEST_S(test_console_puts)
 
 	// Fact: Console_puts wraps row_index to 0 at the last row boundary and sets full, but not wrapped.
 		// Arrange
-	console.row_index := CONSOLE_MAX_ROWS - 1;
+	// The last row through a variable (an index written as a constant expression, [N - 1], is rejected by Sysmac Studio as out of range).
+	last_row := CONSOLE_MAX_ROWS - 1;
+	console.row_index := last_row;
 		// Act
 	next_row := Console_puts(console, 'tail');
 		// Assert
-	EXPECT_EQ_STRING('tail', console.rows[CONSOLE_MAX_ROWS - 1]);
+	EXPECT_EQ_STRING('tail', console.rows[last_row]);
 	EXPECT_EQ_INT(0, console.row_index);
 	EXPECT_EQ_INT(0, next_row);
 	EXPECT_TRUE(console.full);
