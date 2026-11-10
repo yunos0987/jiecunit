@@ -37,6 +37,7 @@ JiecUnit は、IEC 61131-3 ST 言語向けの単体テストフレームワー�
 - ST の `and` / `or` は短絡評価しない。`(i < n) and (a[i] = b[i])` のような条件は、範囲外の要素を読む。ループの中の `if` と `exit` で書く。
 - 配列の宣言で、上限にマクロの式を書く（`array[0..N - 1]`）と、XML に式のまま（`upper="8-1"`）出る。要素数で書く（`array[N]`）と数値（`upper="7"`）になる。jier はどちらも実行できるので、テストでは気付かない。
 - 配列の添字に定数の式を書く（`rows[CONSOLE_MAX_ROWS - 1]`、展開すると `rows[1024 - 1]`）と、Sysmac Studio は先頭の数値だけを見て範囲外のエラーにする（Sysmac Studio の不具合）。添字は変数に入れてから使う（`last_row := CONSOLE_MAX_ROWS - 1; rows[last_row]`）。
+- Sysmac Studio は、文字列リテラルを、それより短い `string[N]` の入力に渡すとビルドエラーにする（「文字列リテラルが長すぎます」「STRING から STRING に変換できません」）。式のテキスト（`@arg`）を受ける入力は `string[EXPRESSION_MAX_SIZE]`（既定は `STRING_MAX_SIZE`）にする。jier は検査しない。
 - OMRON の `string[N]` は終端を含むので、N - 1 バイトしか入らない。1 文字用の変数でも余裕を持たせる（`sys/sys.iec` の `jiec_quote`）。jier は長さを検査しない。
 - jier の `time_to_usec_dint` は、DINT の範囲（約 ±35 分 47 秒）を超えると、黙って上限・下限の値を返す。1 マイクロ秒未満は切り捨てる。1 秒未満に分けてから渡す（`sys/sys_conv.iec` の `time_to_literal`）。jier に `time_to_lint` などの変換は無い。TIME と数値の乗除は jier では動くが、PLC メーカーのツールでは通らないので使わない。Sysmac Studio は TIME の `+`・`-` も受け付けない（`ADD_TIME`・`SUB_TIME` を使う。`sys/sys_conv.iec` の `jiec_add_time`・`jiec_sub_time`）。比較は使える。
 - Sysmac Studio の文字列関数（`MID` など）の位置・長さは UINT で、DINT の変数を渡すとビルドエラーになる（`sys/sys.iec` の `_jiec_to_strpos`）。

@@ -183,7 +183,7 @@ END_TEST_S
   end_for;
   ```
 
-  Google Test の `SCOPED_TRACE` はスコープの終わりまで有効ですが、ST にはその仕組みが無いので、対象の文を引数に書きます。文はヘルパーの呼び出しにしてください。文が POU から戻ると（文に直接 `ASSERT_*` を書いた場合や、ヘルパーの中で `SCOPED_TRACE(text, ASSERT_NO_FATAL_FAILURE(...))` と書いた場合）、そのサイクルの終わりまでトレースが残り、後の無関係な失敗にも付きます。`ASSERT_NO_FATAL_FAILURE` と組み合わせるときは、`ASSERT_NO_FATAL_FAILURE(SCOPED_TRACE(text, ok := helper()))` と外側に書きます。`text` は `EXPRESSION_MAX_SIZE`（既定 128）文字までです。
+  Google Test の `SCOPED_TRACE` はスコープの終わりまで有効ですが、ST にはその仕組みが無いので、対象の文を引数に書きます。文はヘルパーの呼び出しにしてください。文が POU から戻ると（文に直接 `ASSERT_*` を書いた場合や、ヘルパーの中で `SCOPED_TRACE(text, ASSERT_NO_FATAL_FAILURE(...))` と書いた場合）、そのサイクルの終わりまでトレースが残り、後の無関係な失敗にも付きます。`ASSERT_NO_FATAL_FAILURE` と組み合わせるときは、`ASSERT_NO_FATAL_FAILURE(SCOPED_TRACE(text, ok := helper()))` と外側に書きます。`text` は `JIECUNIT_TRACE_TEXT_MAX_SIZE`（既定 128）文字まで保持します。
 * 値をメッセージや `JIECUNIT_LOG` に入れるときは、`jiec_concat('level=', dint_to_string(level))` のように組み立てます。
 * ヘルパーの中で `EOT()` や `SKIP_TEST` を呼ぶと、テストはその時点で終わったものとされ、ヘルパーから戻ります。呼び出し側の本体は、そのサイクルの残りを実行します（Google Test の `GTEST_SKIP` は、ヘルパーから戻るだけです）。
 
@@ -206,7 +206,7 @@ level after filling
 * 式のテキストと値を出します。値がリテラルと同じ表示なら `Which is:` を省きます。不等と大小は `Expected: (a) < (b), actual: 3 vs 2`、`EXPECT_TRUE` は `Value of: c` / `  Actual: false` / `Expected: true` と出します。
 * STRING の値は `'...'` で囲み、`'` と `$` を `$'`・`$$` と書きます。REAL の値は、LREAL に広げた正確な値で出します（例: `0.10000000149011612`）。
 * ファイル名は jiecc に渡したパスがそのまま入るので、jiecc は相対パス（例: `jiecc samples/sample.iec ...`）で呼んでください。ファイル名は `FILENAME_MAX_SIZE`（既定 128）文字までです。
-* 式のテキストの長さは `EXPRESSION_MAX_SIZE`（既定 128）文字までです。jier は長いファイル名や式も切らずに出しますが、PLC で長さを超えたときに切れるかビルドエラーになるかは、ベンダーによります。PLC のメモリやスキャン時間を減らしたいとき、または長い式が文字列の長さの制限に掛かるときは、`JIECUNIT_NO_EXPRESSION_TEXT` を定義すると、式のテキストを渡さず値だけを出します。
+* 式のテキストの長さは `EXPRESSION_MAX_SIZE`（既定は `STRING_MAX_SIZE`）文字までです。式のテキストは文字列リテラルとして渡すので、これより長い式を書くと、Sysmac Studio では「文字列リテラルが長すぎます」というビルドエラーになります（`EXPRESSION_MAX_SIZE` を小さくするときは注意してください。jier は検査しません）。PLC のメモリやスキャン時間を減らしたいとき、または長い式が文字列の長さの制限に掛かるときは、`JIECUNIT_NO_EXPRESSION_TEXT` を定義すると、式のテキストを渡さず値だけを出します。
 * 所要時間は、時計のあるターゲット（OMRON・KEYENCE）では `(123us)`、それ以外（jier・CODESYS・三菱）では `(n/a)` です。
 * コンソール（`g_console`）の行バッファ（`CONSOLE_MAX_ROWS` 行）が一巡したときは、最後に `[ WARNING] The console buffer is full ...` と出します。古い行が上書きされている可能性があります。
 
@@ -240,7 +240,8 @@ level after filling
 |---|---|---|
 | `MAX_TESTS` | 512（上限 512） | テストの数の上限 |
 | `TESTNAME_MAX_SIZE` / `FILENAME_MAX_SIZE` | 128 | テスト名／ファイル名の長さ |
-| `EXPRESSION_MAX_SIZE` | 128 | 失敗に出す式のテキストの長さ |
+| `EXPRESSION_MAX_SIZE` | `STRING_MAX_SIZE` | 失敗に出す式のテキストの長さ（アサーションに書ける式の長さの上限） |
+| `JIECUNIT_TRACE_TEXT_MAX_SIZE` | 128 | `SCOPED_TRACE` の `text` を保持する長さ |
 | `JIECUNIT_MAX_CYCLES_PER_TEST` | 100000（jier 1000） | テストのサイクル数の上限 |
 | `JIECUNIT_MAX_NO_FATAL_FAILURE_DEPTH` | 8 | `*_NO_FATAL_FAILURE` の入れ子の深さ |
 | `JIECUNIT_MAX_TRACE_DEPTH` | 8 | `SCOPED_TRACE` の入れ子の深さ |

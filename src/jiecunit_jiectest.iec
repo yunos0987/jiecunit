@@ -66,7 +66,7 @@ type
 		(*{doc The source line of each nested SCOPED_TRACE statement.}*)
 		tmp_trace_lines: array[JIECUNIT_MAX_TRACE_DEPTH] of dint;
 		(*{doc The text of each nested SCOPED_TRACE statement.}*)
-		tmp_trace_texts: array[JIECUNIT_MAX_TRACE_DEPTH] of string[EXPRESSION_MAX_SIZE];
+		tmp_trace_texts: array[JIECUNIT_MAX_TRACE_DEPTH] of string[JIECUNIT_TRACE_TEXT_MAX_SIZE];
 		(*{doc The name of the active test shown in the results: suite.name for a test in a suite, otherwise the program name.}*)
 		tmp_display_name: string[TESTNAME_MAX_SIZE];
 		(*{doc Whether the TearDown of the fixture of the active test has still to run.}*)
