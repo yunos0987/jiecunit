@@ -29,7 +29,9 @@ TEST_S(test_jiectest_almost_equals_double)
 	big := 1.0e308;
 	inf_value := big * 10.0;
 	nan_value := inf_value - inf_value;
-	max_value := 1.7976931348623157e308;
+	// The largest finite LREAL, (2 - 2^-52) * 2^1023. Not written as the
+	// literal 1.7976931348623157e308: Sysmac Studio reports it as out of range.
+	max_value := (2.0 - eps) * JiecTest_pow2(1023);
 
 	// Fact: 0.1 + 0.2 and 0.3 differ by one ULP and are almost equal.
 	EXPECT_TRUE(JiecTest_almostEquals(a:=0.1 + 0.2, b:=0.3, mantissa_bits:=52, min_exponent:=-1022));
