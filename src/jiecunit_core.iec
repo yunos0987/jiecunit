@@ -267,16 +267,47 @@
 	{#define _DECLARE_EXTERNAL_JIEC_TEST() }
 {#endif}
 
+// Clock for the elapsed time of the tests.
+//   _JIECUNIT_HAS_CLOCK      true if the target has a free-running counter.
+//   _JIECUNIT_CLOCK_T        the type of the counter.
+//   _JIECUNIT_CLOCK_NOW()    the current value of the counter.
+//   _JIECUNIT_CLOCK_DIFF_US(t1, t0)
+//                            the microseconds from t0 to t1 as udint. The
+//                            difference is taken in the type of the counter
+//                            first, so that it stays right when the counter
+//                            wraps around.
+// Both counters count in units of 100 ns, so 10 counts are 1 us.
 {#if _OMRON}
-	{#define currentMicrosecCount() ulint_to_udint(Get100nsCnt() / 100 / 1000)}
+	{#define _JIECUNIT_HAS_CLOCK true}
+	{#define _JIECUNIT_CLOCK_T ulint}
+	{#define _JIECUNIT_CLOCK_NOW() Get100nsCnt()}
+	{#define _JIECUNIT_CLOCK_DIFF_US(t1, t0) ulint_to_udint(((t1) - (t0)) / 10)}
 {#elif _KEYENCE}
-	{#define currentMicrosecCount() (_FreeRunCounter100ns / 100 / 1000)}
+	{#define _JIECUNIT_HAS_CLOCK true}
+	{#define _JIECUNIT_CLOCK_T udint}
+	{#define _JIECUNIT_CLOCK_NOW() _FreeRunCounter100ns}
+	{#define _JIECUNIT_CLOCK_DIFF_US(t1, t0) (((t1) - (t0)) / 10)}
 {#else}
-	// Dummy
-	{#define currentMicrosecCount() 1}
+	// No clock: the elapsed time is shown as "(n/a)".
+	{#define _JIECUNIT_HAS_CLOCK false}
+	{#define _JIECUNIT_CLOCK_T udint}
+	{#define _JIECUNIT_CLOCK_NOW() 0}
+	{#define _JIECUNIT_CLOCK_DIFF_US(t1, t0) 0}
 {#endif}
 
-(*{doc The main program for running the tests.}*)
+// The elapsed-time suffix of the result lines: "(123us)", or "(n/a)" when the
+// target has no clock.
+{#if _JIECUNIT_HAS_CLOCK}
+	{#define _JIECUNIT_ELAPSED_TEXT(us) jiec_concat('(', udint_to_string(us), 'us)')}
+{#else}
+	{#define _JIECUNIT_ELAPSED_TEXT(us) '(n/a)'}
+{#endif}
+
+(*{doc The main program for running the tests.
+Assign it and every test program to the same task, with JiecUnitMain first.
+JiecUnitMain also works as the last program of the task. A test program that
+runs twice in one cycle of JiecUnitMain (in another task, or before and after
+JiecUnitMain) or not at all is reported as an error.}*)
 program {__func__:this_name} JiecUnitMain
 	{#define _initialize()          JiecTest_initialize(_JIECTEST_)}
 	{#define _register(testname)    JiecTest_register(_JIECTEST_, testname)}
@@ -288,6 +319,8 @@ program {__func__:this_name} JiecUnitMain
 	{#define _activate()            JiecTest_activate(_JIECTEST_)}
 	{#define _next_cycle()          JiecTest_nextCycle(_JIECTEST_)}
 	{#define _no_tests()            JiecTest_empty(_JIECTEST_)}
+	// Report an error of the runner about the active test and count it as a failure.
+	{#define _runner_error(text)    puts(jiec_concat('[  ERROR ] ', text)); inc(_JIECTEST_.num_of_failures); JiecTest_deactivate(_JIECTEST_)}
 {#ifdef _JIER}
 	// jier (Jiecc 9.4.0 or later is required): stop the scan loop at once and
 	// make the code the exit code of `jiecc --run` (0: all tests passed, 1:
@@ -311,13 +344,16 @@ program {__func__:this_name} JiecUnitMain
 		register_result: dint;
 		//
 		is_first_scan: bool := true;
+		// Whether a test was active when this program finished its previous
+		// scan, i.e. whether the test program should have run since then.
+		test_expected_to_run: bool := false;
 		//
 		test_index: dint;
-		time_in_us: udint;
 		tmp_string: string[STRING_MAX_SIZE];
 		//
 		active_test_failures0, active_test_failures1: dint;
-		active_test_time0_in_us, active_test_time1_in_us, active_test_acuumulated_time_in_us: udint;
+		active_test_time0, active_test_time1: _JIECUNIT_CLOCK_T;
+		active_test_accumulated_time_in_us: udint;
 		tests_time_in_us: udint;
 		//
 		num_of_failed_tests: dint := 0;
@@ -350,41 +386,68 @@ program {__func__:this_name} JiecUnitMain
 		puts(jiec_concat('[========] Running ', dint_to_string(_num_of_tests()), ' tests.'));
 		is_first_scan := false;
 	else
-		// epilogue
-		repeat if _no_tests() then exit; end_if;
-			if not _JIECTEST_.tmp_is_test_available then
-				// no specified test found.
-				puts(jiec_concat('[  ERROR ] The program $'', _active_testname(), '$' was not found in active tasks.'));
-				inc(_JIECTEST_.num_of_failures);
-				JiecTest_deactivate(_JIECTEST_);
+		// epilogue: check the cycle that has just run and finish the test if it ended.
+		repeat
+			if _no_tests() then
+				// Nothing to run: report an empty run and stop (the exit code is 0, as in Google Test).
+				puts('[========] 0 tests ran.');
+				puts('[ PASSED ] 0 tests.');
+				_bye(0);
 			end_if;
+			if test_expected_to_run then
+				// 1, 2. The test program must have run exactly once.
+				if _JIECTEST_.tmp_exec_count = 0 then
+					if JiecTest_currentCycle(_JIECTEST_) = 0 then
+						_runner_error(jiec_concat('The program $'', _active_testname(), '$' was not found in active tasks.'));
+					else
+						_runner_error(jiec_concat('The program $'', _active_testname(), '$' did not run in cycle ', dint_to_string(JiecTest_currentCycle(_JIECTEST_)), '. Assign it to the task of JiecUnitMain.'));
+					end_if;
+				elsif _JIECTEST_.tmp_exec_count > 1 then
+					_runner_error(jiec_concat('The program $'', _active_testname(), '$' ran ', dint_to_string(_JIECTEST_.tmp_exec_count), ' times in one cycle of JiecUnitMain. Assign it to the task of JiecUnitMain.'));
+				end_if;
+			end_if;
+			_JIECTEST_.tmp_exec_count := 0;
 
-			active_test_time1_in_us := currentMicrosecCount();
-			time_in_us := active_test_time1_in_us - active_test_time0_in_us;
-			active_test_acuumulated_time_in_us := active_test_acuumulated_time_in_us + time_in_us;
-			_next_cycle();
+			active_test_time1 := _JIECUNIT_CLOCK_NOW();
+			active_test_accumulated_time_in_us := active_test_accumulated_time_in_us + _JIECUNIT_CLOCK_DIFF_US(active_test_time1, active_test_time0);
+			active_test_time0 := active_test_time1;
+
+			// 4. Advance the cycle; end a test that cannot go on.
+			if _is_active() then
+				if not _next_cycle() then
+					JiecTest_failure(self:=_JIECTEST_, message:='The cycle counter of the test overflowed.', die:=false, file:=_JIECTEST_.tmp_test_file, line:=_JIECTEST_.tmp_test_line);
+					JiecTest_deactivate(_JIECTEST_);
+				elsif _JIECTEST_.tmp_is_single_cycle then
+					// A TEST_S that returned before END_TEST_S has ended normally.
+					JiecTest_deactivate(_JIECTEST_);
+				elsif (_JIECTEST_.tmp_max_cycles > 0) and (JiecTest_currentCycle(_JIECTEST_) >= _JIECTEST_.tmp_max_cycles) then
+					JiecTest_failure(self:=_JIECTEST_, message:=jiec_concat('The test did not finish within ', dint_to_string(_JIECTEST_.tmp_max_cycles), ' cycles (JIECUNIT_MAX_CYCLES_PER_TEST, SET_TEST_MAX_CYCLES). Call EOT() to end a TEST_M test.'), die:=false, file:=_JIECTEST_.tmp_test_file, line:=_JIECTEST_.tmp_test_line);
+					JiecTest_deactivate(_JIECTEST_);
+				end_if;
+			end_if;
 
 			if _is_active() then
 				exit;
 			end_if;
 
-			tests_time_in_us := tests_time_in_us + active_test_acuumulated_time_in_us;
+			// 6. Finish the test. A failure takes precedence over a skip.
+			tests_time_in_us := tests_time_in_us + active_test_accumulated_time_in_us;
 
 			active_test_failures1 := _num_of_failures();
-			if _JIECTEST_.tmp_is_skipped then
-				inc(num_of_skipped_tests);
-				puts(jiec_concat('[ SKIPPED] ', _active_testname(), ' (', udint_to_string(active_test_acuumulated_time_in_us), 'us)'));
-			elsif active_test_failures0 = active_test_failures1 then
-				puts(jiec_concat('[     OK ] ', _active_testname(), ' (', udint_to_string(active_test_acuumulated_time_in_us), 'us)'));
-			else
+			if active_test_failures0 <> active_test_failures1 then
 				failed_testnames[num_of_failed_tests] := _active_testname();
 				inc(num_of_failed_tests);
-				puts(jiec_concat('[ FAILED ] ', _active_testname(), ' (', udint_to_string(active_test_acuumulated_time_in_us), 'us)'));
+				puts(jiec_concat('[ FAILED ] ', _active_testname(), ' ', _JIECUNIT_ELAPSED_TEXT(active_test_accumulated_time_in_us)));
+			elsif _JIECTEST_.tmp_is_skipped then
+				inc(num_of_skipped_tests);
+				puts(jiec_concat('[ SKIPPED] ', _active_testname(), ' ', _JIECUNIT_ELAPSED_TEXT(active_test_accumulated_time_in_us)));
+			else
+				puts(jiec_concat('[     OK ] ', _active_testname(), ' ', _JIECUNIT_ELAPSED_TEXT(active_test_accumulated_time_in_us)));
 			end_if;
 
 			if _active_test_index() = _num_of_tests() - 1 then
 				// finish
-				tmp_string := jiec_concat(' (', udint_to_string(tests_time_in_us), 'us)');
+				tmp_string := jiec_concat(' ', _JIECUNIT_ELAPSED_TEXT(tests_time_in_us));
 				puts(jiec_concat('[========] ', dint_to_string(_num_of_tests()), ' tests ran.', tmp_string));
 				puts(jiec_concat('[ PASSED ] ', dint_to_string(_num_of_tests() - num_of_failed_tests - num_of_skipped_tests), ' tests.'));
 				if num_of_skipped_tests > 0 then
@@ -402,21 +465,21 @@ program {__func__:this_name} JiecUnitMain
 		until true end_repeat;
 	end_if;
 
-	// prologue
+	// prologue: start the next test.
 	repeat if _no_tests() then exit; end_if;
 		if (_active_test_index() = -1) or ((_active_test_index() < _num_of_tests() - 1) and not _is_active()) then
-			// run the next test case.
+			// run the next test case. Reset every per-test field before activating it.
 			inc(_JIECTEST_.tmp_active_test_index);
-			_JIECTEST_.tmp_is_test_available := false;
-			_JIECTEST_.tmp_is_skipped := false;
-			_activate();
+			JiecTest_beginTest(_JIECTEST_);
 			active_test_failures0 := _num_of_failures();
 			testname := _active_testname();
 			puts(jiec_concat('[ RUN    ] ', testname));
-			active_test_acuumulated_time_in_us := 0;
-			active_test_time0_in_us := currentMicrosecCount();
+			active_test_accumulated_time_in_us := 0;
+			active_test_time0 := _JIECUNIT_CLOCK_NOW();
+			_activate();
 		end_if;
 	until true end_repeat;
+	test_expected_to_run := _is_active();
 	{#undef _initialize}
 	{#undef _register}
 	{#undef _active_test_index}
@@ -427,6 +490,7 @@ program {__func__:this_name} JiecUnitMain
 	{#undef _activate}
 	{#undef _next_cycle}
 	{#undef _no_tests}
+	{#undef _runner_error}
 	{#undef _bye}
 end
 

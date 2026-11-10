@@ -885,31 +885,30 @@
 
 
 
-// Test for a single-cycle test.
+// Test for a single-cycle test. The test ends at END_TEST_S, or at the end of
+// its first cycle if the body returns before END_TEST_S.
 {#define TEST_S(test_name)
 	program ${single-body:true$} ${__func__:TestName$} test_name
 	_DECLARE_EXTERNAL_JIEC_TEST();
-	if not _JIECTEST_.tmp_is_test_available then
-		_JIECTEST_.tmp_is_test_available := JiecTest_activeTestname(_JIECTEST_) = @test_name;
-	end_if;
 	if (not JiecTest_isActive(_JIECTEST_)) or (JiecTest_activeTestname(_JIECTEST_) <> @test_name) then
 		return;
 	end_if;
+	JiecTest_enterTest(self:=_JIECTEST_, single_cycle:=true, file:=__FILE__, line:=__LINE__);
 }
 {#define END_TEST_S
 	EOT();
 end}
 
-// Test for the muiltiple-cycles test.
+// Test for the multiple-cycles test. The test runs once per cycle until it
+// calls EOT(), or fails when it reaches the maximum number of cycles
+// (JIECUNIT_MAX_CYCLES_PER_TEST, or SET_TEST_MAX_CYCLES(n) in the test).
 {#define TEST_M(test_name)
 	program ${single-body:true$} ${__func__:TestName$} test_name
 	_DECLARE_EXTERNAL_JIEC_TEST();
-	if not _JIECTEST_.tmp_is_test_available then
-		_JIECTEST_.tmp_is_test_available := JiecTest_activeTestname(_JIECTEST_) = @test_name;
-	end_if;
 	if (not JiecTest_isActive(_JIECTEST_)) or (JiecTest_activeTestname(_JIECTEST_) <> @test_name) then
 		return;
 	end_if;
+	JiecTest_enterTest(self:=_JIECTEST_, single_cycle:=false, file:=__FILE__, line:=__LINE__);
 }
 {#define END_TEST_M
 end}
@@ -919,6 +918,12 @@ end}
 
 // Skip the current test. The test is reported as skipped, not as passed.
 {#define SKIP_TEST(reason_) JiecTest_skip(self:=_JIECTEST_, reason:=reason_); EOT()}
+
+// Set the maximum number of cycles of the current test: the test fails if it
+// is still running after it has run max_cycles cycles. 0 or a negative value
+// means no limit. The value applies to this test only; the next test starts
+// with JIECUNIT_MAX_CYCLES_PER_TEST again.
+{#define SET_TEST_MAX_CYCLES(max_cycles_) JiecTest_setMaxCycles(self:=_JIECTEST_, max_cycles:=max_cycles_)}
 
 (*
  * The current cycle number.

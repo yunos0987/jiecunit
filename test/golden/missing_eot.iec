@@ -1,5 +1,6 @@
-// golden-args: --max-cycles 20
-// A TEST_M without EOT() never ends by itself.
+// golden-args: -D JIECUNIT_MAX_CYCLES_PER_TEST=5 --max-cycles 100
+// A TEST_M without EOT() fails when it reaches JIECUNIT_MAX_CYCLES_PER_TEST,
+// and the next test still runs.
 {#include <jiecunit.iec>}
 
 TEST_M(test_without_eot)

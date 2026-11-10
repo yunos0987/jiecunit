@@ -59,6 +59,9 @@ DEFINE_CONFIGURATION(
 		test_jiectest_validate_near_rel,
 		// jiectest.iec
 		test_jiectest_initialize,
+		test_jiectest_begin_test,
+		test_jiectest_enter_test,
+		test_jiectest_set_max_cycles,
 		test_jiectest_register,
 		test_jiectest_empty,
 		test_jiectest_is_active,

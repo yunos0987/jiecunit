@@ -6,6 +6,25 @@
 
 7.0.0 からの変更です。
 
+### 互換性に影響する変更 / Breaking changes
+
+- `JiecTest_t` のフィールドを変えました。`tmp_is_test_available` を削除し、`tmp_is_active`・`tmp_exec_count`・`tmp_is_single_cycle`・`tmp_max_cycles`・`tmp_test_file`・`tmp_test_line` を追加しました。テストが動いているかどうかは `tmp_is_active` で表し、`JiecTest_deactivate` はサイクル数（`tmp_cycle`）を変えません（従来は `DINT` の最小値にしていました）。初期化直後の `tmp_cycle` は 0 です。`JiecTest_nextCycle` は、テストが動いていないときと上限に達したときはサイクル数を変えません。
+- 時計の無いターゲット（jier・CODESYS・MITSUBISHI）では、所要時間を `(0us)` ではなく `(n/a)` と表示します。
+
+### 不具合の修正 / Bug fixes
+
+- 失敗した後に `SKIP_TEST` したテストが `[ SKIPPED]` と表示され、失敗の一覧にも載りませんでした（失敗がそれだけなら `[ FAILED ] 0 tests, listed below.` と出て終了コード 1）。失敗を優先して `[ FAILED ]` と表示するようにしました。
+- `EOT()` を呼ばない `TEST_M` や、本体の途中で `return` した `TEST_S` は、終わらずに後続のテストと集計が実行されませんでした。`TEST_S` は最初のサイクルの終わりで終了します（GTest の `return` と同じ）。`TEST_M` は `JIECUNIT_MAX_CYCLES_PER_TEST` サイクル実行してもまだ終わっていなければ失敗として記録され、次のテストへ進みます。既定値は 100000 で、1 秒に 50 サイクル程度しか実行できない jier では 1000 です。0 以下なら無制限です。サイクル数があふれたときも失敗にします。
+- テストが 1 つも無いとき、`[========] Running 0 tests.` の後に何も起きず、jier では `--max-cycles` まで止まりませんでした。空の集計を出して終了します（終了コード 0。Google Test と同じ）。
+- 複数サイクルのテストの所要時間が、サイクルごとに「テスト開始からの経過時間」を足していたため、二乗で大きくなっていました。
+- オムロン・キーエンスの所要時間が、100ns 単位のカウンタを `/100/1000`（10ms 単位）で換算していました。`/10`（us 単位）に直し、カウンタの差を元の型で取ってから換算するようにしました（カウンタが一巡しても正しい差になります）。
+- テストが終わった後（ヘルパーの中の ASSERT の後など）の失敗の位置が `@-2147483648` と表示されていました。
+
+### 新機能 / New features
+
+- `SET_TEST_MAX_CYCLES(n)` を追加しました。実行中のテストのサイクル数の上限を変えます（0 なら無制限）。次のテストでは `JIECUNIT_MAX_CYCLES_PER_TEST` に戻ります。`JIECUNIT_MAX_CYCLES_PER_TEST` は `-D` で上書きできます。
+- テストプログラムが JiecUnitMain の 1 サイクルの間に 1 回も実行されなかったとき、または 2 回以上実行されたとき（別の周期のタスクに割り付けたときなど）、`[  ERROR ]` を出して失敗にします。JiecUnitMain は、従来どおりタスクの先頭に置くほか、末尾に置いても動きます。
+
 ### その他 / Other
 
 - `scripts/check_golden.py` を追加しました。`test/golden/*.iec` を `jiecc --run` で実行し、標準出力と終了コードを `test/golden/*.out` と比べます。所要時間の表示とパスの区切りは比べる前に正規化します。`--update` で期待値を作り直します。`scripts/run_tests.py` は、この検査を `golden` フェーズとして実行します（`--skip-golden` で省略できます。`--compile-only`・`--run-only` のときも実行しません）。CI でも、jier の実行と同じく任意のステップとして実行します。

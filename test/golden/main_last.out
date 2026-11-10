@@ -1,0 +1,15 @@
+[========] Running 3 tests.
+[ RUN    ] test_single
+[     OK ] test_single (<time>)
+[ RUN    ] test_multi
+[     OK ] test_multi (<time>)
+[ RUN    ] test_failing
+Expected: 1
+Actual: 2
+test_failing:16@0
+[ FAILED ] test_failing (<time>)
+[========] 3 tests ran. (<time>)
+[ PASSED ] 2 tests.
+[ FAILED ] 1 tests, listed below.
+[ FAILED ] test_failing
+[exit code: 1]

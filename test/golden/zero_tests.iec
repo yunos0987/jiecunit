@@ -1,0 +1,12 @@
+// A run without tests ends with an empty summary and exit code 0.
+{#include <jiecunit.iec>}
+
+{#define _GOLDEN_GLOBALS_AND_TASKS()
+	var_global
+		_JIECTESTNAMES_: array[MAX_TESTS] of string[TESTNAME_MAX_SIZE] := [MAX_TESTS('')];
+		_JIECTEST_: JiecTest_t;
+	end
+	task JiecUnitTask(priority := 0);
+	program JiecUnitMain with JiecUnitTask: JiecUnitMain();
+}
+DEFINE_CONFIGURATION(_GOLDEN_GLOBALS_AND_TASKS())

@@ -1,0 +1,21 @@
+[========] Running 5 tests.
+[ RUN    ] test_ok
+[     OK ] test_ok (<time>)
+[ RUN    ] test_not_assigned
+[  ERROR ] The program 'test_not_assigned' was not found in active tasks.
+[ FAILED ] test_not_assigned (<time>)
+[ RUN    ] test_runs_twice
+[  ERROR ] The program 'test_runs_twice' ran 2 times in one cycle of JiecUnitMain. Assign it to the task of JiecUnitMain.
+[ FAILED ] test_runs_twice (<time>)
+[ RUN    ] test_stops_running
+[  ERROR ] The program 'test_stops_running' did not run in cycle 1. Assign it to the task of JiecUnitMain.
+[ FAILED ] test_stops_running (<time>)
+[ RUN    ] test_ok_multi
+[     OK ] test_ok_multi (<time>)
+[========] 5 tests ran. (<time>)
+[ PASSED ] 2 tests.
+[ FAILED ] 3 tests, listed below.
+[ FAILED ] test_not_assigned
+[ FAILED ] test_runs_twice
+[ FAILED ] test_stops_running
+[exit code: 1]

@@ -14,14 +14,45 @@ type
 		(*{doc The names of registered test cases.}*)
 		testnames: array[MAX_TESTS] of string[TESTNAME_MAX_SIZE];
 		//
-		tmp_cycle: dint; // There is a active test, if tmp_cycle >= 0.
+		(*{doc The number of cycles the active test has completed. Kept after the test ends.}*)
+		tmp_cycle: dint;
 		tmp_active_test_index: dint;
-		tmp_is_test_available: bool; // error, if the test specified test is not found.
+		(*{doc Whether a test is running. Set by JiecTest_activate, cleared by JiecTest_deactivate.}*)
+		tmp_is_active: bool;
 		(*{doc Whether the active test has been marked as skipped via JiecTest_skip.}*)
 		tmp_is_skipped: bool;
-		(*{doc The number of failed assertions in the active test.}*)
+		(*{doc The number of times the active test program ran in the current cycle of JiecUnitMain.}*)
+		tmp_exec_count: dint;
+		(*{doc Whether the active test is a single-cycle test (TEST_S).}*)
+		tmp_is_single_cycle: bool;
+		(*{doc The maximum number of cycles of the active test. 0 or a negative value means no limit.}*)
+		tmp_max_cycles: dint;
+		(*{doc The source file of the definition of the active test.}*)
+		tmp_test_file: string[FILENAME_MAX_SIZE];
+		(*{doc The source line of the definition of the active test.}*)
+		tmp_test_line: dint;
+		(*{doc The total number of failed assertions of all tests.}*)
 		num_of_failures: dint;
 	end
+end
+
+(*{doc Reset the per-test fields for a new test.
+Clears the cycle counter, the active and skipped flags, the execution count,
+the single-cycle flag and the definition position, and sets the maximum number
+of cycles to JIECUNIT_MAX_CYCLES_PER_TEST. Does not activate the test.
+@inout self The JiecTest_t structure.
+@return Always returns true.}*)
+function JiecTest_beginTest
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	self.tmp_cycle := 0;
+	self.tmp_is_active := false;
+	self.tmp_is_skipped := false;
+	self.tmp_exec_count := 0;
+	self.tmp_is_single_cycle := false;
+	self.tmp_max_cycles := JIECUNIT_MAX_CYCLES_PER_TEST;
+	self.tmp_test_file := '';
+	self.tmp_test_line := 0;
 end
 
 (*{doc Initialize the JiecTest_t structure.
@@ -40,10 +71,8 @@ function JiecTest_initialize
 		self.testnames[test_index] := '';
 	end_for;
 
-	self.tmp_cycle := dint#__DINT_MIN__;
 	self.tmp_active_test_index := -1;
-	self.tmp_is_test_available := false;
-	self.tmp_is_skipped := false;
+	JiecTest_beginTest(self);
 	self.num_of_failures := 0;
 end
 
@@ -159,7 +188,7 @@ end
 function JiecTest_isActive: bool
 	_PROLOGUE_OF_FUNCTION_()
 	var_in_out self: JiecTest_t; end
-	JiecTest_isActive := self.tmp_cycle >= 0;
+	JiecTest_isActive := self.tmp_is_active;
 end
 
 (*{doc Get the index of the active test case.
@@ -187,25 +216,74 @@ function JiecTest_activate: bool
 	_PROLOGUE_OF_FUNCTION_()
 	var_in_out self: JiecTest_t; end
 	self.tmp_cycle := 0;
+	self.tmp_is_active := true;
 end
 
 (*{doc Deactivate the current test case.
+The cycle counter keeps its value, so that a failure reported after the test
+ended still shows the cycle in which it happened.
 @inout self The JiecTest_t structure.
 @return Always returns true.}*)
 function JiecTest_deactivate: bool
 	_PROLOGUE_OF_FUNCTION_()
 	var_in_out self: JiecTest_t; end
-	self.tmp_cycle := dint#__DINT_MIN__;
+	self.tmp_is_active := false;
 end
 
 (*{doc Increment the cycle counter for the active test case.
+Does nothing if no test is active.
 @inout self The JiecTest_t structure.
-@return False if overflow occurred, true otherwise.}*)
+@return False if the counter is already at its maximum (it is not incremented), true otherwise.}*)
 function JiecTest_nextCycle: bool
 	_PROLOGUE_OF_FUNCTION_()
 	var_in_out self: JiecTest_t; end
-	JiecTest_nextCycle := self.tmp_cycle <> dint#__DINT_MAX__; // false, if overflow happend.
-	self.tmp_cycle := self.tmp_cycle + 1;
+	JiecTest_nextCycle := self.tmp_cycle <> dint#__DINT_MAX__;
+	if self.tmp_is_active and JiecTest_nextCycle then
+		self.tmp_cycle := self.tmp_cycle + 1;
+	end_if;
+end
+
+(*{doc Record that the active test program runs in the current cycle.
+Called by the header of TEST_S and TEST_M every time the active test runs.
+In the first cycle it also records the kind and the position of the test.
+@inout self The JiecTest_t structure.
+@input single_cycle True for a single-cycle test (TEST_S).
+@input file The source file of the test definition.
+@input line The source line of the test definition.
+@return Always returns true.}*)
+function JiecTest_enterTest: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc True for a single-cycle test (TEST_S).}*)
+		single_cycle: bool;
+		(*{doc The source file of the test definition.}*)
+		file: string[FILENAME_MAX_SIZE];
+		(*{doc The source line of the test definition.}*)
+		line: dint;
+	end
+	inc(self.tmp_exec_count);
+	if self.tmp_cycle = 0 then
+		self.tmp_is_single_cycle := single_cycle;
+		self.tmp_test_file := file;
+		self.tmp_test_line := line;
+	end_if;
+end
+
+(*{doc Set the maximum number of cycles of the active test.
+The test fails if it is still running after it has run max_cycles cycles.
+The value is reset to JIECUNIT_MAX_CYCLES_PER_TEST when the next test starts.
+@inout self The JiecTest_t structure.
+@input max_cycles The maximum number of cycles. 0 or a negative value means no limit.
+@return Always returns true.}*)
+function JiecTest_setMaxCycles: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc The maximum number of cycles. 0 or a negative value means no limit.}*)
+		max_cycles: dint;
+	end
+	self.tmp_max_cycles := max_cycles;
 end
 
 (*{doc Get the test name at the specified index.
