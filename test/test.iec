@@ -27,6 +27,7 @@
 {#include "test_jiectest_validate_ulp.iec"}
 {#include "test_jiectest.iec"}
 {#include "test_optional_message.iec"}
+{#include "test_failure_api.iec"}
 
 // List test program names.
 DEFINE_CONFIGURATION(
@@ -83,6 +84,10 @@ DEFINE_CONFIGURATION(
 		test_jiectest_failure,
 		// optional message
 		test_optional_message,
-		test_deprecated_msg_aliases
+		test_deprecated_msg_aliases,
+		// failure API
+		test_failure_messages,
+		test_fatal_failure_in_helper,
+		test_fatal_failure_checks
 	)
 )

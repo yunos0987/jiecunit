@@ -1,0 +1,119 @@
+{#include <jiecunit.iec>}
+
+(*{doc A helper for the tests below: fails fatally if the value is not positive.
+@input value The value to check.
+@return True if the check passed.}*)
+function test_helper_check_positive: bool
+	JIECUNIT_DECLARE_HELPER();
+	var_input
+		(*{doc The value to check.}*)
+		value: dint;
+	end
+	ASSERT_GT_INT(value, 0, 'value must be positive');
+	test_helper_check_positive := true;
+end
+
+(*{doc A helper for the tests below: one non-fatal failure.
+@return Always returns true.}*)
+function test_helper_add_failure: bool
+	JIECUNIT_DECLARE_HELPER();
+	ADD_FAILURE('from the helper');
+	test_helper_add_failure := true;
+end
+
+TEST_S(test_failure_messages)
+	var
+		a: dint := 4;
+		s: string[16] := 'abd';
+		flag: bool := false;
+		x: lreal := 1.0;
+		r: real := 1.0;
+	end
+	// Fact: EQ prints the expressions, and the value of each one that is not a literal.
+	EXPECT_NONFATAL_FAILURE(EXPECT_EQ_INT(5, a), 'Expected equality of these values:');
+	EXPECT_NONFATAL_FAILURE(EXPECT_EQ_INT(5, a), '  a');
+	EXPECT_NONFATAL_FAILURE(EXPECT_EQ_INT(5, a), '    Which is: 4');
+	// Fact: STRING values are quoted.
+	EXPECT_NONFATAL_FAILURE(EXPECT_EQ_STRING('abc', s), 'Which is: $'abd$'');
+	// Fact: NE and the comparisons print both expressions and both values on one line.
+	EXPECT_NONFATAL_FAILURE(EXPECT_NE_INT(4, a), 'Expected: (4) <> (a), actual: 4 vs 4');
+	EXPECT_NONFATAL_FAILURE(EXPECT_LT_INT(a, 2), 'Expected: (a) < (2), actual: 4 vs 2');
+	EXPECT_NONFATAL_FAILURE(EXPECT_GE_STRING(s, 'b'), 'Expected: (s) >= ($'b$'), actual: $'abd$' vs $'b$'');
+	// Fact: TRUE/FALSE print the condition, its value and the expected value.
+	EXPECT_NONFATAL_FAILURE(EXPECT_TRUE(flag), 'Value of: flag');
+	EXPECT_NONFATAL_FAILURE(EXPECT_TRUE(flag), '  Actual: false');
+	EXPECT_NONFATAL_FAILURE(EXPECT_FALSE(not flag), 'Expected: false');
+	// Fact: NEAR prints the difference and the tolerance.
+	EXPECT_NONFATAL_FAILURE(EXPECT_NEAR(1.5, x, 0.1), 'The difference between 1.5 and x is 0.5, which exceeds 0.1, where');
+	EXPECT_NONFATAL_FAILURE(EXPECT_NEAR(1.5, x, 0.1), 'x evaluates to 1.0, and');
+	// Fact: the ULP comparisons say so.
+	EXPECT_NONFATAL_FAILURE(EXPECT_DOUBLE_EQ(1.1, x), 'within 4 ULPs');
+	EXPECT_NONFATAL_FAILURE(EXPECT_FLOAT_EQ(1.5, r), '    Which is: 1.0');
+	// Fact: the message is printed, and ADD_FAILURE prints Failed.
+	EXPECT_NONFATAL_FAILURE(EXPECT_EQ_INT(5, a, 'the message'), 'the message');
+	EXPECT_NONFATAL_FAILURE(ADD_FAILURE('added'), 'added');
+	EXPECT_NONFATAL_FAILURE(ADD_FAILURE(), 'Failed');
+	// Fact: captured failures are not counted.
+	EXPECT_FALSE(HAS_FAILURE());
+END_TEST_S
+
+TEST_S(test_fatal_failure_in_helper)
+	var
+		ok: bool;
+	end
+	// Fact: EXPECT_FATAL_FAILURE checks the fatal failure of a helper, which is then not counted.
+	EXPECT_FATAL_FAILURE(ok := test_helper_check_positive(-1), 'value must be positive');
+	EXPECT_FATAL_FAILURE(ok := test_helper_check_positive(-1), 'Expected: (value) > (0), actual: -1 vs 0');
+	EXPECT_FALSE(HAS_FATAL_FAILURE());
+	EXPECT_FALSE(ok);
+	// Fact: EXPECT_NONFATAL_FAILURE checks the non-fatal failure of a helper.
+	EXPECT_NONFATAL_FAILURE(ok := test_helper_add_failure(), 'from the helper');
+	// Fact: a helper without a failure passes EXPECT_NO_FATAL_FAILURE and ASSERT_NO_FATAL_FAILURE.
+	EXPECT_NO_FATAL_FAILURE(ok := test_helper_check_positive(1));
+	ASSERT_NO_FATAL_FAILURE(ok := test_helper_check_positive(2), 'not reached');
+	EXPECT_TRUE(ok);
+	// Fact: a fatal failure captured inside the statement is not a new fatal failure for EXPECT_NO_FATAL_FAILURE.
+	EXPECT_NO_FATAL_FAILURE(EXPECT_FATAL_FAILURE(ok := test_helper_check_positive(-1), 'positive'));
+	// Fact: an empty text is contained in any failure.
+	EXPECT_NONFATAL_FAILURE(ADD_FAILURE(), '');
+	// Fact: a non-fatal failure is not a fatal one for ASSERT_NO_FATAL_FAILURE.
+	EXPECT_NONFATAL_FAILURE(ASSERT_NO_FATAL_FAILURE(ok := test_helper_add_failure()), 'from the helper');
+	EXPECT_FALSE(HAS_FAILURE());
+END_TEST_S
+
+TEST_S(test_fatal_failure_checks)
+	var
+		jt: JiecTest_t;
+	end
+	// Fact: JiecTest_hasFatalFailure and JiecTest_hasNonfatalFailure count the failures of the active test.
+	JiecTest_initialize(jt);
+	JiecTest_activate(jt);
+	jt.tmp_is_single_cycle := true;
+	EXPECT_FALSE(JiecTest_hasFatalFailure(jt));
+	EXPECT_FALSE(JiecTest_hasNonfatalFailure(jt));
+	JiecTest_beginCapture(self:=jt, substr:='x', file:='', line:=0);
+	JiecTest_failure(self:=jt, message:='x', die:=true, file:='', line:=0);
+	EXPECT_EQ_INT(1, jt.tmp_captured_fatal);
+	EXPECT_TRUE(JiecTest_endCapture(self:=jt, fatal:=true, statement_text:='', file:='', line:=0));
+	EXPECT_FALSE(JiecTest_hasFatalFailure(jt));
+	EXPECT_EQ_INT(0, jt.num_of_failures);
+
+	// Fact: JiecTest_abort ends the test in its body, but not in a helper.
+	JiecTest_abort(self:=jt, in_helper:=true);
+	EXPECT_TRUE(JiecTest_isActive(jt));
+	JiecTest_abort(self:=jt, in_helper:=false);
+	EXPECT_FALSE(JiecTest_isActive(jt));
+
+	// Fact: JiecTest_beginTest clears the failure counts, the marks and the capture.
+	jt.tmp_fatal_failures := 2;
+	jt.tmp_nonfatal_failures := 3;
+	jt.tmp_fatal_mark_depth := 4;
+	jt.tmp_capturing := true;
+	jt.tmp_capture_rejected := 1;
+	JiecTest_beginTest(jt);
+	EXPECT_EQ_INT(0, jt.tmp_fatal_failures);
+	EXPECT_EQ_INT(0, jt.tmp_nonfatal_failures);
+	EXPECT_EQ_INT(0, jt.tmp_fatal_mark_depth);
+	EXPECT_FALSE(jt.tmp_capturing);
+	EXPECT_EQ_INT(0, jt.tmp_capture_rejected);
+END_TEST_S

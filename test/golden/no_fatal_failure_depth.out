@@ -1,0 +1,12 @@
+[========] Running 2 tests.
+[ RUN    ] test_too_deep
+test/golden/no_fatal_failure_depth.iec:6: Failure
+ASSERT_NO_FATAL_FAILURE / EXPECT_NO_FATAL_FAILURE are nested deeper than 1 (JIECUNIT_MAX_NO_FATAL_FAILURE_DEPTH); the inner ones are not checked.
+[ FAILED ] test_too_deep (<time>)
+[ RUN    ] test_after
+[     OK ] test_after (<time>)
+[========] 2 tests ran. (<time>)
+[ PASSED ] 1 tests.
+[ FAILED ] 1 tests, listed below.
+[ FAILED ] test_too_deep
+[exit code: 1]

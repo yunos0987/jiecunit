@@ -50,6 +50,8 @@ _NO_MSG_ALIAS_MACROS = [
     ('EXPECT_FLOAT_EQ', 2),
     ('ASSERT_DOUBLE_EQ', 2),
     ('ASSERT_FLOAT_EQ', 2),
+    ('ASSERT_NO_FATAL_FAILURE', 1),
+    ('EXPECT_NO_FATAL_FAILURE', 1),
 ]
 _MESSAGE = "'a, b (c)'"
 _VALUES = ['v1', 'v2', 'v3', 'v4']

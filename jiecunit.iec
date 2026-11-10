@@ -933,6 +933,9 @@
 	_JIECUNIT_COUNT_TEST()
 	program ${single-body:true$} ${__func__:TestName$} test_name
 	_DECLARE_EXTERNAL_JIEC_TEST();
+	var
+		jiecunit_in_helper: bool := false;
+	end
 	if (not JiecTest_isActive(_JIECTEST_)) or (JiecTest_activeTestname(_JIECTEST_) <> @test_name) then
 		return;
 	end_if;
@@ -949,6 +952,9 @@ end}
 	_JIECUNIT_COUNT_TEST()
 	program ${single-body:true$} ${__func__:TestName$} test_name
 	_DECLARE_EXTERNAL_JIEC_TEST();
+	var
+		jiecunit_in_helper: bool := false;
+	end
 	if (not JiecTest_isActive(_JIECTEST_)) or (JiecTest_activeTestname(_JIECTEST_) <> @test_name) then
 		return;
 	end_if;
@@ -974,6 +980,50 @@ end}
  *  Info.: In the unit test for the single-cycle test, the result is always 0.
  *)
 {#define CURRENT_CYCLE() JiecTest_currentCycle(_JIECTEST_)}
+
+// ------------------------------------------------------------------------
+// Fatal failures in helpers, and checking failures (like Google Test).
+// ------------------------------------------------------------------------
+
+// Declare a helper POU (FUNCTION, FUNCTION_BLOCK or PROGRAM) that uses
+// assertions: write it among the declarations of the POU. A fatal failure
+// (ASSERT_*, FAIL) in a helper returns from the helper only and the test goes
+// on, as in Google Test; HAS_FATAL_FAILURE() tells it, and
+// ASSERT_NO_FATAL_FAILURE(helper(...)) stops the test after it.
+{#define JIECUNIT_DECLARE_HELPER()
+	_DECLARE_EXTERNAL_JIEC_TEST();
+	var
+		jiecunit_in_helper: bool := true;
+	end}
+
+// Whether the current test has had a fatal / non-fatal / any failure.
+{#define HAS_FATAL_FAILURE() JiecTest_hasFatalFailure(_JIECTEST_)}
+{#define HAS_NONFATAL_FAILURE() JiecTest_hasNonfatalFailure(_JIECTEST_)}
+{#define HAS_FAILURE() (JiecTest_hasFatalFailure(_JIECTEST_) or JiecTest_hasNonfatalFailure(_JIECTEST_))}
+
+// Run a statement (usually the call of a helper) and fail if it generates a
+// new fatal failure: ASSERT_ stops the test, EXPECT_ goes on.
+{#define _JIECUNIT_NO_FATAL_FAILURE_(die_, statement_, message_, statement_text_)
+	JiecTest_beginNoFatalFailure(self:=_JIECTEST_, file:=__FILE__, line:=__LINE__);
+	statement_;
+	if JiecTest_endNoFatalFailure(self:=_JIECTEST_, statement_text:=statement_text_, message:=message_, die:=die_, file:=__FILE__, line:=__LINE__) then
+		_ON_FAILED_ACTION(die_);
+	end_if}
+{#define ASSERT_NO_FATAL_FAILURE(statement, ...)        _JIECUNIT_NO_FATAL_FAILURE_(true, statement, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 1, 2, __VA_ARGS__), _JIECUNIT_TEXT(@statement))}
+{#define EXPECT_NO_FATAL_FAILURE(statement, ...)        _JIECUNIT_NO_FATAL_FAILURE_(false, statement, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 1, 2, __VA_ARGS__), _JIECUNIT_TEXT(@statement))}
+
+// Check that a statement generates exactly one fatal (EXPECT_FATAL_FAILURE)
+// or non-fatal (EXPECT_NONFATAL_FAILURE) failure, one of whose lines contains
+// substr. The checked failure is neither printed nor counted. For tests of
+// assertions and helpers (gtest-spi.h of Google Test). The statement of
+// EXPECT_FATAL_FAILURE must be the call of a helper: an ASSERT written
+// directly in it would return from the test.
+{#define _JIECUNIT_EXPECT_FAILURE_(fatal_, statement_, substr_, statement_text_)
+	JiecTest_beginCapture(self:=_JIECTEST_, substr:=substr_, file:=__FILE__, line:=__LINE__);
+	statement_;
+	JiecTest_endCapture(self:=_JIECTEST_, fatal:=fatal_, statement_text:=statement_text_, file:=__FILE__, line:=__LINE__)}
+{#define EXPECT_FATAL_FAILURE(statement, substr)        _JIECUNIT_EXPECT_FAILURE_(true, statement, substr, _JIECUNIT_TEXT(@statement))}
+{#define EXPECT_NONFATAL_FAILURE(statement, substr)     _JIECUNIT_EXPECT_FAILURE_(false, statement, substr, _JIECUNIT_TEXT(@statement))}
 
 // Record a failure without aborting the test.
 {#define ADD_FAILURE(...)                       _VALIDATE_FAILURE_(false, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 0, 1, __VA_ARGS__))}

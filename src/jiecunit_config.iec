@@ -53,6 +53,11 @@
 {#error JiecUnit: the maximum length of a file name must not exceed the maximum length of a STRING.}
 {#endif}
 
+// The maximum nesting depth of ASSERT_NO_FATAL_FAILURE / EXPECT_NO_FATAL_FAILURE.
+{#ifndef JIECUNIT_MAX_NO_FATAL_FAILURE_DEPTH}
+{#define JIECUNIT_MAX_NO_FATAL_FAILURE_DEPTH 8}
+{#endif}
+
 // The maximum length of the text of an expression shown in a failure.
 {#ifndef EXPRESSION_MAX_SIZE}
 {#define EXPRESSION_MAX_SIZE 128}

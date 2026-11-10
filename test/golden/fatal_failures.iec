@@ -1,0 +1,75 @@
+// Fatal failures in helpers, ASSERT/EXPECT_NO_FATAL_FAILURE, and the checks
+// of EXPECT_FATAL_FAILURE / EXPECT_NONFATAL_FAILURE when they fail.
+{#include <jiecunit.iec>}
+
+function check_positive: bool
+	JIECUNIT_DECLARE_HELPER();
+	var_input
+		value: dint;
+	end
+	ASSERT_GT_INT(value, 0, 'value must be positive');
+	check_positive := true;
+end
+
+TEST_M(test_assert_in_helper_continues)
+	var
+		ok: bool;
+	end
+	case CURRENT_CYCLE() of
+	0:
+		// The helper returns, the test goes on.
+		ok := check_positive(-1);
+		EXPECT_TRUE(HAS_FATAL_FAILURE(), 'not printed: there is a fatal failure');
+		EXPECT_EQ_INT(1, 2, 'printed after the fatal failure of the helper, in cycle 0');
+	1:
+		EXPECT_EQ_INT(3, 4, 'still running in cycle 1');
+		EXPECT_NO_FATAL_FAILURE(ok := check_positive(-2), 'EXPECT_NO_FATAL_FAILURE goes on');
+		ASSERT_NO_FATAL_FAILURE(ok := check_positive(-3), 'ASSERT_NO_FATAL_FAILURE stops the test');
+		ADD_FAILURE('not reached');
+	end_case;
+END_TEST_M
+
+TEST_S(test_capture_mismatches)
+	EXPECT_NONFATAL_FAILURE(EXPECT_TRUE(true), 'none');
+	EXPECT_NONFATAL_FAILURE(EXPECT_TRUE(false), 'not in the output');
+	EXPECT_NONFATAL_FAILURE(EXPECT_EQ_INT(5, 4), ': Failure');
+	EXPECT_FATAL_FAILURE(EXPECT_TRUE(false), 'Value of');
+	EXPECT_NONFATAL_FAILURE(EXPECT_NONFATAL_FAILURE(EXPECT_TRUE(false), 'x'), 'x');
+END_TEST_S
+
+TEST_S(test_capture_left_by_return)
+	EXPECT_FATAL_FAILURE(ASSERT_TRUE(false), 'Value of');
+	ADD_FAILURE('not reached: the ASSERT returned from the test');
+END_TEST_S
+
+TEST_M(test_capture_left_by_return_ends_test_m)
+	if CURRENT_CYCLE() = 0 then
+		EXPECT_FATAL_FAILURE(ASSERT_TRUE(false), 'Value of');
+	end_if;
+	ADD_FAILURE('not reached: the test ends after the cycle that left the capture');
+	EOT();
+END_TEST_M
+
+TEST_S(test_no_fatal_failure_inside_capture)
+	var
+		ok: bool;
+	end
+	// The NO_FATAL statement sees the captured fatal failure and adds its own
+	// non-fatal one, so the capture sees two failures.
+	EXPECT_FATAL_FAILURE(EXPECT_NO_FATAL_FAILURE(ok := check_positive(-1)), 'positive');
+END_TEST_S
+
+TEST_S(test_after)
+	EXPECT_FALSE(HAS_FAILURE());
+END_TEST_S
+
+DEFINE_CONFIGURATION(
+	_JIEC_TESTNAMES_LIST_(
+		test_assert_in_helper_continues,
+		test_capture_mismatches,
+		test_capture_left_by_return,
+		test_capture_left_by_return_ends_test_m,
+		test_no_fatal_failure_inside_capture,
+		test_after
+	)
+)

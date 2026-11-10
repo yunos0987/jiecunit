@@ -8,9 +8,15 @@
 
 // ------------------------ Define low level macros ------------------------ //
 
+// After a failure: a fatal one (die) returns from the POU of the assertion.
+// JiecTest_abort ends the test only in the body of the test, not in a helper
+// (jiecunit_in_helper is declared by the TEST_* headers as false and by
+// JIECUNIT_DECLARE_HELPER as true), as in Google Test.
+// An error that jiecunit_in_helper is not declared means that an assertion is
+// used outside a test: declare the POU with JIECUNIT_DECLARE_HELPER().
 {#define _ON_FAILED_ACTION(die)
 	if die then
-		JiecTest_deactivate(_JIECTEST_);
+		JiecTest_abort(self:=_JIECTEST_, in_helper:=jiecunit_in_helper);
 		return;
 	end_if
 }
@@ -367,6 +373,8 @@ program {__func__:this_name} JiecUnitMain
 				end_if;
 			end_if;
 			_JIECTEST_.tmp_exec_count := 0;
+			// 3. A capture left open by a statement that returned from the test.
+			JiecTest_endLeftCapture(_JIECTEST_);
 
 			active_test_time1 := _JIECUNIT_CLOCK_NOW();
 			active_test_accumulated_time_in_us := active_test_accumulated_time_in_us + _JIECUNIT_CLOCK_DIFF_US(active_test_time1, active_test_time0);

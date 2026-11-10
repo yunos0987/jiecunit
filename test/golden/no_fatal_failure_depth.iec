@@ -1,0 +1,19 @@
+// golden-args: -D JIECUNIT_MAX_NO_FATAL_FAILURE_DEPTH=1
+// Nesting the NO_FATAL_FAILURE statements deeper than the limit is reported.
+{#include <jiecunit.iec>}
+
+TEST_S(test_too_deep)
+	EXPECT_NO_FATAL_FAILURE(EXPECT_NO_FATAL_FAILURE(EXPECT_TRUE(true)));
+END_TEST_S
+
+TEST_S(test_after)
+	// The marks of the previous test are not left over.
+	EXPECT_NO_FATAL_FAILURE(EXPECT_TRUE(true));
+END_TEST_S
+
+DEFINE_CONFIGURATION(
+	_JIEC_TESTNAMES_LIST_(
+		test_too_deep,
+		test_after
+	)
+)
