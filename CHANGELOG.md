@@ -31,6 +31,7 @@
 - 複数サイクルのテストの所要時間が、サイクルごとに「テスト開始からの経過時間」を足していたため、二乗で大きくなっていました。
 - オムロン・キーエンスの所要時間が、100ns 単位のカウンタを `/100/1000`（10ms 単位）で換算していました。`/10`（us 単位）に直し、カウンタの差を元の型で取ってから換算するようにしました（カウンタが一巡しても正しい差になります）。
 - テストが終わった後（ヘルパーの中の ASSERT の後など）の失敗の位置が `@-2147483648` と表示されていました。
+- `EXPECT_NEAR`・`EXPECT_NEAR_REL` に NaN を渡したとき、jier では成功していました（jier の `abs` は NaN に 0.0 を返します）。NaN は明示的に判定して失敗にし、`A NaN is never near any value.` と出します。同じ値（同符号の無限大どうしを含む）は、差を計算せずに近いとみなします。
 
 ### 新機能 / New features
 
@@ -53,8 +54,9 @@
 - 設定値を `-D NAME=VALUE` で上書きできるようにしました（従来は再定義の警告 PP35 が出て、`-Werror` では失敗していました）。対象は `MAX_TESTS`・`TESTNAME_MAX_SIZE`・`FILENAME_MAX_SIZE`・`JIECUNIT_MAX_CYCLES_PER_TEST`・`EXPRESSION_MAX_SIZE`（新設。既定 128）と、`sys/sys_config.iec` の `STRING_MAX_SIZE`・`CONSOLE_MAX_ROWS`・`CONSOLE_MAX_COLS` です。`MAX_TESTS` が 512（`src/jiecunit_macros.iec` の上限）を超えるとき、`TESTNAME_MAX_SIZE`・`FILENAME_MAX_SIZE`・`EXPRESSION_MAX_SIZE` が `STRING_MAX_SIZE` を超えるときは、前処理をエラーで止めます。`CONSOLE_MAX_COLS` より長い行は、従来どおりコンソールの行バッファでは切れます。
 - コンソール（`g_console`）の行バッファが一巡して古い行が上書きされうるとき、集計の最後に `[ WARNING] The console buffer is full (CONSOLE_MAX_ROWS=N); older lines may have been overwritten.` と出します。集計の後だけでなく、登録時の致命的エラーで終わるときも出します。`Console_t` に `wrapped` を追加しました。
 
-- `EXPECT_NEAR`・`EXPECT_NEAR_REL` に NaN を渡したとき、jier では成功していました（jier の `abs` は NaN に 0.0 を返します）。NaN は明示的に判定して失敗にし、`A NaN is never near any value.` と出します。同じ値（同符号の無限大どうしを含む）は、差を計算せずに近いとみなします。
 - テストを `_JIEC_TESTNAMES_LIST_` に書き忘れると、そのテストは黙って実行されませんでした。`TEST_S` / `TEST_M` の定義の数を jiepp の名前付きカウンタで数え、一覧の名前の数と違えば前処理をエラーで止めます。比べるのは数だけです。一覧に同じ名前を 2 回書いたときは、jier ではコンパイル時の `DUPLICATE_SYMBOL`、PLC では登録時の `Fatal error: ... already registered.` で検出されます。名前の綴りの誤りは、jier では未定義のプログラム、PLC では実行時の `[  ERROR ] ... was not found in active tasks.` で検出されます。一覧は 1 回だけ展開してください（カウンタは戻らないので、2 回目は必ず不一致になります）。`JIECUNIT_NO_TEST_COUNT_CHECK` を定義すると照合しません。完全な自動登録は、jiepp がマクロからディレクティブを作れないこと、構成（configuration）とベンダーのタスク割付にプログラム名の列挙が要ることから、行っていません。
+
+- `scripts/jiecunit_to_junit.py` を追加しました。JiecUnit の出力（`jiecc --run` の標準出力、または PLC の `g_console` を順に書き出したテキスト）を JUnit XML に変換します。`suite.name` のテストは `classname="suite"`、スイートの無いテストは入力ファイル名（`--classname` で変更可）を classname にします。失敗は 1 件ずつ `<failure>`、`[  ERROR ]` は `<error>`、スキップは `<skipped>` にし、所要時間が `(n/a)` のときは `time` を付けません。再実行の出力は最後の実行だけを変換します。集計が無い・結果の無いテストがある・集計の件数が合わない・登録時の致命的エラー・コンソールの溢れの警告があるときは、テストスイート `JiecUnit` のテストケース `(run)` の `<error>` として XML に書き、終了コードを 1 にします。XML に使えない制御文字は `?` に置き換えます。`scripts/run_tests.py` に `--junit-dir DIR`（各スイートの XML を `DIR/<スイート>.xml` に書く。変換で問題が見つかればそのスイートを失敗にする）を追加し、golden フェーズで変換スクリプトの自己テスト（`--self-test`）を実行します。
 
 ### その他 / Other
 

@@ -9,7 +9,9 @@ to determine pass/fail/skip counts. It also runs scripts/check_macro_expansion.p
 to verify that the optional-message assertion macros stay equivalent to their
 deprecated *_MSG aliases, and scripts/check_golden.py to compare the output of
 the cases under test/golden/ with their expected output (the format of
-failures, the runner's handling of skips, timeouts and so on).
+failures, the runner's handling of skips, timeouts and so on); the golden
+phase also runs the self-test of scripts/jiecunit_to_junit.py. --junit-dir
+DIR writes the JUnit XML of each run to DIR/<suite>.xml.
 
 JiecUnit requires Jiecc 9.4.0 or later (src/jiecunit_config.iec stops the
 preprocessor with {#error} on older compilers). The exit code of
@@ -42,9 +44,11 @@ Usage:
   python scripts/run_tests.py --compile-only --jobs 2
   python scripts/run_tests.py --run-only --max-cycles 500
   python scripts/run_tests.py --skip-macro-check --skip-golden
+  python scripts/run_tests.py --run-only --junit-dir build/junit
 """
 import argparse
 import concurrent.futures
+import importlib.util
 import os
 import re
 import shutil
@@ -147,8 +151,34 @@ def compile_suite(jiecc, root, suite, target, outdir, timeout, flags):
     return True, ''
 
 
-def run_suite(jiecc, root, suite, max_cycles, timeout, flags):
-    # type: (str, str, str, int, int, list) -> tuple
+def _load_junit_converter(root):
+    path = os.path.join(root, 'scripts', 'jiecunit_to_junit.py')
+    spec = importlib.util.spec_from_file_location('jiecunit_to_junit', path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def write_junit(root, suite, output, junit_dir):
+    # type: (str, str, str, str) -> str
+    """Write the JUnit XML of a run to <junit_dir>/<suite stem>.xml.
+
+    Returns '' on success, or a description of the problem (the XML could not
+    be written, or the converter found a problem with the run)."""
+    try:
+        os.makedirs(junit_dir, exist_ok=True)
+        converter = _load_junit_converter(root)
+        xml, problems = converter.convert(output, _suite_stem(suite))
+        with open(os.path.join(junit_dir, _suite_stem(suite) + '.xml'), 'w',
+                  encoding='utf-8', newline='\n') as f:
+            f.write(xml)
+    except Exception as e:  # report it as a failed run instead of a traceback
+        return 'junit: could not write the XML: {}'.format(e)
+    return '; '.join('junit: ' + p for p in problems)
+
+
+def run_suite(jiecc, root, suite, max_cycles, timeout, flags, junit_dir=None):
+    # type: (str, str, str, int, int, list, str) -> tuple
     cmd = [
         jiecc, '--run', suite,
         '-I', root,
@@ -159,10 +189,16 @@ def run_suite(jiecc, root, suite, max_cycles, timeout, flags):
         proc = subprocess.run(
             cmd, cwd=root, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
             timeout=timeout)
-    except subprocess.TimeoutExpired:
+    except subprocess.TimeoutExpired as e:
+        if junit_dir:
+            write_junit(root, suite, (e.output or b'').decode('utf-8', errors='replace'), junit_dir)
         return False, 'timed out after {}s'.format(timeout)
     output = proc.stdout.decode('utf-8', errors='replace') if proc.stdout else ''
     lines = output.splitlines()
+    if junit_dir:
+        junit_problem = write_junit(root, suite, output, junit_dir)
+        if junit_problem:
+            return False, junit_problem + '\n' + output
 
     error_lines = [line for line in lines if _RE_ERROR_TEXT.search(line)]
     if error_lines:
@@ -224,6 +260,12 @@ def run_macro_check(jiecc, root, timeout):
 
 def run_golden(jiecc, root, timeout):
     # type: (str, str, int) -> tuple
+    # The JUnit converter is checked here too: it depends on the output format.
+    junit = subprocess.run(
+        [sys.executable, os.path.join(root, 'scripts', 'jiecunit_to_junit.py'), '--self-test'],
+        cwd=root, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    if junit.returncode != 0:
+        return False, junit.stdout.decode('utf-8', errors='replace').strip() or 'junit self-test failed'
     script = os.path.join(root, 'scripts', 'check_golden.py')
     cmd = [sys.executable, script, '--jiecc', jiecc, '--timeout', str(timeout)]
     try:
@@ -278,6 +320,9 @@ def main():
                         help='Skip the scripts/check_golden.py phase '
                              '(also skipped automatically when --compile-only '
                              'or --run-only is given).')
+    parser.add_argument('--junit-dir', default=None,
+                        help='Also write the JUnit XML of each run to DIR/<suite>.xml '
+                             '(scripts/jiecunit_to_junit.py).')
     parser.add_argument('--timeout', type=int, default=600,
                         help='Timeout in seconds for each jiecc invocation (default: 600)')
     parser.add_argument('--jobs', type=int, default=_MAX_JOBS,
@@ -338,7 +383,8 @@ def main():
 
         if do_run:
             for suite in args.suites:
-                ok, detail = run_suite(jiecc, root, suite, args.max_cycles, args.timeout, flags)
+                ok, detail = run_suite(jiecc, root, suite, args.max_cycles, args.timeout, flags,
+                                       args.junit_dir)
                 results.append(('run', suite, '-', ok, detail))
                 all_ok = all_ok and ok
 
