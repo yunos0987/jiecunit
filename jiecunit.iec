@@ -927,41 +927,96 @@
 
 
 
-// Test for a single-cycle test. The test ends at END_TEST_S, or at the end of
-// its first cycle if the body returns before END_TEST_S.
-{#define TEST_S(test_name)
+// The header of a test program (internal). program_name is the name of the
+// PROGRAM (also the name in _JIEC_TESTNAMES_LIST_), display_name the name
+// shown in the results, single_ true for a single-cycle test.
+{#define _JIECUNIT_TEST_HEADER_(program_name, display_name_, single_)
 	_JIECUNIT_COUNT_TEST()
-	program ${single-body:true$} ${__func__:TestName$} test_name
+	program ${single-body:true$} ${__func__:TestName$} program_name
 	_DECLARE_EXTERNAL_JIEC_TEST();
 	var
 		jiecunit_in_helper: bool := false;
 	end
-	if (not JiecTest_isActive(_JIECTEST_)) or (JiecTest_activeTestname(_JIECTEST_) <> @test_name) then
+	if (not JiecTest_isActive(_JIECTEST_)) or (JiecTest_activeTestname(_JIECTEST_) <> @program_name) then
 		return;
 	end_if;
-	JiecTest_enterTest(self:=_JIECTEST_, single_cycle:=true, file:=__FILE__, line:=__LINE__);
+	JiecTest_enterTest(self:=_JIECTEST_, single_cycle:=single_, file:=__FILE__, line:=__LINE__, display_name:=display_name_);
 }
+
+// The header of a test program with a fixture (internal). The program has the
+// variable `fixture` of type fixture_type. In the first run of the test,
+// fixture is reset to its initial value, the TearDown is requested and
+// <fixture_type>_SetUp(fixture) is called; if the SetUp fails fatally, skips
+// or ends the test, the body does not run. After the test has ended,
+// JiecUnitMain waits a cycle in which <fixture_type>_TearDown(fixture) runs,
+// whatever way the test ended (EOT, ASSERT, SKIP_TEST, the cycle limit).
+{#define _JIECUNIT_TEST_F_HEADER_(fixture_type, program_name, display_name_, single_)
+	_JIECUNIT_COUNT_TEST()
+	program ${single-body:true$} ${__func__:TestName$} program_name
+	_DECLARE_EXTERNAL_JIEC_TEST();
+	var
+		jiecunit_in_helper: bool := false;
+		fixture: fixture_type;
+		jiecunit_fixture_init: fixture_type;
+	end
+	if JiecTest_isTearDownPending(self:=_JIECTEST_, test_name:=@program_name) then
+		fixture_type @@ _TearDown(fixture);
+		JiecTest_endTearDown(_JIECTEST_);
+		return;
+	end_if;
+	if (not JiecTest_isActive(_JIECTEST_)) or (JiecTest_activeTestname(_JIECTEST_) <> @program_name) then
+		return;
+	end_if;
+	if JiecTest_enterTest(self:=_JIECTEST_, single_cycle:=single_, file:=__FILE__, line:=__LINE__, display_name:=display_name_) then
+		fixture := jiecunit_fixture_init;
+		JiecTest_requestTearDown(_JIECTEST_);
+		fixture_type @@ _SetUp(fixture);
+		if (not JiecTest_isActive(_JIECTEST_)) or JiecTest_hasFatalFailure(_JIECTEST_) then
+			JiecTest_deactivate(_JIECTEST_);
+			return;
+		end_if;
+	end_if;
+}
+
+// Stringify an argument after its macro parameters are replaced (internal):
+// _JIECUNIT_DISPLAY_NAME_(suite.name) gives 'suite.name'.
+{#define _JIECUNIT_DISPLAY_NAME_(dotted_name) @dotted_name}
+
+// Test for a single-cycle test: TEST_S(name), or TEST_S(suite, name) for a
+// test in a suite. The program of TEST_S(suite, name) is suite_name (list
+// that name in _JIEC_TESTNAMES_LIST_), and the results show suite.name.
+// The test ends at END_TEST_S, or at the end of its first cycle if the body
+// returns before END_TEST_S.
+{#define TEST_S(...) _JIECUNIT_TEST_S_N(__VA_ARGC__, __VA_ARGS__)}
+{#define _JIECUNIT_TEST_S_N(n, ...) _JIECUNIT_TEST_S_ @@ n(__VA_ARGS__)}
+{#define _JIECUNIT_TEST_S_1(test_name) _JIECUNIT_TEST_HEADER_(test_name, '', true)}
+{#define _JIECUNIT_TEST_S_2(suite, test_name) _JIECUNIT_TEST_HEADER_(suite @@ _ @@ test_name, _JIECUNIT_DISPLAY_NAME_(suite.test_name), true)}
 {#define END_TEST_S
 	EOT();
 end}
 
-// Test for the multiple-cycles test. The test runs once per cycle until it
-// calls EOT(), or fails when it reaches the maximum number of cycles
+// Test for the multiple-cycles test: TEST_M(name) or TEST_M(suite, name),
+// named like TEST_S. The test runs once per cycle until it calls EOT(), or
+// fails when it reaches the maximum number of cycles
 // (JIECUNIT_MAX_CYCLES_PER_TEST, or SET_TEST_MAX_CYCLES(n) in the test).
-{#define TEST_M(test_name)
-	_JIECUNIT_COUNT_TEST()
-	program ${single-body:true$} ${__func__:TestName$} test_name
-	_DECLARE_EXTERNAL_JIEC_TEST();
-	var
-		jiecunit_in_helper: bool := false;
-	end
-	if (not JiecTest_isActive(_JIECTEST_)) or (JiecTest_activeTestname(_JIECTEST_) <> @test_name) then
-		return;
-	end_if;
-	JiecTest_enterTest(self:=_JIECTEST_, single_cycle:=false, file:=__FILE__, line:=__LINE__);
-}
+{#define TEST_M(...) _JIECUNIT_TEST_M_N(__VA_ARGC__, __VA_ARGS__)}
+{#define _JIECUNIT_TEST_M_N(n, ...) _JIECUNIT_TEST_M_ @@ n(__VA_ARGS__)}
+{#define _JIECUNIT_TEST_M_1(test_name) _JIECUNIT_TEST_HEADER_(test_name, '', false)}
+{#define _JIECUNIT_TEST_M_2(suite, test_name) _JIECUNIT_TEST_HEADER_(suite @@ _ @@ test_name, _JIECUNIT_DISPLAY_NAME_(suite.test_name), false)}
 {#define END_TEST_M
 end}
+
+// Tests with a fixture, like TEST_F of Google Test: TEST_F_S(F, name) is a
+// single-cycle test and TEST_F_M(F, name) a multiple-cycles test of the suite
+// F (end them with END_TEST_S / END_TEST_M). Define for the fixture:
+//   type F: struct ... end end                    // the data of the fixture
+//   function F_SetUp     var_in_out fixture: F; end  JIECUNIT_DECLARE_HELPER(); ... end
+//   function F_TearDown  var_in_out fixture: F; end  JIECUNIT_DECLARE_HELPER(); ... end
+// The test uses the variable `fixture`, which every run of the test starts
+// from the initial value of F. SetUp runs before the body, TearDown after the
+// test has ended, also when it failed, was skipped or reached the cycle limit.
+{#define TEST_F_S(fixture_type, test_name) _JIECUNIT_TEST_F_HEADER_(fixture_type, fixture_type @@ _ @@ test_name, _JIECUNIT_DISPLAY_NAME_(fixture_type.test_name), true)}
+{#define TEST_F_M(fixture_type, test_name) _JIECUNIT_TEST_F_HEADER_(fixture_type, fixture_type @@ _ @@ test_name, _JIECUNIT_DISPLAY_NAME_(fixture_type.test_name), false)}
 
 // End of Test. Terminate the current test.
 {#define EOT() JiecTest_deactivate(_JIECTEST_); return}

@@ -1,0 +1,63 @@
+[========] Running 11 tests.
+[ RUN    ] Suite.single
+[     OK ] Suite.single (<time>)
+[ RUN    ] Suite.multi
+[     OK ] Suite.multi (<time>)
+[ RUN    ] plain_name
+[     OK ] plain_name (<time>)
+[ RUN    ] TankFixture.single_passes
+SetUp: level=1
+TearDown: level=20
+[     OK ] TankFixture.single_passes (<time>)
+[ RUN    ] TankFixture.multi_counts
+SetUp: level=1
+TearDown: level=13
+[     OK ] TankFixture.multi_counts (<time>)
+[ RUN    ] TankFixture.assert_fails
+SetUp: level=1
+test/golden/suites_and_fixtures.iec:116: Failure
+Expected equality of these values:
+  0
+  fixture.level
+    Which is: 10
+TearDown: level=10
+[ FAILED ] TankFixture.assert_fails (<time>)
+[ RUN    ] TankFixture.skipped
+SetUp: level=1
+Skipped: skipped in the body
+TearDown: level=30
+[ SKIPPED] TankFixture.skipped (<time>)
+[ RUN    ] TankFixture.times_out
+SetUp: level=1
+test/golden/suites_and_fixtures.iec:125: Failure (cycle 2)
+The test did not finish within 2 cycles (JIECUNIT_MAX_CYCLES_PER_TEST, SET_TEST_MAX_CYCLES). Call EOT() to end a TEST_M test.
+TearDown: level=40
+[ FAILED ] TankFixture.times_out (<time>)
+[ RUN    ] BadSetUp.body_not_run
+test/golden/suites_and_fixtures.iec:45: Failure
+Value of: false
+  Actual: false
+Expected: true
+the SetUp failed
+TearDown of BadSetUp
+[ FAILED ] BadSetUp.body_not_run (<time>)
+[ RUN    ] SkipInSetUp.body_not_run
+Skipped: skipped in the SetUp
+TearDown of SkipInSetUp
+[ SKIPPED] SkipInSetUp.body_not_run (<time>)
+[ RUN    ] BadTearDown.fails_after_body
+test/golden/suites_and_fixtures.iec:86: Failure
+Value of: false
+  Actual: false
+Expected: true
+the TearDown failed
+[ FAILED ] BadTearDown.fails_after_body (<time>)
+[========] 11 tests ran. (<time>)
+[ PASSED ] 5 tests.
+[ SKIPPED] 2 tests.
+[ FAILED ] 4 tests, listed below.
+[ FAILED ] TankFixture.assert_fails
+[ FAILED ] TankFixture.times_out
+[ FAILED ] BadSetUp.body_not_run
+[ FAILED ] BadTearDown.fails_after_body
+[exit code: 1]

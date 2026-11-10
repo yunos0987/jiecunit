@@ -57,6 +57,12 @@ type
 		tmp_capture_line: dint;
 		(*{doc The number of nested captures that were rejected and not yet finished.}*)
 		tmp_capture_rejected: dint;
+		(*{doc The name of the active test shown in the results: suite.name for a test in a suite, otherwise the program name.}*)
+		tmp_display_name: string[TESTNAME_MAX_SIZE];
+		(*{doc Whether the TearDown of the fixture of the active test has still to run.}*)
+		tmp_teardown_pending: bool;
+		(*{doc The number of cycles JiecUnitMain has waited for the TearDown.}*)
+		tmp_teardown_waits: dint;
 		(*{doc The total number of failed assertions of all tests.}*)
 		num_of_failures: dint;
 	end
@@ -65,8 +71,9 @@ end
 (*{doc Reset the per-test fields for a new test.
 Clears the cycle counter, the active and skipped flags, the execution count,
 the single-cycle flag, the definition position, the fatal and non-fatal
-failure counts and marks, and the capture state, and sets the maximum number
-of cycles to JIECUNIT_MAX_CYCLES_PER_TEST. Does not activate the test.
+failure counts and marks, the capture state and the fixture state, sets the
+display name to the program name of the active test, and sets the maximum
+number of cycles to JIECUNIT_MAX_CYCLES_PER_TEST. Does not activate the test.
 @inout self The JiecTest_t structure.
 @return Always returns true.}*)
 function JiecTest_beginTest
@@ -91,6 +98,13 @@ function JiecTest_beginTest
 	self.tmp_capture_file := '';
 	self.tmp_capture_line := 0;
 	self.tmp_capture_rejected := 0;
+	self.tmp_teardown_pending := false;
+	self.tmp_teardown_waits := 0;
+	if (0 <= self.tmp_active_test_index) and (self.tmp_active_test_index < self.num_of_tests) then
+		self.tmp_display_name := self.testnames[self.tmp_active_test_index];
+	else
+		self.tmp_display_name := '';
+	end_if;
 end
 
 (*{doc Initialize the JiecTest_t structure.
@@ -435,13 +449,15 @@ function JiecTest_nextCycle: bool
 end
 
 (*{doc Record that the active test program runs in the current cycle.
-Called by the header of TEST_S and TEST_M every time the active test runs.
-In the first cycle it also records the kind and the position of the test.
+Called by the header of every test every time the active test runs. In its
+first run, it also records the kind, the position and the display name of
+the test, and prints the "[ RUN    ]" line.
 @inout self The JiecTest_t structure.
 @input single_cycle True for a single-cycle test (TEST_S).
 @input file The source file of the test definition.
 @input line The source line of the test definition.
-@return Always returns true.}*)
+@input display_name The name shown in the results (suite.name); empty for the program name.
+@return True in the first run of the test (then the fixture is set up).}*)
 function JiecTest_enterTest: bool
 	_PROLOGUE_OF_FUNCTION_()
 	var_in_out self: JiecTest_t; end
@@ -452,13 +468,71 @@ function JiecTest_enterTest: bool
 		file: string[FILENAME_MAX_SIZE];
 		(*{doc The source line of the test definition.}*)
 		line: dint;
+		(*{doc The name shown in the results (suite.name); empty for the program name.}*)
+		display_name: string[TESTNAME_MAX_SIZE] := '';
 	end
 	inc(self.tmp_exec_count);
-	if self.tmp_cycle = 0 then
-		self.tmp_is_single_cycle := single_cycle;
-		self.tmp_test_file := file;
-		self.tmp_test_line := line;
+	JiecTest_enterTest := (self.tmp_cycle = 0) and (self.tmp_exec_count = 1);
+	if not JiecTest_enterTest then
+		return;
 	end_if;
+	self.tmp_is_single_cycle := single_cycle;
+	self.tmp_test_file := file;
+	self.tmp_test_line := line;
+	if display_name <> '' then
+		self.tmp_display_name := display_name;
+	end_if;
+	JiecTest_print(self, jiec_concat('[ RUN    ] ', self.tmp_display_name));
+end
+
+(*{doc Get the name of the active test shown in the results.
+@inout self The JiecTest_t structure.
+@return suite.name for a test in a suite, otherwise the program name.}*)
+function JiecTest_activeDisplayName: string[TESTNAME_MAX_SIZE]
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	JiecTest_activeDisplayName := self.tmp_display_name;
+end
+
+(*{doc Request the TearDown of the fixture of the active test.
+Called by the header of TEST_F_S / TEST_F_M before the SetUp. After the test
+has ended, JiecUnitMain waits a cycle, in which the test program runs the
+TearDown, before it reports the result.
+@inout self The JiecTest_t structure.
+@return Always returns true.}*)
+function JiecTest_requestTearDown: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	self.tmp_teardown_pending := true;
+	self.tmp_teardown_waits := 0;
+end
+
+(*{doc Whether the given test program has to run the TearDown of its fixture now.
+True when the test has ended and its TearDown is pending.
+@inout self The JiecTest_t structure.
+@input test_name The program name of the test.
+@return True if the program has to run its TearDown.}*)
+function JiecTest_isTearDownPending: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc The program name of the test.}*)
+		test_name: string[TESTNAME_MAX_SIZE];
+	end
+	JiecTest_isTearDownPending := self.tmp_teardown_pending and (not self.tmp_is_active)
+		and (0 <= self.tmp_active_test_index) and (self.tmp_active_test_index < self.num_of_tests);
+	if JiecTest_isTearDownPending then
+		JiecTest_isTearDownPending := self.testnames[self.tmp_active_test_index] = test_name;
+	end_if;
+end
+
+(*{doc Record that the TearDown of the fixture of the active test has run.
+@inout self The JiecTest_t structure.
+@return Always returns true.}*)
+function JiecTest_endTearDown: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	self.tmp_teardown_pending := false;
 end
 
 (*{doc Set the maximum number of cycles of the active test.

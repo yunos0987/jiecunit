@@ -70,6 +70,7 @@ DEFINE_CONFIGURATION(
 		test_jiectest_initialize,
 		test_jiectest_begin_test,
 		test_jiectest_enter_test,
+		test_jiectest_teardown,
 		test_jiectest_set_max_cycles,
 		test_jiectest_register,
 		test_jiectest_empty,

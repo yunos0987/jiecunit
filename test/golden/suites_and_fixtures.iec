@@ -1,0 +1,156 @@
+// Tests in suites, and fixtures: SetUp before the body, TearDown after the
+// test in every way it can end, and a SetUp that fails or skips.
+{#include <jiecunit.iec>}
+
+type
+	TankFixture: struct
+		level: dint := 1;
+	end
+	BadSetUp: struct
+		unused: dint;
+	end
+	SkipInSetUp: struct
+		unused: dint;
+	end
+	BadTearDown: struct
+		unused: dint;
+	end
+end
+
+function TankFixture_SetUp
+	JIECUNIT_DECLARE_HELPER();
+	_DECLARE_CONSOLE_IN_POU_();
+	var_in_out
+		fixture: TankFixture;
+	end
+	// The fixture starts from its initial value in every test.
+	puts(jiec_concat('SetUp: level=', dint_to_string(fixture.level)));
+	fixture.level := 10;
+end
+
+function TankFixture_TearDown
+	JIECUNIT_DECLARE_HELPER();
+	_DECLARE_CONSOLE_IN_POU_();
+	var_in_out
+		fixture: TankFixture;
+	end
+	puts(jiec_concat('TearDown: level=', dint_to_string(fixture.level)));
+end
+
+function BadSetUp_SetUp
+	JIECUNIT_DECLARE_HELPER();
+	var_in_out
+		fixture: BadSetUp;
+	end
+	ASSERT_TRUE(false, 'the SetUp failed');
+end
+
+function BadSetUp_TearDown
+	JIECUNIT_DECLARE_HELPER();
+	_DECLARE_CONSOLE_IN_POU_();
+	var_in_out
+		fixture: BadSetUp;
+	end
+	puts('TearDown of BadSetUp');
+end
+
+function SkipInSetUp_SetUp
+	JIECUNIT_DECLARE_HELPER();
+	var_in_out
+		fixture: SkipInSetUp;
+	end
+	SKIP_TEST('skipped in the SetUp');
+end
+
+function SkipInSetUp_TearDown
+	JIECUNIT_DECLARE_HELPER();
+	_DECLARE_CONSOLE_IN_POU_();
+	var_in_out
+		fixture: SkipInSetUp;
+	end
+	puts('TearDown of SkipInSetUp');
+end
+
+function BadTearDown_SetUp
+	JIECUNIT_DECLARE_HELPER();
+	var_in_out
+		fixture: BadTearDown;
+	end
+end
+
+function BadTearDown_TearDown
+	JIECUNIT_DECLARE_HELPER();
+	var_in_out
+		fixture: BadTearDown;
+	end
+	EXPECT_TRUE(false, 'the TearDown failed');
+end
+
+TEST_S(Suite, single)
+	EXPECT_TRUE(true);
+END_TEST_S
+
+TEST_M(Suite, multi)
+	if CURRENT_CYCLE() = 1 then
+		EOT();
+	end_if;
+END_TEST_M
+
+TEST_S(plain_name)
+	EXPECT_TRUE(true);
+END_TEST_S
+
+TEST_F_S(TankFixture, single_passes)
+	EXPECT_EQ_INT(10, fixture.level);
+	fixture.level := 20;
+END_TEST_S
+
+TEST_F_M(TankFixture, multi_counts)
+	fixture.level := fixture.level + 1;
+	if CURRENT_CYCLE() = 2 then
+		EOT();
+	end_if;
+END_TEST_M
+
+TEST_F_S(TankFixture, assert_fails)
+	ASSERT_EQ_INT(0, fixture.level);
+	ADD_FAILURE('not reached');
+END_TEST_S
+
+TEST_F_S(TankFixture, skipped)
+	fixture.level := 30;
+	SKIP_TEST('skipped in the body');
+END_TEST_S
+
+TEST_F_M(TankFixture, times_out)
+	SET_TEST_MAX_CYCLES(2);
+	fixture.level := 40;
+END_TEST_M
+
+TEST_F_S(BadSetUp, body_not_run)
+	FAIL('the body ran');
+END_TEST_S
+
+TEST_F_S(SkipInSetUp, body_not_run)
+	FAIL('the body ran');
+END_TEST_S
+
+TEST_F_S(BadTearDown, fails_after_body)
+	EXPECT_TRUE(true);
+END_TEST_S
+
+DEFINE_CONFIGURATION(
+	_JIEC_TESTNAMES_LIST_(
+		Suite_single,
+		Suite_multi,
+		plain_name,
+		TankFixture_single_passes,
+		TankFixture_multi_counts,
+		TankFixture_assert_fails,
+		TankFixture_skipped,
+		TankFixture_times_out,
+		BadSetUp_body_not_run,
+		SkipInSetUp_body_not_run,
+		BadTearDown_fails_after_body
+	)
+)

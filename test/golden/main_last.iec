@@ -16,15 +16,48 @@ TEST_S(test_failing)
 	EXPECT_EQ_INT(1, 2);
 END_TEST_S
 
+type
+	Fx: struct
+		value: dint;
+	end
+end
+
+function Fx_SetUp
+	JIECUNIT_DECLARE_HELPER();
+	_DECLARE_CONSOLE_IN_POU_();
+	var_in_out
+		fixture: Fx;
+	end
+	puts('SetUp');
+	fixture.value := 1;
+end
+
+function Fx_TearDown
+	JIECUNIT_DECLARE_HELPER();
+	_DECLARE_CONSOLE_IN_POU_();
+	var_in_out
+		fixture: Fx;
+	end
+	puts(jiec_concat('TearDown: value=', dint_to_string(fixture.value)));
+end
+
+TEST_F_M(Fx, with_fixture)
+	fixture.value := fixture.value + 1;
+	if CURRENT_CYCLE() = 1 then
+		EOT();
+	end_if;
+END_TEST_M
+
 {#define _GOLDEN_GLOBALS_AND_TASKS()
 	var_global
-		_JIECTESTNAMES_: array[MAX_TESTS] of string[TESTNAME_MAX_SIZE] := ['test_single', 'test_multi', 'test_failing', (MAX_TESTS - 3)('')];
+		_JIECTESTNAMES_: array[MAX_TESTS] of string[TESTNAME_MAX_SIZE] := ['test_single', 'test_multi', 'test_failing', 'Fx_with_fixture', (MAX_TESTS - 4)('')];
 		_JIECTEST_: JiecTest_t;
 	end
 	task JiecUnitTask(priority := 0);
 	program test_single with JiecUnitTask: test_single();
 	program test_multi with JiecUnitTask: test_multi();
 	program test_failing with JiecUnitTask: test_failing();
+	program Fx_with_fixture with JiecUnitTask: Fx_with_fixture();
 	program JiecUnitMain with JiecUnitTask: JiecUnitMain();
 }
 DEFINE_CONFIGURATION(_GOLDEN_GLOBALS_AND_TASKS())

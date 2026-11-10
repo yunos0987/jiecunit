@@ -1,4 +1,4 @@
-[========] Running 5 tests.
+[========] Running 6 tests.
 [ RUN    ] test_ok
 [     OK ] test_ok (<time>)
 [ RUN    ] test_not_assigned
@@ -10,12 +10,16 @@
 [ RUN    ] test_stops_running
 [  ERROR ] The program 'test_stops_running' did not run in cycle 1. Assign it to the task of JiecUnitMain.
 [ FAILED ] test_stops_running (<time>)
+[ RUN    ] test_teardown_never_runs
+[  ERROR ] The TearDown of the fixture of 'test_teardown_never_runs' did not run.
+[ FAILED ] test_teardown_never_runs (<time>)
 [ RUN    ] test_ok_multi
 [     OK ] test_ok_multi (<time>)
-[========] 5 tests ran. (<time>)
+[========] 6 tests ran. (<time>)
 [ PASSED ] 2 tests.
-[ FAILED ] 3 tests, listed below.
+[ FAILED ] 4 tests, listed below.
 [ FAILED ] test_not_assigned
 [ FAILED ] test_runs_twice
 [ FAILED ] test_stops_running
+[ FAILED ] test_teardown_never_runs
 [exit code: 1]

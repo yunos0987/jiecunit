@@ -1,4 +1,4 @@
-[========] Running 3 tests.
+[========] Running 4 tests.
 [ RUN    ] test_single
 [     OK ] test_single (<time>)
 [ RUN    ] test_multi
@@ -9,8 +9,12 @@ Expected equality of these values:
   1
   2
 [ FAILED ] test_failing (<time>)
-[========] 3 tests ran. (<time>)
-[ PASSED ] 2 tests.
+[ RUN    ] Fx.with_fixture
+SetUp
+TearDown: value=3
+[     OK ] Fx.with_fixture (<time>)
+[========] 4 tests ran. (<time>)
+[ PASSED ] 3 tests.
 [ FAILED ] 1 tests, listed below.
 [ FAILED ] test_failing
 [exit code: 1]
