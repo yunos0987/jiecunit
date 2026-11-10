@@ -28,6 +28,8 @@ $ python scripts/run_tests.py
 
 jiecc は、`--jiecc PATH`、環境変数 `JIECC`、`PATH` の順に探します。
 
+失敗の出力やランナーの挙動を変えたときは、`test/golden/` のゴールデン出力を `python scripts/check_golden.py --update <ケース>` で作り直し、差分が意図どおりか確かめてからコミットしてください。
+
 ```
 $ python scripts/run_tests.py --jiecc /path/to/jiecc.exe
 ```

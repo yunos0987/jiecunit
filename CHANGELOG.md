@@ -8,7 +8,7 @@
 
 ### 互換性に影響する変更 / Breaking changes
 
-- `JiecTest_t` のフィールドを変えました。`tmp_is_test_available` を削除し、`tmp_is_active`・`tmp_exec_count`・`tmp_is_single_cycle`・`tmp_max_cycles`・`tmp_test_file`・`tmp_test_line` を追加しました。テストが動いているかどうかは `tmp_is_active` で表し、`JiecTest_deactivate` はサイクル数（`tmp_cycle`）を変えません（従来は `DINT` の最小値にしていました）。初期化直後の `tmp_cycle` は 0 です。`JiecTest_nextCycle` は、テストが動いていないときと上限に達したときはサイクル数を変えません。
+- `JiecTest_t` のフィールドを変えました。`tmp_is_test_available` を削除し、`tmp_is_active`・`tmp_exec_count`・`tmp_is_single_cycle`・`tmp_max_cycles`・`tmp_test_file`・`tmp_test_line` を追加しました。ほかに、テストごとの致命的・非致命的な失敗の数、失敗の捕捉、表示名、TearDown の待ちのフィールドも追加しました。テストが動いているかどうかは `tmp_is_active` で表し、`JiecTest_deactivate` はサイクル数（`tmp_cycle`）を変えません（従来は `DINT` の最小値にしていました）。初期化直後の `tmp_cycle` は 0 です。`JiecTest_nextCycle` は、テストが動いていないときと上限に達したときはサイクル数を変えません。
 - 時計の無いターゲット（jier・CODESYS・MITSUBISHI）では、所要時間を `(0us)` ではなく `(n/a)` と表示します。
 - 失敗の出力を Google Test の形式に変えました。出力を解析しているツールに影響します。
   - 位置の行を詳細より先に出し、`<ファイル>:<行>: Failure` の形にしました（従来は詳細の後に `<テスト名>:<行>@<サイクル>`）。ファイルは `__FILE__`（jiecc に渡した、またはインクルードに書いたパス）です。複数サイクルのテスト（`TEST_M`）では末尾に ` (cycle N)` を付けます。
@@ -20,7 +20,6 @@
 - `[ RUN    ]` の行は、JiecUnitMain ではなくテストプログラムが最初に実行されたときに出します（タスクに割り付けられていないテストでは、従来どおり JiecUnitMain が `[  ERROR ]` の前に出します。表示名はテストプログラムが実行されて初めて分かるので、この場合はプログラム名で表示します）。`JiecTest_enterTest` は、テストの最初の実行で true を返します。
 - `TEST_S` / `TEST_M` の外（ヘルパーの関数・FB・プログラム）でアサーションを使うときは、その POU の宣言に `JIECUNIT_DECLARE_HELPER();` を書く必要があります。アサーションが参照する変数 `jiecunit_in_helper` を宣言するためです（従来は `TestName` と `g_jiectest` の宣言が要り、事実上ヘルパーでは使えませんでした）。
 - `_JIEC_TESTNAMES_LIST_` は、グローバル変数 `g_jiecunit_result` と `g_jiecunit_rerun` も宣言します。構成（configuration）を手で書いているときは、この 2 つを宣言に加えてください（JiecUnitMain が `var_external` で参照します）。
-- `JiecTest_t` に、テストごとの致命的・非致命的な失敗の数と、失敗の捕捉のためのフィールドを追加しました。
 - `DEFINE_CONFIGURATION(_JIEC_TESTNAMES_LIST_(...))` は、すべての `TEST_S` / `TEST_M` の定義の**後ろ**に置く必要があります。前処理の時点で、定義の数と一覧の名前の数を比べるためです（新機能を参照）。従来の `samples/sample.iec` のように一覧を定義より前に置いていると、前処理がエラー（`PP91`）で止まります。一覧を定義の後ろへ移すか、`JIECUNIT_NO_TEST_COUNT_CHECK` を定義して照合を止めてください。
 
 ### 不具合の修正 / Bug fixes
@@ -60,6 +59,8 @@
 
 ### その他 / Other
 
+- README に「テストの書き方」（最小の例、テストの種類とフィクスチャ、アサーションの一覧、ヘルパー、失敗の出力、サイクル数の上限、結果の変数と再実行、設定の上書き、JUnit XML、Google Test との違い、7.x からの移行）と、ターゲットごとのアサーションの対応表を加えました。サンプルの実行手順のテストプログラムの一覧を更新しました（画面の写真は 7.x のままです）。
+- AGENTS.md と CONTRIBUTING.md に、ゴールデン出力の更新手順と、実装中に見つけた jiepp・jier・ST の落とし穴を加えました。
 - `sys/sys.iec` に `jiec_find`（標準の `find`）と `jiec_quote`（文字列を ST のリテラルの形にする。`STRING_MAX_SIZE` に収まらなければ切って、閉じの `'` の後ろに `...` を付ける）を追加しました。
 - 失敗に関する出力は `JiecTest_print` を通して出します。位置・詳細・メッセージを出す `JiecTest_beginFailure`・`JiecTest_printValue`・`JiecTest_printComparison`・`JiecTest_endFailure` を追加しました。
 - JiecUnit 自身のテスト（`test/test_failure_api.iec`）で、失敗の出力の文面を `EXPECT_NONFATAL_FAILURE` で確かめます。
