@@ -239,7 +239,7 @@
 	while jiecunit_loop_index < (n_) do
 		if expected_[jiecunit_loop_index] <> actual_[jiecunit_loop_index] then
 			JiecTest_markFailures(_JIECTEST_);
-			BASE(die_, expected_[jiecunit_loop_index], actual_[jiecunit_loop_index], JiecTest_arrayMessage(index:=jiecunit_loop_index, message:=message_), JiecTest_indexedText(text:=expected_text_, index:=jiecunit_loop_index), JiecTest_indexedText(text:=actual_text_, index:=jiecunit_loop_index));
+			BASE(die_, expected_[jiecunit_loop_index], actual_[jiecunit_loop_index], JiecTest_arrayMessage(index:=jiecunit_loop_index, message:=message_), JiecTest_indexedText(array_text:=expected_text_, index:=jiecunit_loop_index), JiecTest_indexedText(array_text:=actual_text_, index:=jiecunit_loop_index));
 			if JiecTest_failedSinceMark(_JIECTEST_) then
 				exit;
 			end_if;
@@ -254,7 +254,7 @@
 	jiecunit_loop_index := 0;
 	while jiecunit_loop_index < (n_) do
 		JiecTest_markFailures(_JIECTEST_);
-		_VALIDATE_NEAR_MSG(die_, expected_[jiecunit_loop_index], actual_[jiecunit_loop_index], abs_error_, JiecTest_arrayMessage(index:=jiecunit_loop_index, message:=message_), JiecTest_indexedText(text:=expected_text_, index:=jiecunit_loop_index), JiecTest_indexedText(text:=actual_text_, index:=jiecunit_loop_index), abs_error_text_);
+		_VALIDATE_NEAR_MSG(die_, expected_[jiecunit_loop_index], actual_[jiecunit_loop_index], abs_error_, JiecTest_arrayMessage(index:=jiecunit_loop_index, message:=message_), JiecTest_indexedText(array_text:=expected_text_, index:=jiecunit_loop_index), JiecTest_indexedText(array_text:=actual_text_, index:=jiecunit_loop_index), abs_error_text_);
 		if JiecTest_failedSinceMark(_JIECTEST_) then
 			exit;
 		end_if;

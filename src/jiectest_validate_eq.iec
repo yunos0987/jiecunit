@@ -45,8 +45,8 @@ function JiecTest_validateEQ_@@DATATYPE: bool$n$
 $n$
 	JiecTest_beginFailure(self:=self, file:=file, line:=line);$n$
 	JiecTest_print(self, 'Expected equality of these values:');$n$
-	JiecTest_printValue(self:=self, text:=expected_text, value:=TOSTR(expected));$n$
-	JiecTest_printValue(self:=self, text:=actual_text, value:=TOSTR(actual));$n$
+	JiecTest_printValue(self:=self, expr_text:=expected_text, value:=TOSTR(expected));$n$
+	JiecTest_printValue(self:=self, expr_text:=actual_text, value:=TOSTR(actual));$n$
 	JiecTest_endFailure(self:=self, message:=message, die:=die);$n$
 end$n$
 }

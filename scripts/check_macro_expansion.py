@@ -40,7 +40,7 @@ import sys
 import tempfile
 
 _DEF_RE = re.compile(r'^\{#define\s+([A-Za-z_][A-Za-z0-9_]*)_MSG\(([^)]*)\)')
-_TEXT_RE = re.compile(r"\w+_text:=(?:JiecTest_indexedText\(text:=)?'([^']*)'")
+_TEXT_RE = re.compile(r"\w+_text:=(?:JiecTest_indexedText\(array_text:=)?'([^']*)'")
 
 # Public assertion macros added without a deprecated NAME_MSG alias: (name,
 # number of value arguments[, number of source texts]). Each is checked like

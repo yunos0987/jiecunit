@@ -354,7 +354,7 @@ Prints "  <text>" and "    Which is: <value>". The second line is left out when
 the text is the same as the value (a literal), and only "  <value>" is printed
 when there is no text.
 @inout self The JiecTest_t structure.
-@input text The source text of the expression.
+@input expr_text The source text of the expression.
 @input value The value of the expression as text.
 @return Always returns true.}*)
 function JiecTest_printValue
@@ -362,16 +362,16 @@ function JiecTest_printValue
 	var_in_out self: JiecTest_t; end
 	var_input
 		(*{doc The source text of the expression.}*)
-		text: string[EXPRESSION_MAX_SIZE];
+		expr_text: string[EXPRESSION_MAX_SIZE];
 		(*{doc The value of the expression as text.}*)
 		value: string[STRING_MAX_SIZE];
 	end
-	if text = '' then
+	if expr_text = '' then
 		JiecTest_print(self, jiec_concat('  ', value));
 		return;
 	end_if;
-	JiecTest_print(self, jiec_concat('  ', text));
-	if text <> value then
+	JiecTest_print(self, jiec_concat('  ', expr_text));
+	if expr_text <> value then
 		JiecTest_print(self, jiec_concat('    Which is: ', value));
 	end_if;
 end
@@ -650,7 +650,7 @@ end
 If the statements are nested deeper than JIECUNIT_MAX_TRACE_DEPTH, a failure
 is reported, and the inner texts are not shown.
 @inout self The JiecTest_t structure.
-@input text The text to show with the failures.
+@input trace_text The text to show with the failures.
 @input file The source file name.
 @input line The line number.
 @return Always returns true.}*)
@@ -659,7 +659,7 @@ function JiecTest_pushTrace: bool
 	var_in_out self: JiecTest_t; end
 	var_input
 		(*{doc The text to show with the failures.}*)
-		text: string[EXPRESSION_MAX_SIZE];
+		trace_text: string[EXPRESSION_MAX_SIZE];
 		(*{doc The source file name.}*)
 		file: string[FILENAME_MAX_SIZE];
 		(*{doc The line number.}*)
@@ -669,7 +669,7 @@ function JiecTest_pushTrace: bool
 	if (self.tmp_trace_depth >= 0) and (self.tmp_trace_depth < JIECUNIT_MAX_TRACE_DEPTH) then
 		self.tmp_trace_files[self.tmp_trace_depth] := file;
 		self.tmp_trace_lines[self.tmp_trace_depth] := line;
-		self.tmp_trace_texts[self.tmp_trace_depth] := text;
+		self.tmp_trace_texts[self.tmp_trace_depth] := trace_text;
 	elsif self.tmp_trace_depth = JIECUNIT_MAX_TRACE_DEPTH then
 		JiecTest_beginFailure(self:=self, file:=file, line:=line);
 		JiecTest_print(self, jiec_concat('SCOPED_TRACE is nested deeper than ', dint_to_string(JIECUNIT_MAX_TRACE_DEPTH), ' (JIECUNIT_MAX_TRACE_DEPTH); the inner texts are not shown.'));

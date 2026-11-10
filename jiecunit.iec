@@ -1131,7 +1131,7 @@ end}
 // the statement is an argument. It must not return from the POU (an ASSERT_*
 // written directly in it): the trace would stay until the end of the cycle.
 {#define SCOPED_TRACE(text_, statement_)
-	JiecTest_pushTrace(self:=_JIECTEST_, text:=text_, file:=__FILE__, line:=__LINE__);
+	JiecTest_pushTrace(self:=_JIECTEST_, trace_text:=text_, file:=__FILE__, line:=__LINE__);
 	statement_;
 	JiecTest_popTrace(_JIECTEST_)}
 

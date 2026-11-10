@@ -85,17 +85,17 @@ TEST_S(test_time_to_literal)
 	EXPECT_EQ_STRING('T#35m47s483.648ms', time_to_literal(time#2147483.648ms));
 	EXPECT_EQ_STRING('T#2h', time_to_literal(time#2h));
 	EXPECT_EQ_STRING('T#100d', time_to_literal(time#100d));
-	EXPECT_EQ_STRING('T#10000d23h59m59s999.999999ms', time_to_literal(time#10001d - tiny));
+	EXPECT_EQ_STRING('T#10000d23h59m59s999.999999ms', time_to_literal(jiec_sub_time(time#10001d, tiny)));
 
 	// Fact: a negative duration has the sign after T#.
-	EXPECT_EQ_STRING('T#-1s', time_to_literal(time#0s - time#1s));
-	EXPECT_EQ_STRING('T#-1h500ms', time_to_literal(time#0s - time#1h500ms));
-	EXPECT_EQ_STRING('T#-0.001ms', time_to_literal(time#0s - time#0.001ms));
+	EXPECT_EQ_STRING('T#-1s', time_to_literal(jiec_sub_time(time#0s, time#1s)));
+	EXPECT_EQ_STRING('T#-1h500ms', time_to_literal(jiec_sub_time(time#0s, time#1h500ms)));
+	EXPECT_EQ_STRING('T#-0.001ms', time_to_literal(jiec_sub_time(time#0s, time#0.001ms)));
 
 	// Fact: jiec_time_quotient counts the whole units.
 	EXPECT_EQ_DINT(0, jiec_time_quotient(time#999ms, time#1s));
 	EXPECT_EQ_DINT(1, jiec_time_quotient(time#1s, time#1s));
-	EXPECT_EQ_DINT(86399, jiec_time_quotient(time#1d - time#1ms, time#1s));
+	EXPECT_EQ_DINT(86399, jiec_time_quotient(jiec_sub_time(time#1d, time#1ms), time#1s));
 	EXPECT_EQ_DINT(36500, jiec_time_quotient(time#36500d12h, time#1d));
 	// Fact: jiec_time_remainder is what is left after the whole units.
 	EXPECT_TRUE(time#999ms = jiec_time_remainder(time#999ms, time#1s));

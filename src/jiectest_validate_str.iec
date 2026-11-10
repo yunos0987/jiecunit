@@ -31,46 +31,46 @@ function JiecTest_validateSTR_CONTAINS: bool
 		file: string[FILENAME_MAX_SIZE];
 		(*{doc The line number.}*)
 		line: dint;
-		(*{doc The source text of the string (optional).}*)
+		(*{doc The source shown of the string (optional).}*)
 		haystack_text: string[EXPRESSION_MAX_SIZE] := '';
-		(*{doc The source text of the substring (optional).}*)
+		(*{doc The source shown of the substring (optional).}*)
 		needle_text: string[EXPRESSION_MAX_SIZE] := '';
 	end
 	var_temp
-		text: string[STRING_MAX_SIZE];
+		shown: string[STRING_MAX_SIZE];
 	end
 	JiecTest_validateSTR_CONTAINS := (needle = '') or (jiec_find(haystack, needle) > 0);
 	if JiecTest_validateSTR_CONTAINS then
 		return;
 	end_if;
 
-	text := haystack_text;
-	if text = '' then
-		text := jiec_quote(haystack);
+	shown := haystack_text;
+	if shown = '' then
+		shown := jiec_quote(haystack);
 	end_if;
 	JiecTest_beginFailure(self:=self, file:=file, line:=line);
-	JiecTest_print(self, jiec_concat('Value of: ', text));
+	JiecTest_print(self, jiec_concat('Value of: ', shown));
 	JiecTest_print(self, jiec_concat('Expected: has substring ', jiec_quote(needle)));
 	JiecTest_print(self, jiec_concat('  Actual: ', jiec_quote(haystack)));
 	JiecTest_endFailure(self:=self, message:=message, die:=die);
 end
 
 (*{doc The source text of an array element for the failure of EXPECT_EQ_ARRAY_*: text[index].
-@input text The source text of the array; empty if there is none.
+@input array_text The source text of the array; empty if there is none.
 @input index The index of the element.
-@return The text of the element, or an empty string if text is empty.}*)
+@return The text of the element, or an empty string if array_text is empty.}*)
 function JiecTest_indexedText: string[EXPRESSION_MAX_SIZE]
 	_PROLOGUE_OF_FUNCTION_()
 	var_input
 		(*{doc The source text of the array; empty if there is none.}*)
-		text: string[EXPRESSION_MAX_SIZE];
+		array_text: string[EXPRESSION_MAX_SIZE];
 		(*{doc The index of the element.}*)
 		index: dint;
 	end
-	if text = '' then
+	if array_text = '' then
 		JiecTest_indexedText := '';
 	else
-		JiecTest_indexedText := jiec_concat(text, '[', dint_to_string(index), ']');
+		JiecTest_indexedText := jiec_concat(array_text, '[', dint_to_string(index), ']');
 	end_if;
 end
 

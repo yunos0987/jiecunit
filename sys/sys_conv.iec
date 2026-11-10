@@ -85,8 +85,19 @@ end
 {#endif}
 
 {#if not (_MITSUBISHI)}
+// The sum and the difference of two TIME values. Sysmac Studio (OMRON) has no
+// + and - for TIME, so the standard functions ADD_TIME / SUB_TIME are used;
+// CODESYS has the operators only.
+{#if _CODESYS}
+	{#define jiec_add_time(lhs_, rhs_) ((lhs_) + (rhs_))}
+	{#define jiec_sub_time(lhs_, rhs_) ((lhs_) - (rhs_))}
+{#else}
+	{#define jiec_add_time(lhs_, rhs_) add_time(lhs_, rhs_)}
+	{#define jiec_sub_time(lhs_, rhs_) sub_time(lhs_, rhs_)}
+{#endif}
+
 (*{doc How many times a duration contains a unit, rounded down.
-Uses only the addition, the subtraction and the comparison of TIME values:
+Uses only the addition (ADD_TIME), the subtraction (SUB_TIME) and the comparison of TIME values:
 the PLC tools do not multiply or divide a TIME value by a number. It works
 without 64-bit integers and never computes a duration longer than value.
 @input value The duration; must not be negative.
@@ -113,17 +124,17 @@ function jiec_time_quotient: dint
 		chunk := unit;
 		chunk_count := 1;
 		while chunk_count < 1073741824 do
-			if (remaining - chunk) < chunk then
+			if jiec_sub_time(remaining, chunk) < chunk then
 				exit;
 			end_if;
-			chunk := chunk + chunk;
+			chunk := jiec_add_time(chunk, chunk);
 			chunk_count := chunk_count * 2;
 		end_while;
 		if jiec_time_quotient > 2147483647 - chunk_count then
 			jiec_time_quotient := 2147483647;
 			return;
 		end_if;
-		remaining := remaining - chunk;
+		remaining := jiec_sub_time(remaining, chunk);
 		jiec_time_quotient := jiec_time_quotient + chunk_count;
 	end_while;
 end
@@ -153,13 +164,13 @@ function jiec_time_remainder: time
 		chunk := unit;
 		chunk_count := 1;
 		while chunk_count < 1073741824 do
-			if (remaining - chunk) < chunk then
+			if jiec_sub_time(remaining, chunk) < chunk then
 				exit;
 			end_if;
-			chunk := chunk + chunk;
+			chunk := jiec_add_time(chunk, chunk);
 			chunk_count := chunk_count * 2;
 		end_while;
-		remaining := remaining - chunk;
+		remaining := jiec_sub_time(remaining, chunk);
 	end_while;
 	jiec_time_remainder := remaining;
 end
@@ -196,15 +207,15 @@ function time_to_literal: string[64]
 		days: dint;
 		seconds: dint;
 		nsec: dint;
-		fraction: dint;
-		fraction_str: string[16];
-		text: string[64];
+		ms_fraction: dint;
+		ms_fraction_str: string[16];
+		literal: string[64];
 	end
-	text := 'T#';
+	literal := 'T#';
 	remaining := in;
 	if in < time#0s then
-		text := 'T#-';
-		remaining := time#0s - in;
+		literal := 'T#-';
+		remaining := jiec_sub_time(time#0s, in);
 	end_if;
 	if remaining = time#0s then
 		time_to_literal := 'T#0s';
@@ -216,40 +227,40 @@ function time_to_literal: string[64]
 	days := jiec_time_quotient(remaining, time#1d);
 	if days > 0 then
 		remaining := jiec_time_remainder(remaining, time#1d);
-		text := jiec_concat(text, dint_to_string(days), 'd');
+		literal := jiec_concat(literal, dint_to_string(days), 'd');
 	end_if;
 	// Less than a day is left.
 	seconds := jiec_time_quotient(remaining, time#1s);
 	remaining := jiec_time_remainder(remaining, time#1s);
 	if seconds >= 3600 then
-		text := jiec_concat(text, dint_to_string(seconds / 3600), 'h');
+		literal := jiec_concat(literal, dint_to_string(seconds / 3600), 'h');
 		seconds := seconds mod 3600;
 	end_if;
 	if seconds >= 60 then
-		text := jiec_concat(text, dint_to_string(seconds / 60), 'm');
+		literal := jiec_concat(literal, dint_to_string(seconds / 60), 'm');
 		seconds := seconds mod 60;
 	end_if;
 	if seconds > 0 then
-		text := jiec_concat(text, dint_to_string(seconds), 's');
+		literal := jiec_concat(literal, dint_to_string(seconds), 's');
 	end_if;
 	// Less than a second is left: its nanoseconds fit in a DINT.
 	nsec := _jiec_subsecond_to_nsec(remaining);
-	fraction := nsec mod 1000000;
+	ms_fraction := nsec mod 1000000;
 	if nsec > 0 then
-		text := jiec_concat(text, dint_to_string(nsec / 1000000));
-		if fraction > 0 then
-			fraction_str := dint_to_string(fraction);
-			while len(fraction_str) < 6 do
-				fraction_str := jiec_concat('0', fraction_str);
+		literal := jiec_concat(literal, dint_to_string(nsec / 1000000));
+		if ms_fraction > 0 then
+			ms_fraction_str := dint_to_string(ms_fraction);
+			while len(ms_fraction_str) < 6 do
+				ms_fraction_str := jiec_concat('0', ms_fraction_str);
 			end_while;
-			while right(fraction_str, 1) = '0' do
-				fraction_str := left(fraction_str, len(fraction_str) - 1);
+			while right(ms_fraction_str, 1) = '0' do
+				ms_fraction_str := left(ms_fraction_str, len(ms_fraction_str) - 1);
 			end_while;
-			text := jiec_concat(text, '.', fraction_str);
+			literal := jiec_concat(literal, '.', ms_fraction_str);
 		end_if;
-		text := jiec_concat(text, 'ms');
+		literal := jiec_concat(literal, 'ms');
 	end_if;
-	time_to_literal := text;
+	time_to_literal := literal;
 end
 {#elif _MITSUBISHI}
 	// TODO:

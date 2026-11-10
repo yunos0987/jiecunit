@@ -232,6 +232,12 @@ end
 // This is the standard FIND; a target that names it differently can change
 // this one macro.
 {#define jiec_find(haystack, needle) find(haystack, needle)}
+// A DINT as a position or a length of the string functions (UINT on OMRON).
+{#if _OMRON}
+	{#define _jiec_to_strpos(value_) dint_to_uint(value_)}
+{#else}
+	{#define _jiec_to_strpos(value_) value_}
+{#endif}
 
 (*{doc Quote a string the way it is written as an ST literal.
 Encloses the string in quote characters, and escapes every quote character and
@@ -257,7 +263,7 @@ function jiec_quote: string[STRING_MAX_SIZE]
 	cut := false;
 	size := len(s);
 	for index := 1 to size do
-		piece := mid(s, 1, index);
+		piece := mid(s, 1, _jiec_to_strpos(index));
 		if piece = '$'' then
 			piece := '$$$'';
 		elsif piece = '$$' then
