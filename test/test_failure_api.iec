@@ -56,11 +56,13 @@ TEST_S(test_failure_messages)
 	EXPECT_NONFATAL_FAILURE(EXPECT_TRUE(flag), '  Actual: false');
 	EXPECT_NONFATAL_FAILURE(EXPECT_FALSE(not flag), 'Expected: false');
 	// Fact: NEAR prints the difference and the tolerance.
-	EXPECT_NONFATAL_FAILURE(EXPECT_NEAR(1.5, x, 0.1), 'The difference between 1.5 and x is 0.5, which exceeds 0.1, where');
-	EXPECT_NONFATAL_FAILURE(EXPECT_NEAR(1.5, x, 0.1), 'x evaluates to 1.0, and');
+	// (The text of an LREAL value differs between the targets, for example 0.5
+	// on jier and 5.00000000000000e-01 on OMRON, so it comes from lreal_to_string.)
+	EXPECT_NONFATAL_FAILURE(EXPECT_NEAR(1.5, x, 0.1), jiec_concat('The difference between 1.5 and x is ', lreal_to_string(0.5), ', which exceeds '));
+	EXPECT_NONFATAL_FAILURE(EXPECT_NEAR(1.5, x, 0.1), jiec_concat('x evaluates to ', lreal_to_string(x), ', and'));
 	// Fact: the ULP comparisons say so.
 	EXPECT_NONFATAL_FAILURE(EXPECT_DOUBLE_EQ(1.1, x), '  1.1');
-	EXPECT_NONFATAL_FAILURE(EXPECT_FLOAT_EQ(1.5, r), '    Which is: 1.0');
+	EXPECT_NONFATAL_FAILURE(EXPECT_FLOAT_EQ(1.5, r), jiec_concat('    Which is: ', lreal_to_string(1.0)));
 	// Fact: the message is printed, and ADD_FAILURE prints Failed.
 	EXPECT_NONFATAL_FAILURE(EXPECT_EQ_INT(5, a, 'the message'), 'the message');
 	EXPECT_NONFATAL_FAILURE(ADD_FAILURE('added'), 'added');
@@ -183,7 +185,7 @@ TEST_S(test_tolerant_arrays)
 	ASSERT_NEAR_ARRAY(expected_values, far_values, 2, 0.25);
 	EXPECT_NEAR_ARRAY(real_values, other_real_values, 2, 0.25);
 	// Fact: it goes on after elements that differ within the error, and reports the first one that is not.
-	EXPECT_NONFATAL_FAILURE(EXPECT_NEAR_ARRAY(expected_values, far_values, 3, 0.25), 'The difference between expected_values[2] and far_values[2] is 6.0');
+	EXPECT_NONFATAL_FAILURE(EXPECT_NEAR_ARRAY(expected_values, far_values, 3, 0.25), jiec_concat('The difference between expected_values[2] and far_values[2] is ', lreal_to_string(6.0), ','));
 	EXPECT_NONFATAL_FAILURE(EXPECT_NEAR_ARRAY(expected_values, far_values, 3, 0.25, 'more'), 'The arrays differ first at index 2. more');
 	EXPECT_NONFATAL_FAILURE(EXPECT_NEAR_ARRAY(expected_values, near_values, 3, 0.125), 'The arrays differ first at index 1.');
 	// Fact: a negative error fails as with EXPECT_NEAR, also when the arrays are equal.
