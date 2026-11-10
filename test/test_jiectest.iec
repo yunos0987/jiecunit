@@ -177,7 +177,6 @@ END_TEST_S
 TEST_S(test_jiectest_register)
 	var
 		jt: JiecTest_t;
-		jt_full: JiecTest_t;
 		slot_index: dint;
 		result: dint;
 	end
@@ -231,28 +230,28 @@ TEST_S(test_jiectest_register)
 
 	// Fact: JiecTest_register succeeds at MAX_TESTS-1 and fails at MAX_TESTS.
 		// Arrange
-	JiecTest_initialize(jt_full);
-	jt_full.num_of_tests := MAX_TESTS - 1;
+	JiecTest_initialize(jt);
+	jt.num_of_tests := MAX_TESTS - 1;
 	// The slots through a variable (an index written as a constant expression, [N - 1], is rejected by Sysmac Studio as out of range).
 	slot_index := MAX_TESTS - 2;
-	jt_full.testnames[slot_index] := 'tail';
+	jt.testnames[slot_index] := 'tail';
 	slot_index := MAX_TESTS - 1;
 		// Act
-	result := JiecTest_register(jt_full, 'last_slot');
+	result := JiecTest_register(jt, 'last_slot');
 		// Assert
 	EXPECT_EQ_INT(MAX_TESTS, result);
-	EXPECT_EQ_INT(MAX_TESTS, jt_full.num_of_tests);
-	EXPECT_EQ_STRING('last_slot', jt_full.testnames[slot_index]);
+	EXPECT_EQ_INT(MAX_TESTS, jt.num_of_tests);
+	EXPECT_EQ_STRING('last_slot', jt.testnames[slot_index]);
 
 	// Fact: JiecTest_register keeps the last slot unchanged when overflow is rejected.
 		// Arrange
 	// (keep full state)
 		// Act
-	result := JiecTest_register(jt_full, 'overflow');
+	result := JiecTest_register(jt, 'overflow');
 		// Assert
 	EXPECT_EQ_INT(-2, result);
-	EXPECT_EQ_INT(MAX_TESTS, jt_full.num_of_tests);
-	EXPECT_EQ_STRING('last_slot', jt_full.testnames[slot_index]);
+	EXPECT_EQ_INT(MAX_TESTS, jt.num_of_tests);
+	EXPECT_EQ_STRING('last_slot', jt.testnames[slot_index]);
 END_TEST_S
 
 TEST_S(test_jiectest_empty)

@@ -12,6 +12,13 @@
  * or, to compile for every target and run the tests in one step:
  * $ python scripts/run_tests.py
  *)
+// The tests have their own JiecTest_t variables (about 26; each holds a table
+// of MAX_TESTS names), so the default of 512 does not fit in the variable
+// memory of a small PLC (4 MB on Sysmac Studio). 128 is enough for the tests
+// here; -D MAX_TESTS=n still overrides it.
+{#ifndef MAX_TESTS}
+{#define MAX_TESTS 128}
+{#endif}
 {#include <jiecunit.iec>}
 
 {#include "test_sys.iec"}
