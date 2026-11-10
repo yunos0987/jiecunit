@@ -40,11 +40,12 @@ import sys
 import tempfile
 
 _DEF_RE = re.compile(r'^\{#define\s+([A-Za-z_][A-Za-z0-9_]*)_MSG\(([^)]*)\)')
-_TEXT_RE = re.compile(r"\w+_text:='([^']*)'")
+_TEXT_RE = re.compile(r"\w+_text:=(?:JiecTest_indexedText\(text:=)?'([^']*)'")
 
 # Public assertion macros added without a deprecated NAME_MSG alias: (name,
-# number of value arguments). Each is checked like a pair, against itself
-# with an explicit empty message, and for the order of its source texts.
+# number of value arguments[, number of source texts]). Each is checked like
+# a pair, against itself with an explicit empty message, and for the order of
+# its source texts (the first arguments; by default all of them).
 _NO_MSG_ALIAS_MACROS = [
     ('EXPECT_DOUBLE_EQ', 2),
     ('EXPECT_FLOAT_EQ', 2),
@@ -52,6 +53,64 @@ _NO_MSG_ALIAS_MACROS = [
     ('ASSERT_FLOAT_EQ', 2),
     ('ASSERT_NO_FATAL_FAILURE', 1),
     ('EXPECT_NO_FATAL_FAILURE', 1),
+    ('EXPECT_STR_CONTAINS', 2),
+    ('ASSERT_STR_CONTAINS', 2),
+    ('EXPECT_EQ_ARRAY_SINT', 3, 2),
+    ('EXPECT_EQ_ARRAY_INT', 3, 2),
+    ('EXPECT_EQ_ARRAY_DINT', 3, 2),
+    ('EXPECT_EQ_ARRAY_LINT', 3, 2),
+    ('EXPECT_EQ_ARRAY_INT32', 3, 2),
+    ('EXPECT_EQ_ARRAY_INT64', 3, 2),
+    ('EXPECT_EQ_ARRAY_USINT', 3, 2),
+    ('EXPECT_EQ_ARRAY_UINT', 3, 2),
+    ('EXPECT_EQ_ARRAY_UDINT', 3, 2),
+    ('EXPECT_EQ_ARRAY_ULINT', 3, 2),
+    ('EXPECT_EQ_ARRAY_UINT32', 3, 2),
+    ('EXPECT_EQ_ARRAY_UINT64', 3, 2),
+    ('EXPECT_EQ_ARRAY_REAL', 3, 2),
+    ('EXPECT_EQ_ARRAY_LREAL', 3, 2),
+    ('EXPECT_EQ_ARRAY_FLOAT', 3, 2),
+    ('EXPECT_EQ_ARRAY_DOUBLE', 3, 2),
+    ('EXPECT_EQ_ARRAY_BOOL', 3, 2),
+    ('EXPECT_EQ_ARRAY_BYTE', 3, 2),
+    ('EXPECT_EQ_ARRAY_WORD', 3, 2),
+    ('EXPECT_EQ_ARRAY_DWORD', 3, 2),
+    ('EXPECT_EQ_ARRAY_LWORD', 3, 2),
+    ('EXPECT_EQ_ARRAY_BIT32', 3, 2),
+    ('EXPECT_EQ_ARRAY_BIT64', 3, 2),
+    ('EXPECT_EQ_ARRAY_TIME', 3, 2),
+    ('EXPECT_EQ_ARRAY_DATE', 3, 2),
+    ('EXPECT_EQ_ARRAY_TOD', 3, 2),
+    ('EXPECT_EQ_ARRAY_DT', 3, 2),
+    ('EXPECT_EQ_ARRAY_STRING', 3, 2),
+    ('ASSERT_EQ_ARRAY_SINT', 3, 2),
+    ('ASSERT_EQ_ARRAY_INT', 3, 2),
+    ('ASSERT_EQ_ARRAY_DINT', 3, 2),
+    ('ASSERT_EQ_ARRAY_LINT', 3, 2),
+    ('ASSERT_EQ_ARRAY_INT32', 3, 2),
+    ('ASSERT_EQ_ARRAY_INT64', 3, 2),
+    ('ASSERT_EQ_ARRAY_USINT', 3, 2),
+    ('ASSERT_EQ_ARRAY_UINT', 3, 2),
+    ('ASSERT_EQ_ARRAY_UDINT', 3, 2),
+    ('ASSERT_EQ_ARRAY_ULINT', 3, 2),
+    ('ASSERT_EQ_ARRAY_UINT32', 3, 2),
+    ('ASSERT_EQ_ARRAY_UINT64', 3, 2),
+    ('ASSERT_EQ_ARRAY_REAL', 3, 2),
+    ('ASSERT_EQ_ARRAY_LREAL', 3, 2),
+    ('ASSERT_EQ_ARRAY_FLOAT', 3, 2),
+    ('ASSERT_EQ_ARRAY_DOUBLE', 3, 2),
+    ('ASSERT_EQ_ARRAY_BOOL', 3, 2),
+    ('ASSERT_EQ_ARRAY_BYTE', 3, 2),
+    ('ASSERT_EQ_ARRAY_WORD', 3, 2),
+    ('ASSERT_EQ_ARRAY_DWORD', 3, 2),
+    ('ASSERT_EQ_ARRAY_LWORD', 3, 2),
+    ('ASSERT_EQ_ARRAY_BIT32', 3, 2),
+    ('ASSERT_EQ_ARRAY_BIT64', 3, 2),
+    ('ASSERT_EQ_ARRAY_TIME', 3, 2),
+    ('ASSERT_EQ_ARRAY_DATE', 3, 2),
+    ('ASSERT_EQ_ARRAY_TOD', 3, 2),
+    ('ASSERT_EQ_ARRAY_DT', 3, 2),
+    ('ASSERT_EQ_ARRAY_STRING', 3, 2),
 ]
 _MESSAGE = "'a, b (c)'"
 _VALUES = ['v1', 'v2', 'v3', 'v4']
@@ -165,7 +224,7 @@ def _probe_source(pairs, negatives):
                 ('old_msg', '{}({}{})'.format(name + '_MSG', args + ', ' if args else '', _MESSAGE))):
             _emit('{}_{}'.format(i, kind), expr)
 
-    for i, (name, arity) in enumerate(_NO_MSG_ALIAS_MACROS):
+    for i, (name, arity) in enumerate(e[:2] for e in _NO_MSG_ALIAS_MACROS):
         args = ', '.join(_VALUES[:arity])
         for kind, expr in (
                 ('no_msg', '{}({})'.format(name, args)),
@@ -367,7 +426,7 @@ def main():
     for key, name, arity in (
             [('{}_new_no_msg'.format(i), n, a) for i, (n, a) in enumerate(pairs)]
             + [('{}_old_msg'.format(i), n + '_MSG', a) for i, (n, a) in enumerate(pairs)]
-            + [('x{}_no_msg'.format(i), n, a) for i, (n, a) in enumerate(_NO_MSG_ALIAS_MACROS)]):
+            + [('x{}_no_msg'.format(i), e[0], e[-1]) for i, e in enumerate(_NO_MSG_ALIAS_MACROS)]):
         body = blocks.get(key)
         if body is None:
             text_failures.append('{}: probe block missing'.format(name))
@@ -379,7 +438,7 @@ def main():
                 name, texts, _VALUES[:arity]))
     failures.extend('(source text) ' + f for f in text_failures)
 
-    for i, (name, arity) in enumerate(_NO_MSG_ALIAS_MACROS):
+    for i, (name, arity) in enumerate(e[:2] for e in _NO_MSG_ALIAS_MACROS):
         new = blocks.get('x{}_no_msg'.format(i))
         old = blocks.get('x{}_empty_msg'.format(i))
         if not new or not old:

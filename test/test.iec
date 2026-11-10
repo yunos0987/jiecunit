@@ -89,6 +89,7 @@ DEFINE_CONFIGURATION(
 		// failure API
 		test_failure_messages,
 		test_fatal_failure_in_helper,
-		test_fatal_failure_checks
+		test_fatal_failure_checks,
+		test_array_and_substring
 	)
 )

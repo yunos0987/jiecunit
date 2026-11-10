@@ -48,11 +48,21 @@ TEST_S(test_ulp)
 	EXPECT_EQ_REAL(1.25, r);
 END_TEST_S
 
+TEST_S(test_array_and_substring)
+	var
+		expected_values: array[0..2] of dint := [1, 2, 3];
+		actual_values: array[0..2] of dint := [1, 5, 3];
+	end
+	EXPECT_EQ_ARRAY_DINT(expected_values, actual_values, 3);
+	EXPECT_STR_CONTAINS('abc', 'bd', 'a message');
+END_TEST_S
+
 DEFINE_CONFIGURATION(
 	_JIEC_TESTNAMES_LIST_(
 		test_near_nan,
 		test_string_quoting,
 		test_other_types,
-		test_ulp
+		test_ulp,
+		test_array_and_substring
 	)
 )

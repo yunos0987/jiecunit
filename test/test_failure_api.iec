@@ -13,6 +13,18 @@ function test_helper_check_positive: bool
 	test_helper_check_positive := true;
 end
 
+(*{doc A helper for the tests below: compares two arrays with ASSERT_EQ_ARRAY_DINT.
+@return True if the arrays are equal.}*)
+function test_helper_assert_arrays: bool
+	JIECUNIT_DECLARE_HELPER();
+	var
+		a: array[0..1] of dint := [1, 2];
+		b: array[0..1] of dint := [1, 3];
+	end
+	ASSERT_EQ_ARRAY_DINT(a, b, 2);
+	test_helper_assert_arrays := true;
+end
+
 (*{doc A helper for the tests below: one non-fatal failure.
 @return Always returns true.}*)
 function test_helper_add_failure: bool
@@ -116,4 +128,40 @@ TEST_S(test_fatal_failure_checks)
 	EXPECT_EQ_INT(0, jt.tmp_fatal_mark_depth);
 	EXPECT_FALSE(jt.tmp_capturing);
 	EXPECT_EQ_INT(0, jt.tmp_capture_rejected);
+END_TEST_S
+
+TEST_S(test_array_and_substring)
+	var
+		a: array[0..3] of dint := [1, 2, 3, 4];
+		b: array[0..3] of dint := [1, 2, 3, 4];
+		c: array[0..3] of dint := [1, 2, 9, 4];
+		names: array[0..1] of string[16] := ['ab', 'cd'];
+		others: array[0..1] of string[16] := ['ab', 'ce'];
+		r: array[0..1] of real := [0.1, 0.2];
+		s: string[32] := 'hello world';
+		rr: array[0..1] of real := [0.1, 0.3];
+		ok: bool;
+	end
+	// Fact: equal arrays pass, also when only the first n elements are compared.
+	EXPECT_EQ_ARRAY_DINT(a, b, 4);
+	EXPECT_EQ_ARRAY_DINT(a, c, 2);
+	EXPECT_EQ_ARRAY_DINT(a, c, 0);
+	EXPECT_EQ_ARRAY_REAL(r, r, 2);
+	ASSERT_EQ_ARRAY_STRING(names, names, 2);
+	// Fact: the first element that differs is reported with its index.
+	EXPECT_NONFATAL_FAILURE(EXPECT_EQ_ARRAY_DINT(a, c, 4), '  c[2]');
+	EXPECT_NONFATAL_FAILURE(EXPECT_EQ_ARRAY_DINT(a, c, 4), '    Which is: 9');
+	EXPECT_NONFATAL_FAILURE(EXPECT_EQ_ARRAY_DINT(a, c, 4, 'more'), 'The arrays differ first at index 2. more');
+	EXPECT_NONFATAL_FAILURE(EXPECT_EQ_ARRAY_STRING(names, others, 2), 'Which is: $'ce$'');
+	EXPECT_NONFATAL_FAILURE(EXPECT_EQ_ARRAY_REAL(r, rr, 2), '  rr[1]');
+	// Fact: ASSERT_EQ_ARRAY_* fails fatally.
+	EXPECT_FATAL_FAILURE(ok := test_helper_assert_arrays(), 'The arrays differ first at index 1.');
+	// Fact: EXPECT_STR_CONTAINS finds a substring; an empty one is always contained.
+	EXPECT_STR_CONTAINS(s, 'o w');
+	EXPECT_STR_CONTAINS(s, '');
+	ASSERT_STR_CONTAINS(s, 'hello');
+	EXPECT_NONFATAL_FAILURE(EXPECT_STR_CONTAINS(s, 'xyz'), 'Expected: has substring $'xyz$'');
+	EXPECT_NONFATAL_FAILURE(EXPECT_STR_CONTAINS(s, 'xyz'), '  Actual: $'hello world$'');
+	EXPECT_NONFATAL_FAILURE(EXPECT_STR_CONTAINS(s, 'xyz', 'with a message'), 'with a message');
+	EXPECT_FALSE(HAS_FAILURE());
 END_TEST_S

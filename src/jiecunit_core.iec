@@ -195,6 +195,29 @@
 		_ON_FAILED_ACTION(die_);
 	end_if}
 
+// Compare two arrays element by element from index 0 to n - 1 and report the
+// first element that differs with the EQ validator of the element type
+// (BASE is its _VALIDATE_EQ_<DATATYPE>_MSG macro). The loop variable
+// jiecunit_loop_index is declared by the TEST_* headers and by
+// JIECUNIT_DECLARE_HELPER. (ST does not short-circuit `and`, so the loop
+// exits instead of testing the index and the elements in one condition.)
+{#define _VALIDATE_EQ_ARRAY_(BASE, die_, expected_, actual_, n_, message_, expected_text_, actual_text_)
+	jiecunit_loop_index := 0;
+	while jiecunit_loop_index < (n_) do
+		if expected_[jiecunit_loop_index] <> actual_[jiecunit_loop_index] then
+			exit;
+		end_if;
+		jiecunit_loop_index := jiecunit_loop_index + 1;
+	end_while;
+	if jiecunit_loop_index < (n_) then
+		BASE(die_, expected_[jiecunit_loop_index], actual_[jiecunit_loop_index], JiecTest_arrayMessage(index:=jiecunit_loop_index, message:=message_), JiecTest_indexedText(text:=expected_text_, index:=jiecunit_loop_index), JiecTest_indexedText(text:=actual_text_, index:=jiecunit_loop_index));
+	end_if}
+
+{#define _VALIDATE_STR_CONTAINS_MSG(die_, haystack_, needle_, message_, haystack_text_, needle_text_)
+	if not JiecTest_validateSTR_CONTAINS(self:=_JIECTEST_, haystack:=haystack_, needle:=needle_, message:=message_, die:=die_, file:=__FILE__, line:=__LINE__, haystack_text:=haystack_text_, needle_text:=needle_text_) then
+		_ON_FAILED_ACTION(die_);
+	end_if}
+
 {#define _VALIDATE_NEAR_MSG(die, val1, val2, abs_error, message, t1, t2, t3)    _VALIDATE_NEAR_DATATYPE(DOUBLE, die, val1, val2, abs_error, message, t1, t2, t3)}
 
 {#define _VALIDATE_NEAR_REL_(die_, val1_, val2_, rel_error_, message_, val1_text_, val2_text_, rel_error_text_)

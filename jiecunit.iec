@@ -895,6 +895,73 @@
 {#define EXPECT_FLOAT_EQ(expected, actual, ...)         _VALIDATE_FLOAT_EQ_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 {#define ASSERT_DOUBLE_EQ(expected, actual, ...)        _VALIDATE_DOUBLE_EQ_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 {#define ASSERT_FLOAT_EQ(expected, actual, ...)         _VALIDATE_FLOAT_EQ_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+// Array equality: EXPECT_EQ_ARRAY_<T>(expected, actual, n) compares the
+// elements 0 to n - 1 of two arrays of the element type <T> (the types of
+// EXPECT_EQ_<T>; both arrays must start at index 0), and reports the first
+// element that differs, as expected[i] and actual[i]. n must be from 0 to the
+// length of the arrays; n and the arrays are evaluated more than once, so
+// pass expressions without side effects.
+{#define EXPECT_EQ_ARRAY_SINT(expected, actual, n, ...)  _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_INT32_MSG, false, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_ARRAY_INT(expected, actual, n, ...)   _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_INT32_MSG, false, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_ARRAY_DINT(expected, actual, n, ...)  _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_INT32_MSG, false, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_ARRAY_LINT(expected, actual, n, ...)  _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_INT64_MSG, false, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_ARRAY_INT32(expected, actual, n, ...) _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_INT32_MSG, false, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_ARRAY_INT64(expected, actual, n, ...) _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_INT64_MSG, false, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_ARRAY_USINT(expected, actual, n, ...) _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_UINT32_MSG, false, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_ARRAY_UINT(expected, actual, n, ...)  _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_UINT32_MSG, false, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_ARRAY_UDINT(expected, actual, n, ...) _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_UINT32_MSG, false, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_ARRAY_ULINT(expected, actual, n, ...) _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_UINT64_MSG, false, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_ARRAY_UINT32(expected, actual, n, ...) _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_UINT32_MSG, false, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_ARRAY_UINT64(expected, actual, n, ...) _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_UINT64_MSG, false, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_ARRAY_REAL(expected, actual, n, ...)  _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_FLOAT_MSG, false, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_ARRAY_LREAL(expected, actual, n, ...) _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_DOUBLE_MSG, false, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_ARRAY_FLOAT(expected, actual, n, ...) _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_FLOAT_MSG, false, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_ARRAY_DOUBLE(expected, actual, n, ...) _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_DOUBLE_MSG, false, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_ARRAY_BOOL(expected, actual, n, ...)  _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_BOOL_MSG, false, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_ARRAY_BYTE(expected, actual, n, ...)  _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_BIT32_MSG, false, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_ARRAY_WORD(expected, actual, n, ...)  _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_BIT32_MSG, false, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_ARRAY_DWORD(expected, actual, n, ...) _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_BIT32_MSG, false, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_ARRAY_LWORD(expected, actual, n, ...) _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_BIT64_MSG, false, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_ARRAY_BIT32(expected, actual, n, ...) _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_BIT32_MSG, false, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_ARRAY_BIT64(expected, actual, n, ...) _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_BIT64_MSG, false, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_ARRAY_TIME(expected, actual, n, ...)  _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_TIME_MSG, false, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_ARRAY_DATE(expected, actual, n, ...)  _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_DATE_MSG, false, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_ARRAY_TOD(expected, actual, n, ...)   _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_TOD_MSG, false, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_ARRAY_DT(expected, actual, n, ...)    _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_DT_MSG, false, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_EQ_ARRAY_STRING(expected, actual, n, ...) _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_STRING_MSG, false, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_ARRAY_SINT(expected, actual, n, ...)  _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_INT32_MSG, true, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_ARRAY_INT(expected, actual, n, ...)   _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_INT32_MSG, true, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_ARRAY_DINT(expected, actual, n, ...)  _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_INT32_MSG, true, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_ARRAY_LINT(expected, actual, n, ...)  _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_INT64_MSG, true, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_ARRAY_INT32(expected, actual, n, ...) _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_INT32_MSG, true, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_ARRAY_INT64(expected, actual, n, ...) _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_INT64_MSG, true, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_ARRAY_USINT(expected, actual, n, ...) _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_UINT32_MSG, true, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_ARRAY_UINT(expected, actual, n, ...)  _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_UINT32_MSG, true, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_ARRAY_UDINT(expected, actual, n, ...) _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_UINT32_MSG, true, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_ARRAY_ULINT(expected, actual, n, ...) _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_UINT64_MSG, true, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_ARRAY_UINT32(expected, actual, n, ...) _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_UINT32_MSG, true, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_ARRAY_UINT64(expected, actual, n, ...) _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_UINT64_MSG, true, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_ARRAY_REAL(expected, actual, n, ...)  _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_FLOAT_MSG, true, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_ARRAY_LREAL(expected, actual, n, ...) _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_DOUBLE_MSG, true, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_ARRAY_FLOAT(expected, actual, n, ...) _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_FLOAT_MSG, true, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_ARRAY_DOUBLE(expected, actual, n, ...) _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_DOUBLE_MSG, true, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_ARRAY_BOOL(expected, actual, n, ...)  _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_BOOL_MSG, true, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_ARRAY_BYTE(expected, actual, n, ...)  _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_BIT32_MSG, true, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_ARRAY_WORD(expected, actual, n, ...)  _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_BIT32_MSG, true, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_ARRAY_DWORD(expected, actual, n, ...) _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_BIT32_MSG, true, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_ARRAY_LWORD(expected, actual, n, ...) _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_BIT64_MSG, true, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_ARRAY_BIT32(expected, actual, n, ...) _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_BIT32_MSG, true, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_ARRAY_BIT64(expected, actual, n, ...) _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_BIT64_MSG, true, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_ARRAY_TIME(expected, actual, n, ...)  _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_TIME_MSG, true, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_ARRAY_DATE(expected, actual, n, ...)  _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_DATE_MSG, true, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_ARRAY_TOD(expected, actual, n, ...)   _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_TOD_MSG, true, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_ARRAY_DT(expected, actual, n, ...)    _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_DT_MSG, true, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_EQ_ARRAY_STRING(expected, actual, n, ...) _VALIDATE_EQ_ARRAY_(_VALIDATE_EQ_STRING_MSG, true, expected, actual, n, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+
+// Substring: EXPECT_STR_CONTAINS(haystack, needle) checks that the string
+// haystack contains needle (an empty needle is contained in every string).
+{#define EXPECT_STR_CONTAINS(haystack, needle, ...)    _VALIDATE_STR_CONTAINS_MSG(false, haystack, needle, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@haystack), _JIECUNIT_TEXT(@needle))}
+{#define ASSERT_STR_CONTAINS(haystack, needle, ...)    _VALIDATE_STR_CONTAINS_MSG(true, haystack, needle, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@haystack), _JIECUNIT_TEXT(@needle))}
 
 
 
@@ -938,6 +1005,7 @@
 	_DECLARE_EXTERNAL_JIEC_TEST();
 	var
 		jiecunit_in_helper: bool := false;
+		jiecunit_loop_index: dint;
 	end
 	if (not JiecTest_isActive(_JIECTEST_)) or (JiecTest_activeTestname(_JIECTEST_) <> @program_name) then
 		return;
@@ -958,6 +1026,7 @@
 	_DECLARE_EXTERNAL_JIEC_TEST();
 	var
 		jiecunit_in_helper: bool := false;
+		jiecunit_loop_index: dint;
 		fixture: fixture_type;
 		jiecunit_fixture_init: fixture_type;
 	end
@@ -1051,6 +1120,7 @@ end}
 	_DECLARE_EXTERNAL_JIEC_TEST();
 	var
 		jiecunit_in_helper: bool := true;
+		jiecunit_loop_index: dint;
 	end}
 
 // Whether the current test has had a fatal / non-fatal / any failure.

@@ -1,4 +1,4 @@
-[========] Running 4 tests.
+[========] Running 5 tests.
 [ RUN    ] test_near_nan
 test/golden/failure_formats_more.iec:12: Failure
 The difference between nan_value and 1.0 is nan, which exceeds 0.5, where
@@ -60,11 +60,26 @@ Expected equality of these values:
   r
     Which is: 1.0
 [ FAILED ] test_ulp (<time>)
-[========] 4 tests ran. (<time>)
+[ RUN    ] test_array_and_substring
+test/golden/failure_formats_more.iec:56: Failure
+Expected equality of these values:
+  expected_values[1]
+    Which is: 2
+  actual_values[1]
+    Which is: 5
+The arrays differ first at index 1.
+test/golden/failure_formats_more.iec:57: Failure
+Value of: 'abc'
+Expected: has substring 'bd'
+  Actual: 'abc'
+a message
+[ FAILED ] test_array_and_substring (<time>)
+[========] 5 tests ran. (<time>)
 [ PASSED ] 0 tests.
-[ FAILED ] 4 tests, listed below.
+[ FAILED ] 5 tests, listed below.
 [ FAILED ] test_near_nan
 [ FAILED ] test_string_quoting
 [ FAILED ] test_other_types
 [ FAILED ] test_ulp
+[ FAILED ] test_array_and_substring
 [exit code: 1]

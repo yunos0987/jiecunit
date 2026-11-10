@@ -1,0 +1,95 @@
+{#ifndef __JIECTEST_VALIDATE_STR_IEC__}
+{#define __JIECTEST_VALIDATE_STR_IEC__}
+
+(*{doc Validate that a string contains a substring (EXPECT_STR_CONTAINS).
+An empty substring is contained in every string.
+On failure prints "Value of: <haystack>", "Expected: has substring <needle>"
+and "  Actual: <haystack value>".
+@inout self The JiecTest_t structure.
+@input haystack The string to search in.
+@input needle The substring to search for.
+@input message The failure message.
+@input die Whether to abort the test on failure. Default: true
+@input file The source file name.
+@input line The line number.
+@input haystack_text The source text of the string (optional).
+@input needle_text The source text of the substring (optional).
+@return True if the string contains the substring, false otherwise.}*)
+function JiecTest_validateSTR_CONTAINS: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc The string to search in.}*)
+		haystack: string[STRING_MAX_SIZE];
+		(*{doc The substring to search for.}*)
+		needle: string[STRING_MAX_SIZE];
+		(*{doc The failure message.}*)
+		message: string[STRING_MAX_SIZE];
+		(*{doc Whether to abort the test on failure.}*)
+		die: bool := true;
+		(*{doc The source file name.}*)
+		file: string[FILENAME_MAX_SIZE];
+		(*{doc The line number.}*)
+		line: dint;
+		(*{doc The source text of the string (optional).}*)
+		haystack_text: string[EXPRESSION_MAX_SIZE] := '';
+		(*{doc The source text of the substring (optional).}*)
+		needle_text: string[EXPRESSION_MAX_SIZE] := '';
+	end
+	var_temp
+		text: string[STRING_MAX_SIZE];
+	end
+	JiecTest_validateSTR_CONTAINS := (needle = '') or (jiec_find(haystack, needle) > 0);
+	if JiecTest_validateSTR_CONTAINS then
+		return;
+	end_if;
+
+	text := haystack_text;
+	if text = '' then
+		text := jiec_quote(haystack);
+	end_if;
+	JiecTest_beginFailure(self:=self, file:=file, line:=line);
+	JiecTest_print(self, jiec_concat('Value of: ', text));
+	JiecTest_print(self, jiec_concat('Expected: has substring ', jiec_quote(needle)));
+	JiecTest_print(self, jiec_concat('  Actual: ', jiec_quote(haystack)));
+	JiecTest_endFailure(self:=self, message:=message, die:=die);
+end
+
+(*{doc The source text of an array element for the failure of EXPECT_EQ_ARRAY_*: text[index].
+@input text The source text of the array; empty if there is none.
+@input index The index of the element.
+@return The text of the element, or an empty string if text is empty.}*)
+function JiecTest_indexedText: string[EXPRESSION_MAX_SIZE]
+	_PROLOGUE_OF_FUNCTION_()
+	var_input
+		(*{doc The source text of the array; empty if there is none.}*)
+		text: string[EXPRESSION_MAX_SIZE];
+		(*{doc The index of the element.}*)
+		index: dint;
+	end
+	if text = '' then
+		JiecTest_indexedText := '';
+	else
+		JiecTest_indexedText := jiec_concat(text, '[', dint_to_string(index), ']');
+	end_if;
+end
+
+(*{doc The message of the failure of EXPECT_EQ_ARRAY_*: where the arrays differ, followed by the message of the assertion.
+@input index The first index where the arrays differ.
+@input message The message of the assertion (optional).
+@return The message.}*)
+function JiecTest_arrayMessage: string[STRING_MAX_SIZE]
+	_PROLOGUE_OF_FUNCTION_()
+	var_input
+		(*{doc The first index where the arrays differ.}*)
+		index: dint;
+		(*{doc The message of the assertion (optional).}*)
+		message: string[STRING_MAX_SIZE];
+	end
+	JiecTest_arrayMessage := jiec_concat('The arrays differ first at index ', dint_to_string(index), '.');
+	if message <> '' then
+		JiecTest_arrayMessage := jiec_concat(JiecTest_arrayMessage, ' ', message);
+	end_if;
+end
+
+{#endif}
