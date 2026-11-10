@@ -46,6 +46,10 @@ _TEXT_RE = re.compile(r"\w+_text:='([^']*)'")
 # number of value arguments). Each is checked like a pair, against itself
 # with an explicit empty message, and for the order of its source texts.
 _NO_MSG_ALIAS_MACROS = [
+    ('EXPECT_DOUBLE_EQ', 2),
+    ('EXPECT_FLOAT_EQ', 2),
+    ('ASSERT_DOUBLE_EQ', 2),
+    ('ASSERT_FLOAT_EQ', 2),
 ]
 _MESSAGE = "'a, b (c)'"
 _VALUES = ['v1', 'v2', 'v3', 'v4']

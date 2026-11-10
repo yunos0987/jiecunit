@@ -1,4 +1,4 @@
-[========] Running 3 tests.
+[========] Running 4 tests.
 [ RUN    ] test_near_nan
 test/golden/failure_formats_more.iec:12: Failure
 The difference between nan_value and 1.0 is nan, which exceeds 0.5, where
@@ -42,10 +42,29 @@ Expected equality of these values:
   b
     Which is: true
 [ FAILED ] test_other_types (<time>)
-[========] 3 tests ran. (<time>)
+[ RUN    ] test_ulp
+test/golden/failure_formats_more.iec:46: Failure
+Expected equality of these values (within 4 ULPs):
+  1.1
+  x
+    Which is: 1.0
+test/golden/failure_formats_more.iec:47: Failure
+Expected equality of these values (within 4 ULPs):
+  1.5
+  r
+    Which is: 1.0
+REAL
+test/golden/failure_formats_more.iec:48: Failure
+Expected equality of these values:
+  1.25
+  r
+    Which is: 1.0
+[ FAILED ] test_ulp (<time>)
+[========] 4 tests ran. (<time>)
 [ PASSED ] 0 tests.
-[ FAILED ] 3 tests, listed below.
+[ FAILED ] 4 tests, listed below.
 [ FAILED ] test_near_nan
 [ FAILED ] test_string_quoting
 [ FAILED ] test_other_types
+[ FAILED ] test_ulp
 [exit code: 1]

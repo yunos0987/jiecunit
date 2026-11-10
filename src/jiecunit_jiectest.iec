@@ -442,5 +442,6 @@ end
 {#include "jiectest_validate_gt.iec"}
 {#include "jiectest_validate_near.iec"}
 {#include "jiectest_validate_near_rel.iec"}
+{#include "jiectest_validate_ulp.iec"}
 
 {#endif}

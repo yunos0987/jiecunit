@@ -33,6 +33,9 @@ pragma, so the doc text in the macro bodies does not name the datatype.
 	{#define _JIECTEST_UNLESS_MITSUBISHI_(...)}
 {#endif}
 
+// A REAL value is shown exactly, as the LREAL it converts to.
+{#define _JIECTEST_REAL_TO_STRING_(value) lreal_to_string(real_to_lreal(value))}
+
 // Expands M(DATATYPE, type, to_string) for every datatype of EQ/NE.
 {#define _JIECTEST_FOR_EQ_TYPES_(M)
 	M(INT32, dint, dint_to_string)
@@ -40,6 +43,7 @@ pragma, so the doc text in the macro bodies does not name the datatype.
 	M(UINT32, udint, udint_to_string)
 	_JIECTEST_UNLESS_KEYENCE_MITSUBISHI_(M(UINT64, ulint, ulint_to_string))
 	M(DOUBLE, lreal, lreal_to_string)
+	M(FLOAT, real, _JIECTEST_REAL_TO_STRING_)
 	M(BOOL, bool, bool_to_string)
 	M(BIT32, dword, dword_to_string)
 	_JIECTEST_UNLESS_KEYENCE_MITSUBISHI_(M(BIT64, lword, lword_to_string))
@@ -104,6 +108,7 @@ end$n$
 	_JIECTEST_DEFINE_VALIDATE_CMP_(CMP, OP, LABEL, UINT32, udint, udint_to_string)
 	_JIECTEST_UNLESS_KEYENCE_MITSUBISHI_(_JIECTEST_DEFINE_VALIDATE_CMP_(CMP, OP, LABEL, UINT64, ulint, ulint_to_string))
 	_JIECTEST_DEFINE_VALIDATE_CMP_(CMP, OP, LABEL, DOUBLE, lreal, lreal_to_string)
+	_JIECTEST_DEFINE_VALIDATE_CMP_(CMP, OP, LABEL, FLOAT, real, _JIECTEST_REAL_TO_STRING_)
 	_JIECTEST_UNLESS_MITSUBISHI_(_JIECTEST_DEFINE_VALIDATE_CMP_(CMP, OP, LABEL, TIME, time, time_to_string_sec))
 	_JIECTEST_UNLESS_KEYENCE_MITSUBISHI_(_JIECTEST_DEFINE_VALIDATE_CMP_(CMP, OP, LABEL, DATE, date, date_to_string))
 	_JIECTEST_UNLESS_KEYENCE_MITSUBISHI_(_JIECTEST_DEFINE_VALIDATE_CMP_(CMP, OP, LABEL, TOD, time_of_day, tod_to_string))

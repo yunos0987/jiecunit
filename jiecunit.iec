@@ -130,10 +130,10 @@
 {#define EXPECT_EQ_UINT32_MSG(expected, actual, message)    _VALIDATE_EQ_UINT32_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 {#define EXPECT_EQ_UINT64_MSG(expected, actual, message)    _VALIDATE_EQ_UINT64_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
-{#define EXPECT_EQ_REAL_MSG(expected, actual, message)      _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Deprecated, use EXPECT_NEAR *)
-{#define EXPECT_EQ_LREAL_MSG(expected, actual, message)     _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Deprecated, use EXPECT_NEAR *)
-{#define EXPECT_EQ_FLOAT_MSG(expected, actual, message)     _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Deprecated, use EXPECT_NEAR *)
-{#define EXPECT_EQ_DOUBLE_MSG(expected, actual, message)    _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Deprecated, use EXPECT_NEAR *)
+{#define EXPECT_EQ_REAL_MSG(expected, actual, message)      _VALIDATE_EQ_FLOAT_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Exact; see also EXPECT_FLOAT_EQ / EXPECT_DOUBLE_EQ and EXPECT_NEAR *)
+{#define EXPECT_EQ_LREAL_MSG(expected, actual, message)     _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Exact; see also EXPECT_FLOAT_EQ / EXPECT_DOUBLE_EQ and EXPECT_NEAR *)
+{#define EXPECT_EQ_FLOAT_MSG(expected, actual, message)     _VALIDATE_EQ_FLOAT_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Exact; see also EXPECT_FLOAT_EQ / EXPECT_DOUBLE_EQ and EXPECT_NEAR *)
+{#define EXPECT_EQ_DOUBLE_MSG(expected, actual, message)    _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Exact; see also EXPECT_FLOAT_EQ / EXPECT_DOUBLE_EQ and EXPECT_NEAR *)
 
 {#define EXPECT_EQ_BOOL_MSG(expected, actual, message)      _VALIDATE_EQ_BOOL_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
@@ -167,9 +167,9 @@
 {#define EXPECT_NE_UINT32_MSG(expected, actual, message)    _VALIDATE_NE_UINT32_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 {#define EXPECT_NE_UINT64_MSG(expected, actual, message)    _VALIDATE_NE_UINT64_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
-{#define EXPECT_NE_REAL_MSG(expected, actual, message)      _VALIDATE_NE_DOUBLE_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_REAL_MSG(expected, actual, message)      _VALIDATE_NE_FLOAT_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 {#define EXPECT_NE_LREAL_MSG(expected, actual, message)     _VALIDATE_NE_DOUBLE_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
-{#define EXPECT_NE_FLOAT_MSG(expected, actual, message)     _VALIDATE_NE_DOUBLE_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_FLOAT_MSG(expected, actual, message)     _VALIDATE_NE_FLOAT_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 {#define EXPECT_NE_DOUBLE_MSG(expected, actual, message)    _VALIDATE_NE_DOUBLE_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
 {#define EXPECT_NE_BOOL_MSG(expected, actual, message)      _VALIDATE_NE_BOOL_MSG(false, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
@@ -203,9 +203,9 @@
 {#define EXPECT_LT_UINT32_MSG(lval, rval, message)  _VALIDATE_LT_UINT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define EXPECT_LT_UINT64_MSG(lval, rval, message)  _VALIDATE_LT_UINT64_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_LT_REAL_MSG(lval, rval, message)    _VALIDATE_LT_DOUBLE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LT_REAL_MSG(lval, rval, message)    _VALIDATE_LT_FLOAT_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define EXPECT_LT_LREAL_MSG(lval, rval, message)   _VALIDATE_LT_DOUBLE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
-{#define EXPECT_LT_FLOAT_MSG(lval, rval, message)   _VALIDATE_LT_DOUBLE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LT_FLOAT_MSG(lval, rval, message)   _VALIDATE_LT_FLOAT_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define EXPECT_LT_DOUBLE_MSG(lval, rval, message)  _VALIDATE_LT_DOUBLE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
 {#define EXPECT_LT_TIME_MSG(lval, rval, message)    _VALIDATE_LT_TIME_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
@@ -231,9 +231,9 @@
 {#define EXPECT_LE_UINT32_MSG(lval, rval, message)  _VALIDATE_LE_UINT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define EXPECT_LE_UINT64_MSG(lval, rval, message)  _VALIDATE_LE_UINT64_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_LE_REAL_MSG(lval, rval, message)    _VALIDATE_LE_DOUBLE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LE_REAL_MSG(lval, rval, message)    _VALIDATE_LE_FLOAT_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define EXPECT_LE_LREAL_MSG(lval, rval, message)   _VALIDATE_LE_DOUBLE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
-{#define EXPECT_LE_FLOAT_MSG(lval, rval, message)   _VALIDATE_LE_DOUBLE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LE_FLOAT_MSG(lval, rval, message)   _VALIDATE_LE_FLOAT_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define EXPECT_LE_DOUBLE_MSG(lval, rval, message)  _VALIDATE_LE_DOUBLE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
 {#define EXPECT_LE_TIME_MSG(lval, rval, message)    _VALIDATE_LE_TIME_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
@@ -259,9 +259,9 @@
 {#define EXPECT_GE_UINT32_MSG(lval, rval, message)  _VALIDATE_GE_UINT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define EXPECT_GE_UINT64_MSG(lval, rval, message)  _VALIDATE_GE_UINT64_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_GE_REAL_MSG(lval, rval, message)    _VALIDATE_GE_DOUBLE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GE_REAL_MSG(lval, rval, message)    _VALIDATE_GE_FLOAT_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define EXPECT_GE_LREAL_MSG(lval, rval, message)   _VALIDATE_GE_DOUBLE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
-{#define EXPECT_GE_FLOAT_MSG(lval, rval, message)   _VALIDATE_GE_DOUBLE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GE_FLOAT_MSG(lval, rval, message)   _VALIDATE_GE_FLOAT_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define EXPECT_GE_DOUBLE_MSG(lval, rval, message)  _VALIDATE_GE_DOUBLE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
 {#define EXPECT_GE_TIME_MSG(lval, rval, message)    _VALIDATE_GE_TIME_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
@@ -287,9 +287,9 @@
 {#define EXPECT_GT_UINT32_MSG(lval, rval, message)  _VALIDATE_GT_UINT32_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define EXPECT_GT_UINT64_MSG(lval, rval, message)  _VALIDATE_GT_UINT64_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_GT_REAL_MSG(lval, rval, message)    _VALIDATE_GT_DOUBLE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GT_REAL_MSG(lval, rval, message)    _VALIDATE_GT_FLOAT_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define EXPECT_GT_LREAL_MSG(lval, rval, message)   _VALIDATE_GT_DOUBLE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
-{#define EXPECT_GT_FLOAT_MSG(lval, rval, message)   _VALIDATE_GT_DOUBLE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GT_FLOAT_MSG(lval, rval, message)   _VALIDATE_GT_FLOAT_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define EXPECT_GT_DOUBLE_MSG(lval, rval, message)  _VALIDATE_GT_DOUBLE_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
 {#define EXPECT_GT_TIME_MSG(lval, rval, message)    _VALIDATE_GT_TIME_MSG(false, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
@@ -324,10 +324,10 @@
 {#define EXPECT_EQ_UINT32(expected, actual, ...)        _VALIDATE_EQ_UINT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 {#define EXPECT_EQ_UINT64(expected, actual, ...)        _VALIDATE_EQ_UINT64_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
-{#define EXPECT_EQ_REAL(expected, actual, ...)          _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Deprecated, use EXPECT_NEAR *)
-{#define EXPECT_EQ_LREAL(expected, actual, ...)         _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Deprecated, use EXPECT_NEAR *)
-{#define EXPECT_EQ_FLOAT(expected, actual, ...)         _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Deprecated, use EXPECT_NEAR *)
-{#define EXPECT_EQ_DOUBLE(expected, actual, ...)        _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Deprecated, use EXPECT_NEAR *)
+{#define EXPECT_EQ_REAL(expected, actual, ...)          _VALIDATE_EQ_FLOAT_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Exact; see also EXPECT_FLOAT_EQ / EXPECT_DOUBLE_EQ and EXPECT_NEAR *)
+{#define EXPECT_EQ_LREAL(expected, actual, ...)         _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Exact; see also EXPECT_FLOAT_EQ / EXPECT_DOUBLE_EQ and EXPECT_NEAR *)
+{#define EXPECT_EQ_FLOAT(expected, actual, ...)         _VALIDATE_EQ_FLOAT_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Exact; see also EXPECT_FLOAT_EQ / EXPECT_DOUBLE_EQ and EXPECT_NEAR *)
+{#define EXPECT_EQ_DOUBLE(expected, actual, ...)        _VALIDATE_EQ_DOUBLE_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Exact; see also EXPECT_FLOAT_EQ / EXPECT_DOUBLE_EQ and EXPECT_NEAR *)
 
 {#define EXPECT_EQ_BOOL(expected, actual, ...)          _VALIDATE_EQ_BOOL_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
@@ -361,9 +361,9 @@
 {#define EXPECT_NE_UINT32(expected, actual, ...)        _VALIDATE_NE_UINT32_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 {#define EXPECT_NE_UINT64(expected, actual, ...)        _VALIDATE_NE_UINT64_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
-{#define EXPECT_NE_REAL(expected, actual, ...)          _VALIDATE_NE_DOUBLE_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_REAL(expected, actual, ...)          _VALIDATE_NE_FLOAT_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 {#define EXPECT_NE_LREAL(expected, actual, ...)         _VALIDATE_NE_DOUBLE_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
-{#define EXPECT_NE_FLOAT(expected, actual, ...)         _VALIDATE_NE_DOUBLE_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_NE_FLOAT(expected, actual, ...)         _VALIDATE_NE_FLOAT_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 {#define EXPECT_NE_DOUBLE(expected, actual, ...)        _VALIDATE_NE_DOUBLE_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
 {#define EXPECT_NE_BOOL(expected, actual, ...)          _VALIDATE_NE_BOOL_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
@@ -398,9 +398,9 @@
 {#define EXPECT_LT_UINT32(lval, rval, ...)              _VALIDATE_LT_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define EXPECT_LT_UINT64(lval, rval, ...)              _VALIDATE_LT_UINT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_LT_REAL(lval, rval, ...)                _VALIDATE_LT_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LT_REAL(lval, rval, ...)                _VALIDATE_LT_FLOAT_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define EXPECT_LT_LREAL(lval, rval, ...)               _VALIDATE_LT_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
-{#define EXPECT_LT_FLOAT(lval, rval, ...)               _VALIDATE_LT_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LT_FLOAT(lval, rval, ...)               _VALIDATE_LT_FLOAT_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define EXPECT_LT_DOUBLE(lval, rval, ...)              _VALIDATE_LT_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
 {#define EXPECT_LT_TIME(lval, rval, ...)                _VALIDATE_LT_TIME_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
@@ -425,9 +425,9 @@
 {#define EXPECT_LE_UINT32(lval, rval, ...)              _VALIDATE_LE_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define EXPECT_LE_UINT64(lval, rval, ...)              _VALIDATE_LE_UINT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_LE_REAL(lval, rval, ...)                _VALIDATE_LE_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LE_REAL(lval, rval, ...)                _VALIDATE_LE_FLOAT_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define EXPECT_LE_LREAL(lval, rval, ...)               _VALIDATE_LE_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
-{#define EXPECT_LE_FLOAT(lval, rval, ...)               _VALIDATE_LE_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_LE_FLOAT(lval, rval, ...)               _VALIDATE_LE_FLOAT_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define EXPECT_LE_DOUBLE(lval, rval, ...)              _VALIDATE_LE_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
 {#define EXPECT_LE_TIME(lval, rval, ...)                _VALIDATE_LE_TIME_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
@@ -453,9 +453,9 @@
 {#define EXPECT_GE_UINT32(lval, rval, ...)              _VALIDATE_GE_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define EXPECT_GE_UINT64(lval, rval, ...)              _VALIDATE_GE_UINT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_GE_REAL(lval, rval, ...)                _VALIDATE_GE_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GE_REAL(lval, rval, ...)                _VALIDATE_GE_FLOAT_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define EXPECT_GE_LREAL(lval, rval, ...)               _VALIDATE_GE_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
-{#define EXPECT_GE_FLOAT(lval, rval, ...)               _VALIDATE_GE_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GE_FLOAT(lval, rval, ...)               _VALIDATE_GE_FLOAT_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define EXPECT_GE_DOUBLE(lval, rval, ...)              _VALIDATE_GE_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
 {#define EXPECT_GE_TIME(lval, rval, ...)                _VALIDATE_GE_TIME_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
@@ -481,9 +481,9 @@
 {#define EXPECT_GT_UINT32(lval, rval, ...)              _VALIDATE_GT_UINT32_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define EXPECT_GT_UINT64(lval, rval, ...)              _VALIDATE_GT_UINT64_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define EXPECT_GT_REAL(lval, rval, ...)                _VALIDATE_GT_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GT_REAL(lval, rval, ...)                _VALIDATE_GT_FLOAT_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define EXPECT_GT_LREAL(lval, rval, ...)               _VALIDATE_GT_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
-{#define EXPECT_GT_FLOAT(lval, rval, ...)               _VALIDATE_GT_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define EXPECT_GT_FLOAT(lval, rval, ...)               _VALIDATE_GT_FLOAT_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define EXPECT_GT_DOUBLE(lval, rval, ...)              _VALIDATE_GT_DOUBLE_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
 {#define EXPECT_GT_TIME(lval, rval, ...)                _VALIDATE_GT_TIME_MSG(false, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
@@ -520,10 +520,10 @@
 {#define ASSERT_EQ_UINT32_MSG(expected, actual, message)    _VALIDATE_EQ_UINT32_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 {#define ASSERT_EQ_UINT64_MSG(expected, actual, message)    _VALIDATE_EQ_UINT64_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
-{#define ASSERT_EQ_REAL_MSG(expected, actual, message)      _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Deprecated, use ASSERT_NEAR *)
-{#define ASSERT_EQ_LREAL_MSG(expected, actual, message)     _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Deprecated, use ASSERT_NEAR *)
-{#define ASSERT_EQ_FLOAT_MSG(expected, actual, message)     _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Deprecated, use ASSERT_NEAR *)
-{#define ASSERT_EQ_DOUBLE_MSG(expected, actual, message)    _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Deprecated, use ASSERT_NEAR *)
+{#define ASSERT_EQ_REAL_MSG(expected, actual, message)      _VALIDATE_EQ_FLOAT_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Exact; see also ASSERT_FLOAT_EQ / ASSERT_DOUBLE_EQ and ASSERT_NEAR *)
+{#define ASSERT_EQ_LREAL_MSG(expected, actual, message)     _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Exact; see also ASSERT_FLOAT_EQ / ASSERT_DOUBLE_EQ and ASSERT_NEAR *)
+{#define ASSERT_EQ_FLOAT_MSG(expected, actual, message)     _VALIDATE_EQ_FLOAT_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Exact; see also ASSERT_FLOAT_EQ / ASSERT_DOUBLE_EQ and ASSERT_NEAR *)
+{#define ASSERT_EQ_DOUBLE_MSG(expected, actual, message)    _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Exact; see also ASSERT_FLOAT_EQ / ASSERT_DOUBLE_EQ and ASSERT_NEAR *)
 
 {#define ASSERT_EQ_BOOL_MSG(expected, actual, message)      _VALIDATE_EQ_BOOL_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
@@ -557,9 +557,9 @@
 {#define ASSERT_NE_UINT32_MSG(expected, actual, message)    _VALIDATE_NE_UINT32_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 {#define ASSERT_NE_UINT64_MSG(expected, actual, message)    _VALIDATE_NE_UINT64_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
-{#define ASSERT_NE_REAL_MSG(expected, actual, message)      _VALIDATE_NE_DOUBLE_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_REAL_MSG(expected, actual, message)      _VALIDATE_NE_FLOAT_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 {#define ASSERT_NE_LREAL_MSG(expected, actual, message)     _VALIDATE_NE_DOUBLE_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
-{#define ASSERT_NE_FLOAT_MSG(expected, actual, message)     _VALIDATE_NE_DOUBLE_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_FLOAT_MSG(expected, actual, message)     _VALIDATE_NE_FLOAT_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 {#define ASSERT_NE_DOUBLE_MSG(expected, actual, message)    _VALIDATE_NE_DOUBLE_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
 {#define ASSERT_NE_BOOL_MSG(expected, actual, message)      _VALIDATE_NE_BOOL_MSG(true, expected, actual, message, _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
@@ -594,9 +594,9 @@
 {#define ASSERT_LT_UINT32_MSG(lval, rval, message)  _VALIDATE_LT_UINT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define ASSERT_LT_UINT64_MSG(lval, rval, message)  _VALIDATE_LT_UINT64_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_LT_REAL_MSG(lval, rval, message)    _VALIDATE_LT_DOUBLE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LT_REAL_MSG(lval, rval, message)    _VALIDATE_LT_FLOAT_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define ASSERT_LT_LREAL_MSG(lval, rval, message)   _VALIDATE_LT_DOUBLE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
-{#define ASSERT_LT_FLOAT_MSG(lval, rval, message)   _VALIDATE_LT_DOUBLE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LT_FLOAT_MSG(lval, rval, message)   _VALIDATE_LT_FLOAT_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define ASSERT_LT_DOUBLE_MSG(lval, rval, message)  _VALIDATE_LT_DOUBLE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
 {#define ASSERT_LT_TIME_MSG(lval, rval, message)    _VALIDATE_LT_TIME_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
@@ -622,9 +622,9 @@
 {#define ASSERT_LE_UINT32_MSG(lval, rval, message)  _VALIDATE_LE_UINT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define ASSERT_LE_UINT64_MSG(lval, rval, message)  _VALIDATE_LE_UINT64_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_LE_REAL_MSG(lval, rval, message)    _VALIDATE_LE_DOUBLE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LE_REAL_MSG(lval, rval, message)    _VALIDATE_LE_FLOAT_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define ASSERT_LE_LREAL_MSG(lval, rval, message)   _VALIDATE_LE_DOUBLE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
-{#define ASSERT_LE_FLOAT_MSG(lval, rval, message)   _VALIDATE_LE_DOUBLE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LE_FLOAT_MSG(lval, rval, message)   _VALIDATE_LE_FLOAT_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define ASSERT_LE_DOUBLE_MSG(lval, rval, message)  _VALIDATE_LE_DOUBLE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
 {#define ASSERT_LE_TIME_MSG(lval, rval, message)    _VALIDATE_LE_TIME_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
@@ -650,9 +650,9 @@
 {#define ASSERT_GE_UINT32_MSG(lval, rval, message)  _VALIDATE_GE_UINT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define ASSERT_GE_UINT64_MSG(lval, rval, message)  _VALIDATE_GE_UINT64_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_GE_REAL_MSG(lval, rval, message)    _VALIDATE_GE_DOUBLE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GE_REAL_MSG(lval, rval, message)    _VALIDATE_GE_FLOAT_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define ASSERT_GE_LREAL_MSG(lval, rval, message)   _VALIDATE_GE_DOUBLE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
-{#define ASSERT_GE_FLOAT_MSG(lval, rval, message)   _VALIDATE_GE_DOUBLE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GE_FLOAT_MSG(lval, rval, message)   _VALIDATE_GE_FLOAT_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define ASSERT_GE_DOUBLE_MSG(lval, rval, message)  _VALIDATE_GE_DOUBLE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
 {#define ASSERT_GE_TIME_MSG(lval, rval, message)    _VALIDATE_GE_TIME_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
@@ -678,9 +678,9 @@
 {#define ASSERT_GT_UINT32_MSG(lval, rval, message)  _VALIDATE_GT_UINT32_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define ASSERT_GT_UINT64_MSG(lval, rval, message)  _VALIDATE_GT_UINT64_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_GT_REAL_MSG(lval, rval, message)    _VALIDATE_GT_DOUBLE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GT_REAL_MSG(lval, rval, message)    _VALIDATE_GT_FLOAT_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define ASSERT_GT_LREAL_MSG(lval, rval, message)   _VALIDATE_GT_DOUBLE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
-{#define ASSERT_GT_FLOAT_MSG(lval, rval, message)   _VALIDATE_GT_DOUBLE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GT_FLOAT_MSG(lval, rval, message)   _VALIDATE_GT_FLOAT_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define ASSERT_GT_DOUBLE_MSG(lval, rval, message)  _VALIDATE_GT_DOUBLE_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
 {#define ASSERT_GT_TIME_MSG(lval, rval, message)    _VALIDATE_GT_TIME_MSG(true, lval, rval, message, _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
@@ -713,10 +713,10 @@
 {#define ASSERT_EQ_UINT32(expected, actual, ...)        _VALIDATE_EQ_UINT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 {#define ASSERT_EQ_UINT64(expected, actual, ...)        _VALIDATE_EQ_UINT64_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
-{#define ASSERT_EQ_REAL(expected, actual, ...)          _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Deprecated, use ASSERT_NEAR *)
-{#define ASSERT_EQ_LREAL(expected, actual, ...)         _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Deprecated, use ASSERT_NEAR *)
-{#define ASSERT_EQ_FLOAT(expected, actual, ...)         _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Deprecated, use ASSERT_NEAR *)
-{#define ASSERT_EQ_DOUBLE(expected, actual, ...)        _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Deprecated, use ASSERT_NEAR *)
+{#define ASSERT_EQ_REAL(expected, actual, ...)          _VALIDATE_EQ_FLOAT_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Exact; see also ASSERT_FLOAT_EQ / ASSERT_DOUBLE_EQ and ASSERT_NEAR *)
+{#define ASSERT_EQ_LREAL(expected, actual, ...)         _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Exact; see also ASSERT_FLOAT_EQ / ASSERT_DOUBLE_EQ and ASSERT_NEAR *)
+{#define ASSERT_EQ_FLOAT(expected, actual, ...)         _VALIDATE_EQ_FLOAT_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Exact; see also ASSERT_FLOAT_EQ / ASSERT_DOUBLE_EQ and ASSERT_NEAR *)
+{#define ASSERT_EQ_DOUBLE(expected, actual, ...)        _VALIDATE_EQ_DOUBLE_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))} (* Exact; see also ASSERT_FLOAT_EQ / ASSERT_DOUBLE_EQ and ASSERT_NEAR *)
 
 {#define ASSERT_EQ_BOOL(expected, actual, ...)          _VALIDATE_EQ_BOOL_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
@@ -750,9 +750,9 @@
 {#define ASSERT_NE_UINT32(expected, actual, ...)        _VALIDATE_NE_UINT32_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 {#define ASSERT_NE_UINT64(expected, actual, ...)        _VALIDATE_NE_UINT64_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
-{#define ASSERT_NE_REAL(expected, actual, ...)          _VALIDATE_NE_DOUBLE_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_REAL(expected, actual, ...)          _VALIDATE_NE_FLOAT_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 {#define ASSERT_NE_LREAL(expected, actual, ...)         _VALIDATE_NE_DOUBLE_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
-{#define ASSERT_NE_FLOAT(expected, actual, ...)         _VALIDATE_NE_DOUBLE_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_NE_FLOAT(expected, actual, ...)         _VALIDATE_NE_FLOAT_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 {#define ASSERT_NE_DOUBLE(expected, actual, ...)        _VALIDATE_NE_DOUBLE_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
 {#define ASSERT_NE_BOOL(expected, actual, ...)          _VALIDATE_NE_BOOL_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
@@ -787,9 +787,9 @@
 {#define ASSERT_LT_UINT32(lval, rval, ...)              _VALIDATE_LT_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define ASSERT_LT_UINT64(lval, rval, ...)              _VALIDATE_LT_UINT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_LT_REAL(lval, rval, ...)                _VALIDATE_LT_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LT_REAL(lval, rval, ...)                _VALIDATE_LT_FLOAT_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define ASSERT_LT_LREAL(lval, rval, ...)               _VALIDATE_LT_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
-{#define ASSERT_LT_FLOAT(lval, rval, ...)               _VALIDATE_LT_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LT_FLOAT(lval, rval, ...)               _VALIDATE_LT_FLOAT_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define ASSERT_LT_DOUBLE(lval, rval, ...)              _VALIDATE_LT_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
 {#define ASSERT_LT_TIME(lval, rval, ...)                _VALIDATE_LT_TIME_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
@@ -815,9 +815,9 @@
 {#define ASSERT_LE_UINT32(lval, rval, ...)              _VALIDATE_LE_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define ASSERT_LE_UINT64(lval, rval, ...)              _VALIDATE_LE_UINT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_LE_REAL(lval, rval, ...)                _VALIDATE_LE_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LE_REAL(lval, rval, ...)                _VALIDATE_LE_FLOAT_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define ASSERT_LE_LREAL(lval, rval, ...)               _VALIDATE_LE_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
-{#define ASSERT_LE_FLOAT(lval, rval, ...)               _VALIDATE_LE_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_LE_FLOAT(lval, rval, ...)               _VALIDATE_LE_FLOAT_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define ASSERT_LE_DOUBLE(lval, rval, ...)              _VALIDATE_LE_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
 {#define ASSERT_LE_TIME(lval, rval, ...)                _VALIDATE_LE_TIME_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
@@ -843,9 +843,9 @@
 {#define ASSERT_GE_UINT32(lval, rval, ...)              _VALIDATE_GE_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define ASSERT_GE_UINT64(lval, rval, ...)              _VALIDATE_GE_UINT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_GE_REAL(lval, rval, ...)                _VALIDATE_GE_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GE_REAL(lval, rval, ...)                _VALIDATE_GE_FLOAT_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define ASSERT_GE_LREAL(lval, rval, ...)               _VALIDATE_GE_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
-{#define ASSERT_GE_FLOAT(lval, rval, ...)               _VALIDATE_GE_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GE_FLOAT(lval, rval, ...)               _VALIDATE_GE_FLOAT_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define ASSERT_GE_DOUBLE(lval, rval, ...)              _VALIDATE_GE_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
 {#define ASSERT_GE_TIME(lval, rval, ...)                _VALIDATE_GE_TIME_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
@@ -871,9 +871,9 @@
 {#define ASSERT_GT_UINT32(lval, rval, ...)              _VALIDATE_GT_UINT32_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define ASSERT_GT_UINT64(lval, rval, ...)              _VALIDATE_GT_UINT64_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
-{#define ASSERT_GT_REAL(lval, rval, ...)                _VALIDATE_GT_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GT_REAL(lval, rval, ...)                _VALIDATE_GT_FLOAT_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define ASSERT_GT_LREAL(lval, rval, ...)               _VALIDATE_GT_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
-{#define ASSERT_GT_FLOAT(lval, rval, ...)               _VALIDATE_GT_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
+{#define ASSERT_GT_FLOAT(lval, rval, ...)               _VALIDATE_GT_FLOAT_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 {#define ASSERT_GT_DOUBLE(lval, rval, ...)              _VALIDATE_GT_DOUBLE_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
 
 {#define ASSERT_GT_TIME(lval, rval, ...)                _VALIDATE_GT_TIME_MSG(true, lval, rval, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@lval), _JIECUNIT_TEXT(@rval))}
@@ -886,6 +886,15 @@
 
 {#define ASSERT_NEAR(val1, val2, abs_error, ...)        _VALIDATE_NEAR_MSG(true, val1, val2, abs_error, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@val1), _JIECUNIT_TEXT(@val2), _JIECUNIT_TEXT(@abs_error))}
 {#define ASSERT_NEAR_REL(val1, val2, rel_error, ...)    _VALIDATE_NEAR_REL_MSG(true, val1, val2, rel_error, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 3, 4, __VA_ARGS__), _JIECUNIT_TEXT(@val1), _JIECUNIT_TEXT(@val2), _JIECUNIT_TEXT(@rel_error))}
+
+// Floating-point equality within 4 ULPs (units in the last place), like
+// EXPECT_DOUBLE_EQ / EXPECT_FLOAT_EQ of Google Test. *_DOUBLE_EQ compares
+// LREAL values, *_FLOAT_EQ compares REAL values with the precision of REAL.
+// A NaN is never equal; an infinity is equal only to the same infinity.
+{#define EXPECT_DOUBLE_EQ(expected, actual, ...)        _VALIDATE_DOUBLE_EQ_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define EXPECT_FLOAT_EQ(expected, actual, ...)         _VALIDATE_FLOAT_EQ_MSG(false, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_DOUBLE_EQ(expected, actual, ...)        _VALIDATE_DOUBLE_EQ_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
+{#define ASSERT_FLOAT_EQ(expected, actual, ...)         _VALIDATE_FLOAT_EQ_MSG(true, expected, actual, _JIECUNIT_OPTMSG_N(__VA_ARGC__, 2, 3, __VA_ARGS__), _JIECUNIT_TEXT(@expected), _JIECUNIT_TEXT(@actual))}
 
 
 

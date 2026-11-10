@@ -28,6 +28,7 @@
 {#define _VALIDATE_EQ_UINT64_MSG(die, expected, actual, message, t1, t2)    _VALIDATE_EQ_DATATYPE(UINT64, die, expected, actual, message, t1, t2)}
 {#endif}
 {#define _VALIDATE_EQ_DOUBLE_MSG(die, expected, actual, message, t1, t2)    _VALIDATE_EQ_DATATYPE(DOUBLE, die, expected, actual, message, t1, t2)}
+{#define _VALIDATE_EQ_FLOAT_MSG(die, expected, actual, message, t1, t2)     _VALIDATE_EQ_DATATYPE(FLOAT, die, expected, actual, message, t1, t2)}
 {#define _VALIDATE_EQ_BOOL_MSG(die, expected, actual, message, t1, t2)      _VALIDATE_EQ_DATATYPE(BOOL, die, expected, actual, message, t1, t2)}
 {#define _VALIDATE_EQ_BIT32_MSG(die, expected, actual, message, t1, t2)     _VALIDATE_EQ_DATATYPE(BIT32, die, expected, actual, message, t1, t2)}
 {#if not (_KEYENCE or _MITSUBISHI)}
@@ -58,6 +59,7 @@
 {#define _VALIDATE_NE_UINT64_MSG(die, expected, actual, message, t1, t2)    _VALIDATE_NE_DATATYPE(UINT64, die, expected, actual, message, t1, t2)}
 {#endif}
 {#define _VALIDATE_NE_DOUBLE_MSG(die, expected, actual, message, t1, t2)    _VALIDATE_NE_DATATYPE(DOUBLE, die, expected, actual, message, t1, t2)}
+{#define _VALIDATE_NE_FLOAT_MSG(die, expected, actual, message, t1, t2)     _VALIDATE_NE_DATATYPE(FLOAT, die, expected, actual, message, t1, t2)}
 {#define _VALIDATE_NE_BOOL_MSG(die, expected, actual, message, t1, t2)      _VALIDATE_NE_DATATYPE(BOOL, die, expected, actual, message, t1, t2)}
 {#define _VALIDATE_NE_BIT32_MSG(die, expected, actual, message, t1, t2)     _VALIDATE_NE_DATATYPE(BIT32, die, expected, actual, message, t1, t2)}
 {#if not (_KEYENCE or _MITSUBISHI)}
@@ -125,6 +127,10 @@
 {#define _VALIDATE_LE_DOUBLE_MSG(die, lval, rval, message, t1, t2)  _VALIDATE_CMP_DATATYPE(LE, DOUBLE, die, lval, rval, message, t1, t2)}
 {#define _VALIDATE_GE_DOUBLE_MSG(die, lval, rval, message, t1, t2)  _VALIDATE_CMP_DATATYPE(GE, DOUBLE, die, lval, rval, message, t1, t2)}
 {#define _VALIDATE_GT_DOUBLE_MSG(die, lval, rval, message, t1, t2)  _VALIDATE_CMP_DATATYPE(GT, DOUBLE, die, lval, rval, message, t1, t2)}
+{#define _VALIDATE_LT_FLOAT_MSG(die, lval, rval, message, t1, t2)   _VALIDATE_CMP_DATATYPE(LT, FLOAT, die, lval, rval, message, t1, t2)}
+{#define _VALIDATE_LE_FLOAT_MSG(die, lval, rval, message, t1, t2)   _VALIDATE_CMP_DATATYPE(LE, FLOAT, die, lval, rval, message, t1, t2)}
+{#define _VALIDATE_GE_FLOAT_MSG(die, lval, rval, message, t1, t2)   _VALIDATE_CMP_DATATYPE(GE, FLOAT, die, lval, rval, message, t1, t2)}
+{#define _VALIDATE_GT_FLOAT_MSG(die, lval, rval, message, t1, t2)   _VALIDATE_CMP_DATATYPE(GT, FLOAT, die, lval, rval, message, t1, t2)}
 
 {#if not _MITSUBISHI}
 {#define _VALIDATE_LT_TIME_MSG(die, lval, rval, message, t1, t2)    _VALIDATE_CMP_DATATYPE(LT, TIME, die, lval, rval, message, t1, t2)}
@@ -174,6 +180,15 @@
 	if not JiecTest_validateNEAR(self:=_JIECTEST_, val1:=val1_, val2:=val2_, abs_error:=abs_error_, message:=message_, die:=die_, file:=__FILE__, line:=__LINE__, val1_text:=val1_text_, val2_text:=val2_text_, abs_error_text:=abs_error_text_) then
 		_ON_FAILED_ACTION(die_);
 	end_if}
+{#define _VALIDATE_DOUBLE_EQ_MSG(die_, expected_, actual_, message_, expected_text_, actual_text_)
+	if not JiecTest_validateDOUBLE_EQ(self:=_JIECTEST_, expected:=expected_, actual:=actual_, message:=message_, die:=die_, file:=__FILE__, line:=__LINE__, expected_text:=expected_text_, actual_text:=actual_text_) then
+		_ON_FAILED_ACTION(die_);
+	end_if}
+{#define _VALIDATE_FLOAT_EQ_MSG(die_, expected_, actual_, message_, expected_text_, actual_text_)
+	if not JiecTest_validateFLOAT_EQ(self:=_JIECTEST_, expected:=expected_, actual:=actual_, message:=message_, die:=die_, file:=__FILE__, line:=__LINE__, expected_text:=expected_text_, actual_text:=actual_text_) then
+		_ON_FAILED_ACTION(die_);
+	end_if}
+
 {#define _VALIDATE_NEAR_MSG(die, val1, val2, abs_error, message, t1, t2, t3)    _VALIDATE_NEAR_DATATYPE(DOUBLE, die, val1, val2, abs_error, message, t1, t2, t3)}
 
 {#define _VALIDATE_NEAR_REL_(die_, val1_, val2_, rel_error_, message_, val1_text_, val2_text_, rel_error_text_)

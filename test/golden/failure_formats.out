@@ -46,11 +46,6 @@ Value of: not flag
 Expected: false
 [ FAILED ] test_bool (<time>)
 [ RUN    ] test_float
-test/golden/failure_formats.iec:41: Failure
-Expected equality of these values:
-  0.1
-  r
-    Which is: 0.10000000149011612
 test/golden/failure_formats.iec:42: Failure
 Expected equality of these values:
   0.3

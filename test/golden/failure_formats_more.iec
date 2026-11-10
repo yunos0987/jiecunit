@@ -38,10 +38,21 @@ TEST_S(test_other_types)
 	EXPECT_EQ_BOOL(false, b);
 END_TEST_S
 
+TEST_S(test_ulp)
+	var
+		x: lreal := 1.0;
+		r: real := 1.0;
+	end
+	EXPECT_DOUBLE_EQ(1.1, x);
+	EXPECT_FLOAT_EQ(1.5, r, 'REAL');
+	EXPECT_EQ_REAL(1.25, r);
+END_TEST_S
+
 DEFINE_CONFIGURATION(
 	_JIEC_TESTNAMES_LIST_(
 		test_near_nan,
 		test_string_quoting,
-		test_other_types
+		test_other_types,
+		test_ulp
 	)
 )

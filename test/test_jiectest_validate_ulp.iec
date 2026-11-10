@@ -1,0 +1,164 @@
+{#include <jiecunit.iec>}
+
+TEST_S(test_jiectest_pow2)
+	// Fact: JiecTest_pow2 returns exact powers of two, also subnormal ones.
+		// Arrange/Act/Assert
+	EXPECT_EQ_DOUBLE(1.0, JiecTest_pow2(0));
+	EXPECT_EQ_DOUBLE(1024.0, JiecTest_pow2(10));
+	EXPECT_EQ_DOUBLE(0.125, JiecTest_pow2(-3));
+	EXPECT_EQ_DOUBLE(2.220446049250313e-16, JiecTest_pow2(-52));
+	EXPECT_EQ_DOUBLE(2.2250738585072014e-308, JiecTest_pow2(-1022));
+	EXPECT_GT_DOUBLE(JiecTest_pow2(-1074), 0.0);
+	EXPECT_EQ_DOUBLE(JiecTest_pow2(-1073), 2.0 * JiecTest_pow2(-1074));
+	EXPECT_EQ_DOUBLE(8.98846567431158e307, JiecTest_pow2(1023));
+END_TEST_S
+
+TEST_S(test_jiectest_almost_equals_double)
+	var
+		eps: lreal;   // the ULP of 1.0
+		u: lreal;     // the smallest positive LREAL
+		b: lreal;     // 2^-1021, where the ULP starts to grow
+		big: lreal;
+		inf_value: lreal;
+		nan_value: lreal;
+		max_value: lreal;
+	end
+	eps := JiecTest_pow2(-52);
+	u := JiecTest_pow2(-1074);
+	b := JiecTest_pow2(-1021);
+	big := 1.0e308;
+	inf_value := big * 10.0;
+	nan_value := inf_value - inf_value;
+	max_value := 1.7976931348623157e308;
+
+	// Fact: 0.1 + 0.2 and 0.3 differ by one ULP and are almost equal.
+	EXPECT_TRUE(JiecTest_almostEquals(a:=0.1 + 0.2, b:=0.3, mantissa_bits:=52, min_exponent:=-1022));
+
+	// Fact: values 4 ULPs apart are almost equal, 5 ULPs apart are not.
+	EXPECT_TRUE(JiecTest_almostEquals(a:=1.0, b:=1.0 + 4.0 * eps, mantissa_bits:=52, min_exponent:=-1022));
+	EXPECT_FALSE(JiecTest_almostEquals(a:=1.0, b:=1.0 + 5.0 * eps, mantissa_bits:=52, min_exponent:=-1022));
+	EXPECT_TRUE(JiecTest_almostEquals(a:=-1.0, b:=-1.0 - 4.0 * eps, mantissa_bits:=52, min_exponent:=-1022));
+
+	// Fact: across a power of two, the ULPs of both sides are counted (2 below + 2 above = 4, 2 + 3 = 5).
+	EXPECT_TRUE(JiecTest_almostEquals(a:=2.0 - 2.0 * eps, b:=2.0 + 4.0 * eps, mantissa_bits:=52, min_exponent:=-1022));
+	EXPECT_FALSE(JiecTest_almostEquals(a:=2.0 - 2.0 * eps, b:=2.0 + 6.0 * eps, mantissa_bits:=52, min_exponent:=-1022));
+
+	// Fact: subnormal values are counted in units of the smallest value (3u and 7u: 4; 3u and 8u: 5).
+	EXPECT_TRUE(JiecTest_almostEquals(a:=3.0 * u, b:=7.0 * u, mantissa_bits:=52, min_exponent:=-1022));
+	EXPECT_FALSE(JiecTest_almostEquals(a:=3.0 * u, b:=8.0 * u, mantissa_bits:=52, min_exponent:=-1022));
+
+	// Fact: across 2^-1021 the ULP doubles (1 below + 1 above = 2).
+	EXPECT_TRUE(JiecTest_almostEquals(a:=b - u, b:=b + 2.0 * u, mantissa_bits:=52, min_exponent:=-1022));
+
+	// Fact: values of different signs are counted across zero (u and -u: 2; 3u and -2u: 5).
+	EXPECT_TRUE(JiecTest_almostEquals(a:=u, b:=-u, mantissa_bits:=52, min_exponent:=-1022));
+	EXPECT_FALSE(JiecTest_almostEquals(a:=3.0 * u, b:=-2.0 * u, mantissa_bits:=52, min_exponent:=-1022));
+	EXPECT_FALSE(JiecTest_almostEquals(a:=1.0, b:=-1.0, mantissa_bits:=52, min_exponent:=-1022));
+
+	// Fact: +0 and -0 are equal, and 0 is 1 ULP from the smallest value.
+	EXPECT_TRUE(JiecTest_almostEquals(a:=0.0, b:=-0.0, mantissa_bits:=52, min_exponent:=-1022));
+	EXPECT_TRUE(JiecTest_almostEquals(a:=0.0, b:=u, mantissa_bits:=52, min_exponent:=-1022));
+
+	// Fact: a NaN is never equal; an infinity is equal only to the same infinity.
+	EXPECT_FALSE(JiecTest_almostEquals(a:=nan_value, b:=nan_value, mantissa_bits:=52, min_exponent:=-1022));
+	EXPECT_FALSE(JiecTest_almostEquals(a:=nan_value, b:=1.0, mantissa_bits:=52, min_exponent:=-1022));
+	EXPECT_TRUE(JiecTest_almostEquals(a:=inf_value, b:=inf_value, mantissa_bits:=52, min_exponent:=-1022));
+	EXPECT_FALSE(JiecTest_almostEquals(a:=inf_value, b:=-inf_value, mantissa_bits:=52, min_exponent:=-1022));
+	EXPECT_FALSE(JiecTest_almostEquals(a:=inf_value, b:=max_value, mantissa_bits:=52, min_exponent:=-1022));
+
+	// Fact: a power of two as the smaller value starts its own binade (0.5 and 0.5 + 4 ULPs of 0.5).
+	EXPECT_TRUE(JiecTest_almostEquals(a:=0.5, b:=0.5 + 4.0 * JiecTest_pow2(-53), mantissa_bits:=52, min_exponent:=-1022));
+	EXPECT_FALSE(JiecTest_almostEquals(a:=0.5, b:=0.5 + 5.0 * JiecTest_pow2(-53), mantissa_bits:=52, min_exponent:=-1022));
+	EXPECT_TRUE(JiecTest_almostEquals(a:=b, b:=b + 8.0 * u, mantissa_bits:=52, min_exponent:=-1022));
+	EXPECT_FALSE(JiecTest_almostEquals(a:=b, b:=b + 10.0 * u, mantissa_bits:=52, min_exponent:=-1022));
+
+	// Fact: small normal values are normalized with the large powers (1e-200 and 4 or 5 of its ULPs).
+	EXPECT_TRUE(JiecTest_almostEquals(a:=1.0e-200, b:=1.0e-200 + 4.0 * JiecTest_pow2(-717), mantissa_bits:=52, min_exponent:=-1022));
+	EXPECT_FALSE(JiecTest_almostEquals(a:=1.0e-200, b:=1.0e-200 + 5.0 * JiecTest_pow2(-717), mantissa_bits:=52, min_exponent:=-1022));
+
+	// Fact: the largest values are compared without overflow.
+	EXPECT_TRUE(JiecTest_almostEquals(a:=max_value, b:=max_value - 4.0 * JiecTest_pow2(971), mantissa_bits:=52, min_exponent:=-1022));
+	EXPECT_FALSE(JiecTest_almostEquals(a:=max_value, b:=max_value - 5.0 * JiecTest_pow2(971), mantissa_bits:=52, min_exponent:=-1022));
+END_TEST_S
+
+TEST_S(test_jiectest_almost_equals_float)
+	var
+		eps: lreal; // the ULP of 1.0 as REAL
+	end
+	eps := JiecTest_pow2(-23);
+	// Fact: with the precision of REAL, values 4 ULPs apart are almost equal, 5 ULPs apart are not.
+	EXPECT_TRUE(JiecTest_almostEquals(a:=1.0, b:=1.0 + 4.0 * eps, mantissa_bits:=23, min_exponent:=-126));
+	EXPECT_FALSE(JiecTest_almostEquals(a:=1.0, b:=1.0 + 5.0 * eps, mantissa_bits:=23, min_exponent:=-126));
+	// Fact: the subnormal REAL values are counted in units of 2^-149.
+	EXPECT_TRUE(JiecTest_almostEquals(a:=3.0 * JiecTest_pow2(-149), b:=7.0 * JiecTest_pow2(-149), mantissa_bits:=23, min_exponent:=-126));
+	EXPECT_FALSE(JiecTest_almostEquals(a:=3.0 * JiecTest_pow2(-149), b:=8.0 * JiecTest_pow2(-149), mantissa_bits:=23, min_exponent:=-126));
+	// Fact: across 2^-125 the REAL ULP doubles (1 below + 1 above = 2).
+	EXPECT_TRUE(JiecTest_almostEquals(a:=JiecTest_pow2(-125) - JiecTest_pow2(-149), b:=JiecTest_pow2(-125) + 2.0 * JiecTest_pow2(-149), mantissa_bits:=23, min_exponent:=-126));
+	// Fact: the largest REAL values are 4 ULPs (of 2^104) apart at most.
+	EXPECT_TRUE(JiecTest_almostEquals(a:=3.4028234663852886e38, b:=3.4028234663852886e38 - 4.0 * JiecTest_pow2(104), mantissa_bits:=23, min_exponent:=-126));
+	EXPECT_FALSE(JiecTest_almostEquals(a:=3.4028234663852886e38, b:=3.4028234663852886e38 - 5.0 * JiecTest_pow2(104), mantissa_bits:=23, min_exponent:=-126));
+	// Fact: values of different signs are not equal unless both are tiny.
+	EXPECT_FALSE(JiecTest_almostEquals(a:=1.0, b:=-1.0, mantissa_bits:=23, min_exponent:=-126));
+END_TEST_S
+
+TEST_S(test_float_eq_with_infinity_and_nan)
+	var
+		big_r: real := 3.0e38;
+		inf_r: real;
+		nan_r: real;
+	end
+	inf_r := big_r * 10.0;
+	nan_r := inf_r - inf_r;
+	// Fact: REAL infinities and NaN keep their meaning through real_to_lreal.
+	EXPECT_TRUE(JiecTest_almostEquals(a:=real_to_lreal(inf_r), b:=real_to_lreal(inf_r), mantissa_bits:=23, min_exponent:=-126));
+	EXPECT_FALSE(JiecTest_almostEquals(a:=real_to_lreal(inf_r), b:=real_to_lreal(big_r), mantissa_bits:=23, min_exponent:=-126));
+	EXPECT_FALSE(JiecTest_almostEquals(a:=real_to_lreal(nan_r), b:=real_to_lreal(nan_r), mantissa_bits:=23, min_exponent:=-126));
+END_TEST_S
+
+TEST_S(test_double_eq_and_float_eq_macros)
+	var
+		jt: JiecTest_t;
+		r: real := 0.1;
+		big_r: real;
+		x: lreal;
+		ok: bool;
+	end
+	// Fact: EXPECT_DOUBLE_EQ accepts 0.1 + 0.2 for 0.3, which EXPECT_EQ_DOUBLE rejects.
+	x := 0.1 + 0.2;
+	EXPECT_DOUBLE_EQ(0.3, x);
+	EXPECT_NE_DOUBLE(0.3, x);
+
+	// Fact: EXPECT_FLOAT_EQ compares REAL values; 0.1 as REAL equals the REAL variable.
+	EXPECT_FLOAT_EQ(0.1, r);
+	ASSERT_FLOAT_EQ(0.1, r, 'REAL 0.1');
+
+	// Fact: 16777217 is not a REAL value, so as REAL it equals 16777216; 16777220 is 2 ULPs away, 16777226 is 5.
+	JiecTest_initialize(jt);
+	big_r := 16777216.0;
+	EXPECT_FLOAT_EQ(16777217.0, big_r);
+	EXPECT_FLOAT_EQ(16777220.0, big_r);
+	ok := JiecTest_validateFLOAT_EQ(self:=jt, expected:=16777226.0, actual:=big_r, message:='', die:=false, file:='', line:=0);
+	EXPECT_FALSE(ok);
+
+	// Fact: JiecTest_validateDOUBLE_EQ reports a failure for values 5 ULPs apart.
+	JiecTest_initialize(jt);
+	ok := JiecTest_validateDOUBLE_EQ(self:=jt, expected:=1.0, actual:=1.0 + 5.0 * JiecTest_pow2(-52), message:='', die:=false, file:='', line:=0);
+	EXPECT_FALSE(ok);
+	EXPECT_EQ_INT(1, jt.num_of_failures);
+END_TEST_S
+
+TEST_S(test_real_macros_compare_real_values)
+	var
+		r: real := 0.1;
+	end
+	// Fact: the *_REAL and *_FLOAT macros compare REAL values, so a REAL variable equals the REAL literal it was set from.
+	EXPECT_EQ_REAL(0.1, r);
+	EXPECT_EQ_FLOAT(0.1, r);
+	EXPECT_LE_REAL(r, 0.1);
+	EXPECT_GE_REAL(r, 0.1);
+	EXPECT_LT_FLOAT(r, 0.2);
+	EXPECT_NE_REAL(0.2, r);
+	// Fact: the *_LREAL and *_DOUBLE macros compare LREAL values, where the REAL 0.1 differs from 0.1.
+	EXPECT_NE_LREAL(0.1, real_to_lreal(r));
+	EXPECT_GT_DOUBLE(real_to_lreal(r), 0.1);
+END_TEST_S

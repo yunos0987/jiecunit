@@ -24,6 +24,7 @@
 {#include "test_jiectest_validate_gt.iec"}
 {#include "test_jiectest_validate_near.iec"}
 {#include "test_jiectest_validate_near_rel.iec"}
+{#include "test_jiectest_validate_ulp.iec"}
 {#include "test_jiectest.iec"}
 {#include "test_optional_message.iec"}
 
@@ -58,6 +59,12 @@ DEFINE_CONFIGURATION(
 		test_jiectest_validate_near,
 		test_near_rel_macros,
 		test_jiectest_validate_near_rel,
+		test_jiectest_pow2,
+		test_jiectest_almost_equals_double,
+		test_jiectest_almost_equals_float,
+		test_float_eq_with_infinity_and_nan,
+		test_double_eq_and_float_eq_macros,
+		test_real_macros_compare_real_values,
 		// jiectest.iec
 		test_jiectest_initialize,
 		test_jiectest_begin_test,
