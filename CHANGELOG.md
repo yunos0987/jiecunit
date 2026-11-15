@@ -2,7 +2,7 @@
 
 5.0.0 以降の変更を記録します。それ以前の変更は、Git の履歴と GitHub の Pull Request（https://github.com/yunos0987/jiecunit）を参照してください。
 
-## Unreleased
+## 8.0.0 (2026-11-15)
 
 7.0.0 からの変更です。
 
