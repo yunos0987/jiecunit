@@ -981,8 +981,11 @@
 // _jiecunit_tests (the __assert in the test headers only advances it), and
 // _JIEC_TESTNAMES_LIST_ compares it with the number of listed names, so that
 // a test missing from the list stops the preprocessor instead of silently not
-// running. The list must therefore come after all test definitions, and be
-// expanded only once (the counter is not reset). Only the numbers are
+// running. The check needs the list after all test definitions, expanded only
+// once (the counter is not reset). A list expanded before any test definition
+// (the counter is 0) is the older form, in which the configuration declares
+// the test programs as extern stubs; it is accepted without the check, so a
+// test missing from such a list still does not run. Only the numbers are
 // compared: a name listed twice is reported when the tests are registered
 // (jier: DUPLICATE_SYMBOL; PLC: "Fatal error: ... already registered"), and a
 // misspelled name is reported as an undefined program (jier) or as "was not
@@ -990,7 +993,7 @@
 // the check off.
 {#define _JIECUNIT_COUNT_TEST() __assert(__counter(_jiecunit_tests) >= 0, '')}
 {#ifndef JIECUNIT_NO_TEST_COUNT_CHECK}
-	{#define _JIECUNIT_CHECK_TEST_COUNT(n) __assert(__counter_peek(_jiecunit_tests) = n, 'JiecUnit: the number of TEST_S/TEST_M definitions differs from the number of names in _JIEC_TESTNAMES_LIST_. List every test exactly once (look for a missing, removed or extra name), and place DEFINE_CONFIGURATION(_JIEC_TESTNAMES_LIST_(...)) once, after all test definitions (or define JIECUNIT_NO_TEST_COUNT_CHECK to turn this check off).')}
+	{#define _JIECUNIT_CHECK_TEST_COUNT(n) __assert(__counter_peek(_jiecunit_tests) = 0 || __counter_peek(_jiecunit_tests) = n, 'JiecUnit: the number of TEST_S/TEST_M definitions differs from the number of names in _JIEC_TESTNAMES_LIST_. List every test exactly once (look for a missing, removed or extra name), and place DEFINE_CONFIGURATION(_JIEC_TESTNAMES_LIST_(...)) once, after all test definitions (or define JIECUNIT_NO_TEST_COUNT_CHECK to turn this check off).')}
 {#else}
 	{#define _JIECUNIT_CHECK_TEST_COUNT(n)}
 {#endif}

@@ -1,4 +1,6 @@
-// A list placed before the test definitions stops the preprocessor too.
+// A list placed before the test definitions (the older form, with extern program
+// stubs) is accepted without the count check: the listed test runs, and a test
+// missing from the list does not run and is not reported.
 {#include <jiecunit.iec>}
 
 DEFINE_CONFIGURATION(
@@ -9,4 +11,8 @@ DEFINE_CONFIGURATION(
 
 TEST_S(test_one)
 	EXPECT_TRUE(true);
+END_TEST_S
+
+TEST_S(test_not_listed)
+	FAIL('must not run');
 END_TEST_S

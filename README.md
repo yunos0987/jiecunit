@@ -75,6 +75,7 @@ DEFINE_CONFIGURATION(
 ```
 
 * `DEFINE_CONFIGURATION(_JIEC_TESTNAMES_LIST_(...))` は、すべてのテストの定義の**後ろ**に 1 回だけ書きます。前処理の時点でテストの定義の数と一覧の名前の数を比べ、書き忘れがあればエラー（`PP91: JiecUnit: the number of TEST_S/TEST_M definitions differs ...`）で止めます。照合を止めるには `JIECUNIT_NO_TEST_COUNT_CHECK` を定義します。
+* 7.x までのように一覧を定義より**前**に書いても動きます（構成がテストプログラムを `extern program` で前方宣言します）。ただし、この形では照合をしないので、一覧に書き忘れたテストは黙って実行されません。
 * PLC では、`JiecUnitMain` と各テストプログラム（一覧に書いた名前のプログラム。スイートなら `suite_name`、フィクスチャなら `F_name`）を**同じタスク**に割り付け、`JiecUnitMain` を先頭（または末尾）に置きます。ヘルパーや `F_SetUp` / `F_TearDown` は関数なので、割り付けません。テストプログラムが JiecUnitMain の 1 サイクルの間に実行されなかったり、2 回以上実行されたりすると `[  ERROR ]` になります。
 
 ### テストの種類
@@ -284,7 +285,7 @@ PLC の `g_console` の行を古い順に書き出したテキストも変換で
 
 ### 7.x からの移行
 
-* `DEFINE_CONFIGURATION(_JIEC_TESTNAMES_LIST_(...))` を、すべてのテストの定義の後ろへ移してください。
+* `DEFINE_CONFIGURATION(_JIEC_TESTNAMES_LIST_(...))` を、すべてのテストの定義の後ろへ移すと、一覧の書き忘れを前処理で検出できます（移さなくても動きます）。
 * `EXPECT_EQ_REAL` などの `*_REAL` / `*_FLOAT` に LREAL の値を渡しているところは、`*_LREAL` / `*_DOUBLE` か `EXPECT_DOUBLE_EQ` に変えてください（REAL のまま比べるようになりました。ベンダーによっては、LREAL を渡しても黙って REAL に丸めて比べます）。
 * テストの外でアサーションを使っている POU には、`JIECUNIT_DECLARE_HELPER();` を書いてください。
 * 構成を手で書いている場合は、`g_jiecunit_result: JiecUnitResult_t;` と `g_jiecunit_rerun: bool;` をグローバル変数に加えてください。
