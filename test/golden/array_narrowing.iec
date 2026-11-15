@@ -1,0 +1,22 @@
+// golden-args: -Wno-error --allow-narrowing
+// An array of a wider type than the assertion, where the target narrows
+// implicitly (jier with --allow-narrowing): elements that differ only before
+// the conversion do not end the comparison, and the later real difference is
+// reported.
+{#include <jiecunit.iec>}
+
+TEST_S(test_narrowed_elements)
+	var
+		expected_values: array[0..2] of lreal := [1.0, 2.0, 3.0];
+		actual_values: array[0..2] of lreal := [1.0, 2.0, 99.0];
+	end
+	// Element 1 differs as LREAL but not as REAL; element 2 differs as both.
+	actual_values[1] := 2.0 + 1.0e-12;
+	EXPECT_EQ_ARRAY_REAL(expected_values, actual_values, 3);
+END_TEST_S
+
+DEFINE_CONFIGURATION(
+	_JIEC_TESTNAMES_LIST_(
+		test_narrowed_elements
+	)
+)

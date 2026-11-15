@@ -1,0 +1,230 @@
+{#include <jiecunit.iec>}
+
+(*{doc A helper for the tests below: fails fatally if the value is not positive.
+@input value The value to check.
+@return True if the check passed.}*)
+function test_helper_check_positive: bool
+	JIECUNIT_DECLARE_HELPER();
+	var_input
+		(*{doc The value to check.}*)
+		value: dint;
+	end
+	ASSERT_GT_INT(value, 0, 'value must be positive');
+	test_helper_check_positive := true;
+end
+
+(*{doc A helper for the tests below: compares two arrays with ASSERT_EQ_ARRAY_DINT.
+@return True if the arrays are equal.}*)
+function test_helper_assert_arrays: bool
+	JIECUNIT_DECLARE_HELPER();
+	var
+		a: array[0..1] of dint := [1, 2];
+		b: array[0..1] of dint := [1, 3];
+	end
+	ASSERT_EQ_ARRAY_DINT(a, b, 2);
+	test_helper_assert_arrays := true;
+end
+
+(*{doc A helper for the tests below: one non-fatal failure.
+@return Always returns true.}*)
+function test_helper_add_failure: bool
+	JIECUNIT_DECLARE_HELPER();
+	ADD_FAILURE('from the helper');
+	test_helper_add_failure := true;
+end
+
+TEST_S(test_failure_messages)
+	var
+		a: dint := 4;
+		s: string[16] := 'abd';
+		flag: bool := false;
+		x: lreal := 1.0;
+		r: real := 1.0;
+	end
+	// Fact: EQ prints the expressions, and the value of each one that is not a literal.
+	EXPECT_NONFATAL_FAILURE(EXPECT_EQ_INT(5, a), 'Expected equality of these values:');
+	EXPECT_NONFATAL_FAILURE(EXPECT_EQ_INT(5, a), '  a');
+	EXPECT_NONFATAL_FAILURE(EXPECT_EQ_INT(5, a), '    Which is: 4');
+	// Fact: STRING values are quoted.
+	EXPECT_NONFATAL_FAILURE(EXPECT_EQ_STRING('abc', s), 'Which is: $'abd$'');
+	// Fact: NE and the comparisons print both expressions and both values on one line.
+	EXPECT_NONFATAL_FAILURE(EXPECT_NE_INT(4, a), 'Expected: (4) <> (a), actual: 4 vs 4');
+	EXPECT_NONFATAL_FAILURE(EXPECT_LT_INT(a, 2), 'Expected: (a) < (2), actual: 4 vs 2');
+	EXPECT_NONFATAL_FAILURE(EXPECT_GE_STRING(s, 'b'), 'Expected: (s) >= ($'b$'), actual: $'abd$' vs $'b$'');
+	// Fact: TRUE/FALSE print the condition, its value and the expected value.
+	EXPECT_NONFATAL_FAILURE(EXPECT_TRUE(flag), 'Value of: flag');
+	EXPECT_NONFATAL_FAILURE(EXPECT_TRUE(flag), '  Actual: false');
+	EXPECT_NONFATAL_FAILURE(EXPECT_FALSE(not flag), 'Expected: false');
+	// Fact: NEAR prints the difference and the tolerance.
+	// (The text of an LREAL value differs between the targets, for example 0.5
+	// on jier and 5.00000000000000e-01 on OMRON, so it comes from lreal_to_string.)
+	EXPECT_NONFATAL_FAILURE(EXPECT_NEAR(1.5, x, 0.1), jiec_concat('The difference between 1.5 and x is ', lreal_to_string(0.5), ', which exceeds '));
+	EXPECT_NONFATAL_FAILURE(EXPECT_NEAR(1.5, x, 0.1), jiec_concat('x evaluates to ', lreal_to_string(x), ', and'));
+	// Fact: the ULP comparisons say so.
+	EXPECT_NONFATAL_FAILURE(EXPECT_DOUBLE_EQ(1.1, x), '  1.1');
+	EXPECT_NONFATAL_FAILURE(EXPECT_FLOAT_EQ(1.5, r), jiec_concat('    Which is: ', lreal_to_string(1.0)));
+	// Fact: the message is printed, and ADD_FAILURE prints Failed.
+	EXPECT_NONFATAL_FAILURE(EXPECT_EQ_INT(5, a, 'the message'), 'the message');
+	EXPECT_NONFATAL_FAILURE(ADD_FAILURE('added'), 'added');
+	EXPECT_NONFATAL_FAILURE(ADD_FAILURE(), 'Failed');
+	// Fact: captured failures are not counted.
+	EXPECT_FALSE(HAS_FAILURE());
+END_TEST_S
+
+TEST_S(test_fatal_failure_in_helper)
+	var
+		ok: bool;
+	end
+	// Fact: EXPECT_FATAL_FAILURE checks the fatal failure of a helper, which is then not counted.
+	EXPECT_FATAL_FAILURE(ok := test_helper_check_positive(-1), 'value must be positive');
+	EXPECT_FATAL_FAILURE(ok := test_helper_check_positive(-1), 'Expected: (value) > (0), actual: -1 vs 0');
+	EXPECT_FALSE(HAS_FATAL_FAILURE());
+	EXPECT_FALSE(ok);
+	// Fact: EXPECT_NONFATAL_FAILURE checks the non-fatal failure of a helper.
+	EXPECT_NONFATAL_FAILURE(ok := test_helper_add_failure(), 'from the helper');
+	// Fact: a helper without a failure passes EXPECT_NO_FATAL_FAILURE and ASSERT_NO_FATAL_FAILURE.
+	EXPECT_NO_FATAL_FAILURE(ok := test_helper_check_positive(1));
+	ASSERT_NO_FATAL_FAILURE(ok := test_helper_check_positive(2), 'not reached');
+	EXPECT_TRUE(ok);
+	// Fact: a fatal failure captured inside the statement is not a new fatal failure for EXPECT_NO_FATAL_FAILURE.
+	EXPECT_NO_FATAL_FAILURE(EXPECT_FATAL_FAILURE(ok := test_helper_check_positive(-1), 'positive'));
+	// Fact: an empty text is contained in any failure.
+	EXPECT_NONFATAL_FAILURE(ADD_FAILURE(), '');
+	// Fact: a non-fatal failure is not a fatal one for ASSERT_NO_FATAL_FAILURE.
+	EXPECT_NONFATAL_FAILURE(ASSERT_NO_FATAL_FAILURE(ok := test_helper_add_failure()), 'from the helper');
+	EXPECT_FALSE(HAS_FAILURE());
+END_TEST_S
+
+TEST_S(test_fatal_failure_checks)
+	var
+		jt: JiecTest_t;
+	end
+	// Fact: JiecTest_hasFatalFailure and JiecTest_hasNonfatalFailure count the failures of the active test.
+	JiecTest_initialize(jt);
+	JiecTest_activate(jt);
+	jt.tmp_is_single_cycle := true;
+	EXPECT_FALSE(JiecTest_hasFatalFailure(jt));
+	EXPECT_FALSE(JiecTest_hasNonfatalFailure(jt));
+	JiecTest_beginCapture(self:=jt, substr:='x', file:='', line:=0);
+	JiecTest_failure(self:=jt, message:='x', die:=true, file:='', line:=0);
+	EXPECT_EQ_INT(1, jt.tmp_captured_fatal);
+	EXPECT_TRUE(JiecTest_endCapture(self:=jt, fatal:=true, statement_text:='', file:='', line:=0));
+	EXPECT_FALSE(JiecTest_hasFatalFailure(jt));
+	EXPECT_EQ_INT(0, jt.num_of_failures);
+
+	// Fact: JiecTest_abort ends the test in its body, but not in a helper.
+	JiecTest_abort(self:=jt, in_helper:=true);
+	EXPECT_TRUE(JiecTest_isActive(jt));
+	JiecTest_abort(self:=jt, in_helper:=false);
+	EXPECT_FALSE(JiecTest_isActive(jt));
+
+	// Fact: JiecTest_beginTest clears the failure counts, the marks and the capture.
+	jt.tmp_fatal_failures := 2;
+	jt.tmp_nonfatal_failures := 3;
+	jt.tmp_fatal_mark_depth := 4;
+	jt.tmp_capturing := true;
+	jt.tmp_capture_rejected := 1;
+	JiecTest_beginTest(jt);
+	EXPECT_EQ_INT(0, jt.tmp_fatal_failures);
+	EXPECT_EQ_INT(0, jt.tmp_nonfatal_failures);
+	EXPECT_EQ_INT(0, jt.tmp_fatal_mark_depth);
+	EXPECT_FALSE(jt.tmp_capturing);
+	EXPECT_EQ_INT(0, jt.tmp_capture_rejected);
+END_TEST_S
+
+TEST_S(test_array_and_substring)
+	var
+		a: array[0..3] of dint := [1, 2, 3, 4];
+		b: array[0..3] of dint := [1, 2, 3, 4];
+		c: array[0..3] of dint := [1, 2, 9, 4];
+		names: array[0..1] of string[16] := ['ab', 'cd'];
+		others: array[0..1] of string[16] := ['ab', 'ce'];
+		r: array[0..1] of real := [0.1, 0.2];
+		s: string[32] := 'hello world';
+		rr: array[0..1] of real := [0.1, 0.3];
+		ok: bool;
+	end
+	// Fact: equal arrays pass, also when only the first n elements are compared.
+	EXPECT_EQ_ARRAY_DINT(a, b, 4);
+	EXPECT_EQ_ARRAY_DINT(a, c, 2);
+	EXPECT_EQ_ARRAY_DINT(a, c, 0);
+	EXPECT_EQ_ARRAY_REAL(r, r, 2);
+	ASSERT_EQ_ARRAY_STRING(names, names, 2);
+	// Fact: the first element that differs is reported with its index.
+	EXPECT_NONFATAL_FAILURE(EXPECT_EQ_ARRAY_DINT(a, c, 4), '  c[2]');
+	EXPECT_NONFATAL_FAILURE(EXPECT_EQ_ARRAY_DINT(a, c, 4), '    Which is: 9');
+	EXPECT_NONFATAL_FAILURE(EXPECT_EQ_ARRAY_DINT(a, c, 4, 'more'), 'The arrays differ first at index 2. more');
+	EXPECT_NONFATAL_FAILURE(EXPECT_EQ_ARRAY_STRING(names, others, 2), 'Which is: $'ce$'');
+	EXPECT_NONFATAL_FAILURE(EXPECT_EQ_ARRAY_REAL(r, rr, 2), '  rr[1]');
+	// Fact: ASSERT_EQ_ARRAY_* fails fatally.
+	EXPECT_FATAL_FAILURE(ok := test_helper_assert_arrays(), 'The arrays differ first at index 1.');
+	// Fact: EXPECT_STR_CONTAINS finds a substring; an empty one is always contained.
+	EXPECT_STR_CONTAINS(s, 'o w');
+	EXPECT_STR_CONTAINS(s, '');
+	ASSERT_STR_CONTAINS(s, 'hello');
+	EXPECT_NONFATAL_FAILURE(EXPECT_STR_CONTAINS(s, 'xyz'), 'Expected: has substring $'xyz$'');
+	EXPECT_NONFATAL_FAILURE(EXPECT_STR_CONTAINS(s, 'xyz'), '  Actual: $'hello world$'');
+	EXPECT_NONFATAL_FAILURE(EXPECT_STR_CONTAINS(s, 'xyz', 'with a message'), 'with a message');
+	EXPECT_FALSE(HAS_FAILURE());
+END_TEST_S
+
+TEST_S(test_tolerant_arrays)
+	var
+		expected_values: array[0..2] of lreal := [1.0, 2.0, 3.0];
+		near_values: array[0..2] of lreal := [1.0, 2.25, 2.75];
+		far_values: array[0..2] of lreal := [1.0, 2.25, 9.0];
+		sums: array[0..1] of lreal;
+		exact_values: array[0..1] of lreal := [0.3, 1.0];
+		real_values: array[0..1] of real := [0.5, 1.5];
+		other_real_values: array[0..1] of real := [0.5, 1.75];
+	end
+	sums[0] := 0.1 + 0.2;
+	sums[1] := 1.0;
+	// Fact: EXPECT_NEAR_ARRAY passes when every pair of elements is within the error.
+	EXPECT_NEAR_ARRAY(expected_values, near_values, 3, 0.25);
+	ASSERT_NEAR_ARRAY(expected_values, far_values, 2, 0.25);
+	EXPECT_NEAR_ARRAY(real_values, other_real_values, 2, 0.25);
+	// Fact: it goes on after elements that differ within the error, and reports the first one that is not.
+	EXPECT_NONFATAL_FAILURE(EXPECT_NEAR_ARRAY(expected_values, far_values, 3, 0.25), jiec_concat('The difference between expected_values[2] and far_values[2] is ', lreal_to_string(6.0), ','));
+	EXPECT_NONFATAL_FAILURE(EXPECT_NEAR_ARRAY(expected_values, far_values, 3, 0.25, 'more'), 'The arrays differ first at index 2. more');
+	EXPECT_NONFATAL_FAILURE(EXPECT_NEAR_ARRAY(expected_values, near_values, 3, 0.125), 'The arrays differ first at index 1.');
+	// Fact: a negative error fails as with EXPECT_NEAR, also when the arrays are equal.
+	EXPECT_NONFATAL_FAILURE(EXPECT_NEAR_ARRAY(expected_values, expected_values, 3, -1.0), 'must not be negative');
+	// Fact: EXPECT_DOUBLE_EQ_ARRAY / EXPECT_FLOAT_EQ_ARRAY accept elements within 4 ULPs.
+	EXPECT_NE_LREAL(exact_values[0], sums[0]);
+	EXPECT_DOUBLE_EQ_ARRAY(exact_values, sums, 2);
+	ASSERT_DOUBLE_EQ_ARRAY(exact_values, sums, 2);
+	EXPECT_FLOAT_EQ_ARRAY(real_values, real_values, 2);
+	ASSERT_FLOAT_EQ_ARRAY(real_values, other_real_values, 1);
+	EXPECT_NONFATAL_FAILURE(EXPECT_DOUBLE_EQ_ARRAY(expected_values, near_values, 3), '  near_values[1]');
+	EXPECT_NONFATAL_FAILURE(EXPECT_FLOAT_EQ_ARRAY(real_values, other_real_values, 2), 'The arrays differ first at index 1.');
+	EXPECT_FALSE(HAS_FAILURE());
+END_TEST_S
+
+(*{doc A helper for the tests below: one non-fatal failure inside a nested SCOPED_TRACE.
+@return Always returns true.}*)
+function test_helper_traced_failure: bool
+	JIECUNIT_DECLARE_HELPER();
+	var
+		ok: bool;
+	end
+	SCOPED_TRACE('inner trace', ok := test_helper_add_failure());
+	test_helper_traced_failure := true;
+end
+
+TEST_S(test_trace_and_log)
+	var
+		ok: bool;
+	end
+	// Fact: a failure inside SCOPED_TRACE shows the text of the trace; nested traces are all shown.
+	EXPECT_NONFATAL_FAILURE(SCOPED_TRACE('the outer trace', ok := test_helper_add_failure()), 'JiecUnit trace:');
+	EXPECT_NONFATAL_FAILURE(SCOPED_TRACE('the outer trace', ok := test_helper_add_failure()), ': the outer trace');
+	EXPECT_NONFATAL_FAILURE(SCOPED_TRACE('the outer trace', ok := test_helper_traced_failure()), ': inner trace');
+	EXPECT_NONFATAL_FAILURE(SCOPED_TRACE('the outer trace', ok := test_helper_traced_failure()), ': the outer trace');
+	// Fact: a statement without a failure leaves nothing behind.
+	SCOPED_TRACE('no failure', ok := test_helper_check_positive(1));
+	EXPECT_EQ_DINT(0, g_jiectest.tmp_trace_depth);
+	// Fact: JIECUNIT_LOG is not a failure.
+	JIECUNIT_LOG('a line from test_trace_and_log');
+	EXPECT_FALSE(HAS_FAILURE());
+END_TEST_S

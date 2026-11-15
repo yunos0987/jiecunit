@@ -1,0 +1,20 @@
+[========] Running 4 tests.
+[ RUN    ] test_single
+[     OK ] test_single (n/a)
+[ RUN    ] test_multi
+[     OK ] test_multi (n/a)
+[ RUN    ] test_failing
+test/golden/main_last.iec:16: Failure
+Expected equality of these values:
+  1
+  2
+[ FAILED ] test_failing (n/a)
+[ RUN    ] Fx.with_fixture
+SetUp
+TearDown: value=3
+[     OK ] Fx.with_fixture (n/a)
+[========] 4 tests ran. (n/a)
+[ PASSED ] 3 tests.
+[ FAILED ] 1 tests, listed below.
+[ FAILED ] test_failing
+[exit code: 1]

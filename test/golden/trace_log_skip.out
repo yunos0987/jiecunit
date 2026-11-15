@@ -1,0 +1,92 @@
+[========] Running 6 tests.
+[ RUN    ] test_traces
+a log line
+test/golden/trace_log_skip.iec:11: Failure
+Expected: (level) >= (0), actual: -1 vs 0
+a message
+JiecUnit trace:
+test/golden/trace_log_skip.iec:31: the low level
+test/golden/trace_log_skip.iec:10: Failure
+Expected: (level) <= (100), actual: 150 vs 100
+JiecUnit trace:
+test/golden/trace_log_skip.iec:20: the high level
+test/golden/trace_log_skip.iec:33: all levels
+test/golden/trace_log_skip.iec:10: Failure
+Expected: (level) <= (100), actual: 101 vs 100
+JiecUnit trace:
+test/golden/trace_log_skip.iec:36: step 1
+test/golden/trace_log_skip.iec:10: Failure
+Expected: (level) <= (100), actual: 102 vs 100
+JiecUnit trace:
+test/golden/trace_log_skip.iec:36: step 2
+test/golden/trace_log_skip.iec:39: Failure
+Value of: false
+  Actual: false
+Expected: true
+[ FAILED ] test_traces (n/a)
+[ RUN    ] test_trace_depth
+test/golden/trace_log_skip.iec:51: Failure
+SCOPED_TRACE is nested deeper than 8 (JIECUNIT_MAX_TRACE_DEPTH); the inner texts are not shown.
+JiecUnit trace:
+test/golden/trace_log_skip.iec:51: depth 2
+test/golden/trace_log_skip.iec:51: depth 3
+test/golden/trace_log_skip.iec:51: depth 4
+test/golden/trace_log_skip.iec:51: depth 5
+test/golden/trace_log_skip.iec:51: depth 6
+test/golden/trace_log_skip.iec:51: depth 7
+test/golden/trace_log_skip.iec:51: depth 8
+test/golden/trace_log_skip.iec:51: depth 9
+test/golden/trace_log_skip.iec:53: Failure
+Failed
+at the bottom
+JiecUnit trace:
+test/golden/trace_log_skip.iec:51: depth 2
+test/golden/trace_log_skip.iec:51: depth 3
+test/golden/trace_log_skip.iec:51: depth 4
+test/golden/trace_log_skip.iec:51: depth 5
+test/golden/trace_log_skip.iec:51: depth 6
+test/golden/trace_log_skip.iec:51: depth 7
+test/golden/trace_log_skip.iec:51: depth 8
+test/golden/trace_log_skip.iec:51: depth 9
+[ FAILED ] test_trace_depth (n/a)
+[ RUN    ] test_skip_single
+test/golden/trace_log_skip.iec:67: Skipped
+a reason
+[ SKIPPED] test_skip_single (n/a)
+[ RUN    ] test_skip_without_reason
+test/golden/trace_log_skip.iec:71: Skipped
+[ SKIPPED] test_skip_without_reason (n/a)
+[ RUN    ] test_skip_in_second_cycle
+test/golden/trace_log_skip.iec:76: Skipped (cycle 1)
+in the second cycle
+[ SKIPPED] test_skip_in_second_cycle (n/a)
+[ RUN    ] test_tolerant_arrays
+test/golden/trace_log_skip.iec:87: Failure
+The difference between expected_values[2] and actual_values[2] is 6.0, which exceeds 0.25, where
+expected_values[2] evaluates to 3.0,
+actual_values[2] evaluates to 9.0, and
+0.25 evaluates to 0.25.
+The arrays differ first at index 2. a message
+test/golden/trace_log_skip.iec:88: Failure
+Expected equality of these values:
+  expected_values[1]
+    Which is: 2.0
+  actual_values[1]
+    Which is: 2.25
+The arrays differ first at index 1.
+test/golden/trace_log_skip.iec:89: Failure
+Expected equality of these values:
+  real_values[1]
+    Which is: 1.5
+  other_real_values[1]
+    Which is: 1.75
+The arrays differ first at index 1.
+[ FAILED ] test_tolerant_arrays (n/a)
+[========] 6 tests ran. (n/a)
+[ PASSED ] 0 tests.
+[ SKIPPED] 3 tests.
+[ FAILED ] 3 tests, listed below.
+[ FAILED ] test_traces
+[ FAILED ] test_trace_depth
+[ FAILED ] test_tolerant_arrays
+[exit code: 1]

@@ -28,15 +28,19 @@ TEST_S(test_console_initialize)
 	var
 		console: Console_t;
 	end
-	// Fact: Console_initialize clears rows and resets row_index to 0.
+	// Fact: Console_initialize clears rows, resets row_index to 0 and clears wrapped.
 		// Arrange
 	console.row_index := 7;
+	console.full := true;
+	console.wrapped := true;
 	console.rows[0] := 'dirty0';
 	console.rows[1] := 'dirty1';
 		// Act
 	Console_initialize(console);
 		// Assert
 	EXPECT_EQ_INT(0, console.row_index);
+	EXPECT_FALSE(console.full);
+	EXPECT_FALSE(console.wrapped);
 	EXPECT_EQ_STRING('', console.rows[0]);
 	EXPECT_EQ_STRING('', console.rows[1]);
 
@@ -86,6 +90,7 @@ TEST_S(test_console_puts)
 	var
 		console: Console_t;
 		next_row: dint;
+		last_row: dint;
 	end
 	// Fact: Console_puts writes one line and advances row_index by one.
 		// Arrange
@@ -96,24 +101,67 @@ TEST_S(test_console_puts)
 	EXPECT_EQ_STRING('line0', console.rows[0]);
 	EXPECT_EQ_INT(1, console.row_index);
 	EXPECT_EQ_INT(1, next_row);
+	EXPECT_FALSE(console.wrapped);
 
-	// Fact: Console_puts wraps row_index to 0 at the last row boundary.
+	// Fact: Console_puts wraps row_index to 0 at the last row boundary and sets full, but not wrapped.
 		// Arrange
-	console.row_index := CONSOLE_MAX_ROWS - 1;
+	// The last row through a variable (an index written as a constant expression, [N - 1], is rejected by Sysmac Studio as out of range).
+	last_row := CONSOLE_MAX_ROWS - 1;
+	console.row_index := last_row;
 		// Act
 	next_row := Console_puts(console, 'tail');
 		// Assert
-	EXPECT_EQ_STRING('tail', console.rows[CONSOLE_MAX_ROWS - 1]);
+	EXPECT_EQ_STRING('tail', console.rows[last_row]);
 	EXPECT_EQ_INT(0, console.row_index);
 	EXPECT_EQ_INT(0, next_row);
+	EXPECT_TRUE(console.full);
+	EXPECT_FALSE(console.wrapped);
 
-	// Fact: Console_puts accepts empty lines and still advances row_index.
+	// Fact: the next line overwrites the oldest one and sets wrapped; empty lines also advance row_index.
 		// Arrange
-	// (keep wrapped state)
+	// (keep the full state)
 		// Act
 	next_row := Console_puts(console, '');
 		// Assert
 	EXPECT_EQ_STRING('', console.rows[0]);
 	EXPECT_EQ_INT(1, console.row_index);
 	EXPECT_EQ_INT(1, next_row);
+	EXPECT_TRUE(console.wrapped);
+END_TEST_S
+
+TEST_S(test_jiec_quote)
+	var
+		long_text: string[STRING_MAX_SIZE];
+		quoted: string[STRING_MAX_SIZE];
+		index: dint;
+	end
+	// Fact: jiec_quote encloses a plain string in quote characters.
+		// Arrange/Act/Assert
+	EXPECT_EQ_STRING('$'abc$'', jiec_quote('abc'));
+
+	// Fact: jiec_quote of an empty string is two quote characters.
+		// Arrange/Act/Assert
+	EXPECT_EQ_STRING('$'$'', jiec_quote(''));
+
+	// Fact: jiec_quote escapes quote characters and dollar signs with a dollar sign.
+		// Arrange/Act/Assert
+	EXPECT_EQ_STRING('$'$$$'$$$$$'', jiec_quote('$'$$'));
+
+	// Fact: jiec_quote keeps the other characters, including spaces at the end.
+		// Arrange/Act/Assert
+	EXPECT_EQ_STRING('$'a b  $'', jiec_quote('a b  '));
+
+	// Fact: jiec_quote cuts off a string that does not fit and marks it with three dots after the closing quote.
+		// Arrange
+	long_text := '';
+	for index := 1 to STRING_MAX_SIZE do
+		long_text := concat(long_text, 'x');
+	end_for;
+		// Act
+	quoted := jiec_quote(long_text);
+		// Assert
+	// (One less than STRING_MAX_SIZE: on OMRON the size of a STRING includes the terminator.)
+	EXPECT_EQ_INT(STRING_MAX_SIZE - 1, len(quoted));
+	EXPECT_EQ_STRING('$'...', right(quoted, 4));
+	EXPECT_EQ_STRING('$'x', left(quoted, 2));
 END_TEST_S

@@ -1,0 +1,71 @@
+// A listed test that is not assigned to the task, a test that runs twice in
+// one cycle of JiecUnitMain, and a test that stops running before it ends are
+// reported as errors; the other tests run.
+{#include <jiecunit.iec>}
+
+TEST_S(test_ok)
+	EXPECT_TRUE(true);
+END_TEST_S
+
+TEST_S(test_not_assigned)
+	EXPECT_TRUE(true);
+END_TEST_S
+
+TEST_M(test_runs_twice)
+	if CURRENT_CYCLE() = 3 then
+		EOT();
+	end_if;
+END_TEST_M
+
+// Stands for a second instance of test_runs_twice (as if the program were
+// assigned to two tasks): it does what the header of TEST_M does.
+program second_instance_of_test_runs_twice
+	_DECLARE_EXTERNAL_JIEC_TEST();
+	if JiecTest_isActive(_JIECTEST_) and (JiecTest_activeTestname(_JIECTEST_) = 'test_runs_twice') then
+		JiecTest_enterTest(self:=_JIECTEST_, single_cycle:=false, file:=__FILE__, line:=__LINE__);
+	end_if;
+end
+
+// Stands for a test program in a slower task: it runs only in cycle 0.
+program test_stops_running
+	_DECLARE_EXTERNAL_JIEC_TEST();
+	if JiecTest_isActive(_JIECTEST_) and (JiecTest_activeTestname(_JIECTEST_) = 'test_stops_running') and (JiecTest_currentCycle(_JIECTEST_) = 0) then
+		JiecTest_enterTest(self:=_JIECTEST_, single_cycle:=false, file:=__FILE__, line:=__LINE__);
+	end_if;
+end
+
+// Stands for a fixture test whose program never runs its TearDown.
+program test_teardown_never_runs
+	_DECLARE_EXTERNAL_JIEC_TEST();
+	if JiecTest_isActive(_JIECTEST_) and (JiecTest_activeTestname(_JIECTEST_) = 'test_teardown_never_runs') then
+		if JiecTest_enterTest(self:=_JIECTEST_, single_cycle:=true, file:=__FILE__, line:=__LINE__) then
+			JiecTest_requestTearDown(_JIECTEST_);
+		end_if;
+		JiecTest_deactivate(_JIECTEST_);
+	end_if;
+end
+
+TEST_M(test_ok_multi)
+	if CURRENT_CYCLE() = 2 then
+		EOT();
+	end_if;
+END_TEST_M
+
+// The configuration is written by hand to make the mistakes on purpose.
+{#define _GOLDEN_GLOBALS_AND_TASKS()
+	var_global
+		_JIECTESTNAMES_: array[MAX_TESTS] of string[TESTNAME_MAX_SIZE] := ['test_ok', 'test_not_assigned', 'test_runs_twice', 'test_stops_running', 'test_teardown_never_runs', 'test_ok_multi', (MAX_TESTS - 6)('')];
+		_JIECTEST_: JiecTest_t;
+		_JIECUNIT_RESULT_: JiecUnitResult_t;
+		_JIECUNIT_RERUN_: bool;
+	end
+	task JiecUnitTask(priority := 0);
+	program JiecUnitMain with JiecUnitTask: JiecUnitMain();
+	program test_ok with JiecUnitTask: test_ok();
+	program test_runs_twice with JiecUnitTask: test_runs_twice();
+	program second_instance_of_test_runs_twice with JiecUnitTask: second_instance_of_test_runs_twice();
+	program test_stops_running with JiecUnitTask: test_stops_running();
+	program test_teardown_never_runs with JiecUnitTask: test_teardown_never_runs();
+	program test_ok_multi with JiecUnitTask: test_ok_multi();
+}
+DEFINE_CONFIGURATION(_GOLDEN_GLOBALS_AND_TASKS())

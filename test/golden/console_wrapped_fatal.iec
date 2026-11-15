@@ -1,0 +1,21 @@
+// golden-args: -D CONSOLE_MAX_ROWS=1 -D JIECUNIT_JIER_CONSOLE_WARNING
+// A fatal registration error (a name listed twice) with a one-row console:
+// the single line fills the console but overwrites nothing, so no warning.
+{#include <jiecunit.iec>}
+
+TEST_S(test_twice)
+	EXPECT_TRUE(true);
+END_TEST_S
+
+{#define _GOLDEN_GLOBALS_AND_TASKS()
+	var_global
+		_JIECTESTNAMES_: array[MAX_TESTS] of string[TESTNAME_MAX_SIZE] := ['test_twice', 'test_twice', (MAX_TESTS - 2)('')];
+		_JIECTEST_: JiecTest_t;
+		_JIECUNIT_RESULT_: JiecUnitResult_t;
+		_JIECUNIT_RERUN_: bool;
+	end
+	task JiecUnitTask(priority := 0);
+	program JiecUnitMain with JiecUnitTask: JiecUnitMain();
+	program test_twice with JiecUnitTask: test_twice();
+}
+DEFINE_CONFIGURATION(_GOLDEN_GLOBALS_AND_TASKS())

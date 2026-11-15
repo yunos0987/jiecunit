@@ -1,0 +1,70 @@
+[========] Running 6 tests.
+[ RUN    ] test_assert_in_helper_continues
+test/golden/fatal_failures.iec:10: Failure (cycle 0)
+Expected: (value) > (0), actual: -1 vs 0
+value must be positive
+test/golden/fatal_failures.iec:23: Failure (cycle 0)
+Expected equality of these values:
+  1
+  2
+printed after the fatal failure of the helper, in cycle 0
+test/golden/fatal_failures.iec:25: Failure (cycle 1)
+Expected equality of these values:
+  3
+  4
+still running in cycle 1
+test/golden/fatal_failures.iec:10: Failure (cycle 1)
+Expected: (value) > (0), actual: -2 vs 0
+value must be positive
+test/golden/fatal_failures.iec:26: Failure (cycle 1)
+Expected: ok := check_positive(-2) does not generate new fatal failures.
+  Actual: it does.
+EXPECT_NO_FATAL_FAILURE goes on
+test/golden/fatal_failures.iec:10: Failure (cycle 1)
+Expected: (value) > (0), actual: -3 vs 0
+value must be positive
+test/golden/fatal_failures.iec:27: Failure (cycle 1)
+Expected: ok := check_positive(-3) does not generate new fatal failures.
+  Actual: it does.
+ASSERT_NO_FATAL_FAILURE stops the test
+[ FAILED ] test_assert_in_helper_continues (n/a)
+[ RUN    ] test_capture_mismatches
+test/golden/fatal_failures.iec:33: Failure
+Expected: EXPECT_TRUE(true) generates 1 non-fatal failure containing 'none'
+  Actual: 0 fatal and 0 non-fatal failures
+test/golden/fatal_failures.iec:34: Failure
+Expected: EXPECT_TRUE(false) generates 1 non-fatal failure containing 'not in the output'
+  Actual: 1 non-fatal failure, without the text
+test/golden/fatal_failures.iec:35: Failure
+Expected: EXPECT_EQ_INT(5, 4) generates 1 non-fatal failure containing ': Failure'
+  Actual: 1 non-fatal failure, without the text
+test/golden/fatal_failures.iec:36: Failure
+Expected: EXPECT_TRUE(false) generates 1 fatal failure containing 'Value of'
+  Actual: 0 fatal and 1 non-fatal failures
+test/golden/fatal_failures.iec:37: Failure
+EXPECT_FATAL_FAILURE / EXPECT_NONFATAL_FAILURE cannot be nested.
+[ FAILED ] test_capture_mismatches (n/a)
+[ RUN    ] test_capture_left_by_return
+test/golden/fatal_failures.iec:41: Failure
+The statement of EXPECT_FATAL_FAILURE / EXPECT_NONFATAL_FAILURE returned from the test. Call a function (a helper with JIECUNIT_DECLARE_HELPER) that contains the assertion.
+[ FAILED ] test_capture_left_by_return (n/a)
+[ RUN    ] test_capture_left_by_return_ends_test_m
+test/golden/fatal_failures.iec:47: Failure (cycle 0)
+The statement of EXPECT_FATAL_FAILURE / EXPECT_NONFATAL_FAILURE returned from the test. Call a function (a helper with JIECUNIT_DECLARE_HELPER) that contains the assertion.
+[ FAILED ] test_capture_left_by_return_ends_test_m (n/a)
+[ RUN    ] test_no_fatal_failure_inside_capture
+test/golden/fatal_failures.iec:59: Failure
+Expected: EXPECT_NO_FATAL_FAILURE(ok := check_positive(-1)) generates 1 fatal failure containing 'positive'
+  Actual: 1 fatal and 1 non-fatal failures
+[ FAILED ] test_no_fatal_failure_inside_capture (n/a)
+[ RUN    ] test_after
+[     OK ] test_after (n/a)
+[========] 6 tests ran. (n/a)
+[ PASSED ] 1 tests.
+[ FAILED ] 5 tests, listed below.
+[ FAILED ] test_assert_in_helper_continues
+[ FAILED ] test_capture_mismatches
+[ FAILED ] test_capture_left_by_return
+[ FAILED ] test_capture_left_by_return_ends_test_m
+[ FAILED ] test_no_fatal_failure_inside_capture
+[exit code: 1]

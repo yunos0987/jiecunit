@@ -12,7 +12,10 @@ so the deprecated _MSG form and the new optional-message form stay equivalent.
 It also verifies that:
 
   * the expansion reports the call site's own source line (via __LINE__),
-    not some other line, and
+    not some other line,
+  * the expansion passes the source text of each value argument, in order
+    (NAME(v1, v2) passes <x>_text:='v1' and then <y>_text:='v2'), so that a
+    failure shows each expression next to its own value, and
   * a wrong argument count is rejected, through one of three negative-case
     groups, guarded by a fourth positive-control group that is not itself
     counted among the negative cases verified:
@@ -37,6 +40,84 @@ import sys
 import tempfile
 
 _DEF_RE = re.compile(r'^\{#define\s+([A-Za-z_][A-Za-z0-9_]*)_MSG\(([^)]*)\)')
+_TEXT_RE = re.compile(r"\w+_text:=(?:JiecTest_indexedText\(array_text:=)?'([^']*)'")
+
+# Public assertion macros added without a deprecated NAME_MSG alias: (name,
+# number of value arguments[, number of source texts]). Each is checked like
+# a pair, against itself with an explicit empty message, and for the order of
+# its source texts (the first arguments; by default all of them).
+_NO_MSG_ALIAS_MACROS = [
+    ('EXPECT_DOUBLE_EQ', 2),
+    ('EXPECT_FLOAT_EQ', 2),
+    ('ASSERT_DOUBLE_EQ', 2),
+    ('ASSERT_FLOAT_EQ', 2),
+    ('ASSERT_NO_FATAL_FAILURE', 1),
+    ('EXPECT_NO_FATAL_FAILURE', 1),
+    ('EXPECT_NEAR_ARRAY', 4, (0, 1, 3)),
+    ('ASSERT_NEAR_ARRAY', 4, (0, 1, 3)),
+    ('EXPECT_FLOAT_EQ_ARRAY', 3, 2),
+    ('ASSERT_FLOAT_EQ_ARRAY', 3, 2),
+    ('EXPECT_DOUBLE_EQ_ARRAY', 3, 2),
+    ('ASSERT_DOUBLE_EQ_ARRAY', 3, 2),
+    ('EXPECT_STR_CONTAINS', 2),
+    ('ASSERT_STR_CONTAINS', 2),
+    ('EXPECT_EQ_ARRAY_SINT', 3, 2),
+    ('EXPECT_EQ_ARRAY_INT', 3, 2),
+    ('EXPECT_EQ_ARRAY_DINT', 3, 2),
+    ('EXPECT_EQ_ARRAY_LINT', 3, 2),
+    ('EXPECT_EQ_ARRAY_INT32', 3, 2),
+    ('EXPECT_EQ_ARRAY_INT64', 3, 2),
+    ('EXPECT_EQ_ARRAY_USINT', 3, 2),
+    ('EXPECT_EQ_ARRAY_UINT', 3, 2),
+    ('EXPECT_EQ_ARRAY_UDINT', 3, 2),
+    ('EXPECT_EQ_ARRAY_ULINT', 3, 2),
+    ('EXPECT_EQ_ARRAY_UINT32', 3, 2),
+    ('EXPECT_EQ_ARRAY_UINT64', 3, 2),
+    ('EXPECT_EQ_ARRAY_REAL', 3, 2),
+    ('EXPECT_EQ_ARRAY_LREAL', 3, 2),
+    ('EXPECT_EQ_ARRAY_FLOAT', 3, 2),
+    ('EXPECT_EQ_ARRAY_DOUBLE', 3, 2),
+    ('EXPECT_EQ_ARRAY_BOOL', 3, 2),
+    ('EXPECT_EQ_ARRAY_BYTE', 3, 2),
+    ('EXPECT_EQ_ARRAY_WORD', 3, 2),
+    ('EXPECT_EQ_ARRAY_DWORD', 3, 2),
+    ('EXPECT_EQ_ARRAY_LWORD', 3, 2),
+    ('EXPECT_EQ_ARRAY_BIT32', 3, 2),
+    ('EXPECT_EQ_ARRAY_BIT64', 3, 2),
+    ('EXPECT_EQ_ARRAY_TIME', 3, 2),
+    ('EXPECT_EQ_ARRAY_DATE', 3, 2),
+    ('EXPECT_EQ_ARRAY_TOD', 3, 2),
+    ('EXPECT_EQ_ARRAY_DT', 3, 2),
+    ('EXPECT_EQ_ARRAY_STRING', 3, 2),
+    ('ASSERT_EQ_ARRAY_SINT', 3, 2),
+    ('ASSERT_EQ_ARRAY_INT', 3, 2),
+    ('ASSERT_EQ_ARRAY_DINT', 3, 2),
+    ('ASSERT_EQ_ARRAY_LINT', 3, 2),
+    ('ASSERT_EQ_ARRAY_INT32', 3, 2),
+    ('ASSERT_EQ_ARRAY_INT64', 3, 2),
+    ('ASSERT_EQ_ARRAY_USINT', 3, 2),
+    ('ASSERT_EQ_ARRAY_UINT', 3, 2),
+    ('ASSERT_EQ_ARRAY_UDINT', 3, 2),
+    ('ASSERT_EQ_ARRAY_ULINT', 3, 2),
+    ('ASSERT_EQ_ARRAY_UINT32', 3, 2),
+    ('ASSERT_EQ_ARRAY_UINT64', 3, 2),
+    ('ASSERT_EQ_ARRAY_REAL', 3, 2),
+    ('ASSERT_EQ_ARRAY_LREAL', 3, 2),
+    ('ASSERT_EQ_ARRAY_FLOAT', 3, 2),
+    ('ASSERT_EQ_ARRAY_DOUBLE', 3, 2),
+    ('ASSERT_EQ_ARRAY_BOOL', 3, 2),
+    ('ASSERT_EQ_ARRAY_BYTE', 3, 2),
+    ('ASSERT_EQ_ARRAY_WORD', 3, 2),
+    ('ASSERT_EQ_ARRAY_DWORD', 3, 2),
+    ('ASSERT_EQ_ARRAY_LWORD', 3, 2),
+    ('ASSERT_EQ_ARRAY_BIT32', 3, 2),
+    ('ASSERT_EQ_ARRAY_BIT64', 3, 2),
+    ('ASSERT_EQ_ARRAY_TIME', 3, 2),
+    ('ASSERT_EQ_ARRAY_DATE', 3, 2),
+    ('ASSERT_EQ_ARRAY_TOD', 3, 2),
+    ('ASSERT_EQ_ARRAY_DT', 3, 2),
+    ('ASSERT_EQ_ARRAY_STRING', 3, 2),
+]
 _MESSAGE = "'a, b (c)'"
 _VALUES = ['v1', 'v2', 'v3', 'v4']
 
@@ -148,6 +229,13 @@ def _probe_source(pairs, negatives):
                 ('new_msg', '{}({}{})'.format(name, args + ', ' if args else '', _MESSAGE)),
                 ('old_msg', '{}({}{})'.format(name + '_MSG', args + ', ' if args else '', _MESSAGE))):
             _emit('{}_{}'.format(i, kind), expr)
+
+    for i, (name, arity) in enumerate(e[:2] for e in _NO_MSG_ALIAS_MACROS):
+        args = ', '.join(_VALUES[:arity])
+        for kind, expr in (
+                ('no_msg', '{}({})'.format(name, args)),
+                ('empty_msg', '{}({}{})'.format(name, args + ', ' if args else '', "''"))):
+            _emit('x{}_{}'.format(i, kind), expr)
 
     for j, (expr, lo, hi) in enumerate(negatives):
         _emit('neg_{}'.format(j), expr)
@@ -338,6 +426,37 @@ def main():
             'line:= marker in {} (some probe blocks were missing one)'.format(
                 expected_line_checked, line_checked))
 
+    # Source texts: every value argument's text, in argument order.
+    text_failures = []
+    text_checked = 0
+    for key, name, arity in (
+            [('{}_new_no_msg'.format(i), n, a) for i, (n, a) in enumerate(pairs)]
+            + [('{}_old_msg'.format(i), n + '_MSG', a) for i, (n, a) in enumerate(pairs)]
+            + [('x{}_no_msg'.format(i), e[0], e[-1]) for i, e in enumerate(_NO_MSG_ALIAS_MACROS)]):
+        body = blocks.get(key)
+        if body is None:
+            text_failures.append('{}: probe block missing'.format(name))
+            continue
+        texts = _TEXT_RE.findall(body)
+        text_checked += 1
+        # arity is the number of leading arguments with a text, or the
+        # indexes of the arguments with a text.
+        expected_texts = [_VALUES[i] for i in arity] if isinstance(arity, tuple) else _VALUES[:arity]
+        if texts != expected_texts:
+            text_failures.append('{}: source texts {} but expected {}'.format(
+                name, texts, expected_texts))
+    failures.extend('(source text) ' + f for f in text_failures)
+
+    for i, (name, arity) in enumerate(e[:2] for e in _NO_MSG_ALIAS_MACROS):
+        new = blocks.get('x{}_no_msg'.format(i))
+        old = blocks.get('x{}_empty_msg'.format(i))
+        if not new or not old:
+            failures.append('{}: probe block missing or empty'.format(name))
+            continue
+        if _LINE_RE.sub('line:=#', new) != _LINE_RE.sub('line:=#', old):
+            failures.append('{} (omitted message != empty message):\n  no msg: {}\n  empty: {}'.format(
+                name, new.replace('\n', ' '), old.replace('\n', ' ')))
+
     for i, (name, arity) in enumerate(pairs):
         for kind in ('no_msg', 'msg'):
             new = blocks.get('{}_new_{}'.format(i, kind))
@@ -394,6 +513,8 @@ def main():
         return 1
 
     print('OK: {} macro pairs verified (optional message == _MSG form).'.format(len(pairs)))
+    print('OK: {} expansions pass the source texts in argument order '
+          '({} macros without a _MSG alias).'.format(text_checked, len(_NO_MSG_ALIAS_MACROS)))
     print('OK: {} __LINE__ call sites verified.'.format(line_checked))
     print('OK: {} of {} negative (wrong argument count) cases verified '
           '({} too many -> sentinel, {} too few -> PP34, {} empty -> '

@@ -1,0 +1,21 @@
+[========] Running 3 tests.
+[ RUN    ] test_passes
+[     OK ] test_passes (n/a)
+[ RUN    ] test_fails_then_skips
+test/golden/skip_after_failure.iec:9: Failure
+Expected equality of these values:
+  1
+  2
+test/golden/skip_after_failure.iec:10: Skipped
+skipped after a failure
+[ FAILED ] test_fails_then_skips (n/a)
+[ RUN    ] test_skips
+test/golden/skip_after_failure.iec:14: Skipped
+plain skip
+[ SKIPPED] test_skips (n/a)
+[========] 3 tests ran. (n/a)
+[ PASSED ] 1 tests.
+[ SKIPPED] 1 tests.
+[ FAILED ] 1 tests, listed below.
+[ FAILED ] test_fails_then_skips
+[exit code: 1]

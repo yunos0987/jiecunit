@@ -1,0 +1,50 @@
+{#ifndef __JIECTEST_VALIDATE_BOOL_IEC__}
+{#define __JIECTEST_VALIDATE_BOOL_IEC__}
+
+(*{doc Validate that a condition has the expected truth value (EXPECT_TRUE / EXPECT_FALSE).
+On failure prints "Value of: <condition>", "  Actual: <value>" and "Expected: <expected>".
+@inout self The JiecTest_t structure.
+@input expected The expected truth value.
+@input condition The condition.
+@input message The failure message.
+@input die Whether to abort the test on failure. Default: true
+@input file The source file name.
+@input line The line number.
+@input condition_text The source text of the condition (optional).
+@return True if the condition has the expected value, false otherwise.}*)
+function JiecTest_validateBOOL: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc The expected truth value.}*)
+		expected: bool;
+		(*{doc The condition.}*)
+		condition: bool;
+		(*{doc The failure message.}*)
+		message: string[STRING_MAX_SIZE];
+		(*{doc Whether to abort the test on failure.}*)
+		die: bool := true;
+		(*{doc The source file name.}*)
+		file: string[FILENAME_MAX_SIZE];
+		(*{doc The line number.}*)
+		line: dint;
+		(*{doc The source text of the condition (optional).}*)
+		condition_text: string[EXPRESSION_MAX_SIZE] := '';
+	end
+	JiecTest_validateBOOL := condition = expected;
+	if JiecTest_validateBOOL then
+		return;
+	end_if;
+
+	JiecTest_beginFailure(self:=self, file:=file, line:=line);
+	if condition_text <> '' then
+		JiecTest_print(self, jiec_concat('Value of: ', condition_text));
+	else
+		JiecTest_print(self, 'Value of: (condition)');
+	end_if;
+	JiecTest_print(self, jiec_concat('  Actual: ', bool_to_string(condition)));
+	JiecTest_print(self, jiec_concat('Expected: ', bool_to_string(expected)));
+	JiecTest_endFailure(self:=self, message:=message, die:=die);
+end
+
+{#endif}

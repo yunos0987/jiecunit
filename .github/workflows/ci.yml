@@ -119,6 +119,24 @@ jobs:
           python scripts/run_tests.py --jiecc $env:JIECC_EXE --run-only
           if ($LASTEXITCODE -ne 0) { throw "run_tests.py --run-only failed with exit code $LASTEXITCODE" }
 
+      # Optional: the golden-output cases also run with jier, so a failure is
+      # reported as a warning in the same way.
+      - name: Check golden output with jier (optional)
+        id: golden_run
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          python scripts/check_golden.py --jiecc $env:JIECC_EXE
+          if ($LASTEXITCODE -ne 0) { throw "check_golden.py failed with exit code $LASTEXITCODE" }
+
+      - name: Report golden check failure
+        if: steps.golden_run.outcome == 'failure'
+        shell: pwsh
+        run: |
+          $msg = 'The optional golden-output check (check_golden.py) failed. Compile and macro checks passed. See the "Check golden output with jier (optional)" step log.'
+          Write-Output "::warning title=Optional golden check failed::$msg"
+          "### Optional golden check failed`n`n$msg" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+
       - name: Report jier run failure
         if: steps.jier_run.outcome == 'failure'
         shell: pwsh

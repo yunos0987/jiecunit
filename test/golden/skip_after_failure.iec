@@ -1,0 +1,23 @@
+// A test that fails and then skips itself must be reported as FAILED.
+{#include <jiecunit.iec>}
+
+TEST_S(test_passes)
+	EXPECT_EQ_INT(1, 1);
+END_TEST_S
+
+TEST_S(test_fails_then_skips)
+	EXPECT_EQ_INT(1, 2);
+	SKIP_TEST('skipped after a failure');
+END_TEST_S
+
+TEST_S(test_skips)
+	SKIP_TEST('plain skip');
+END_TEST_S
+
+DEFINE_CONFIGURATION(
+	_JIEC_TESTNAMES_LIST_(
+		test_passes,
+		test_fails_then_skips,
+		test_skips
+	)
+)

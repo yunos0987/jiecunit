@@ -1,0 +1,16 @@
+// A test missing from _JIEC_TESTNAMES_LIST_ stops the preprocessor.
+{#include <jiecunit.iec>}
+
+TEST_S(test_listed)
+	EXPECT_TRUE(true);
+END_TEST_S
+
+TEST_S(test_not_listed)
+	EXPECT_TRUE(true);
+END_TEST_S
+
+DEFINE_CONFIGURATION(
+	_JIEC_TESTNAMES_LIST_(
+		test_listed
+	)
+)

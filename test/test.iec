@@ -12,6 +12,13 @@
  * or, to compile for every target and run the tests in one step:
  * $ python scripts/run_tests.py
  *)
+// The tests have their own JiecTest_t variables (about 26; each holds a table
+// of MAX_TESTS names), so the default of 512 does not fit in the variable
+// memory of a small PLC (4 MB on Sysmac Studio). 128 is enough for the tests
+// here; -D MAX_TESTS=n still overrides it.
+{#ifndef MAX_TESTS}
+{#define MAX_TESTS 128}
+{#endif}
 {#include <jiecunit.iec>}
 
 {#include "test_sys.iec"}
@@ -24,8 +31,10 @@
 {#include "test_jiectest_validate_gt.iec"}
 {#include "test_jiectest_validate_near.iec"}
 {#include "test_jiectest_validate_near_rel.iec"}
+{#include "test_jiectest_validate_ulp.iec"}
 {#include "test_jiectest.iec"}
 {#include "test_optional_message.iec"}
+{#include "test_failure_api.iec"}
 
 // List test program names.
 DEFINE_CONFIGURATION(
@@ -34,12 +43,13 @@ DEFINE_CONFIGURATION(
 		test_console_initialize,
 		test_console_print,
 		test_console_puts,
+		test_jiec_quote,
 		// sys_conv.iec
 		test_udint_to_string,
 		test_dint_to_string,
 		test_lreal_to_string,
 		test_bool_to_string,
-		test_time_to_string_sec,
+		test_time_to_literal,
 		// validate_*.iec
 		test_eq_macro,
 		test_jiectest_validate_eq,
@@ -57,8 +67,18 @@ DEFINE_CONFIGURATION(
 		test_jiectest_validate_near,
 		test_near_rel_macros,
 		test_jiectest_validate_near_rel,
+		test_jiectest_pow2,
+		test_jiectest_almost_equals_double,
+		test_jiectest_almost_equals_float,
+		test_float_eq_with_infinity_and_nan,
+		test_double_eq_and_float_eq_macros,
+		test_real_macros_compare_real_values,
 		// jiectest.iec
 		test_jiectest_initialize,
+		test_jiectest_begin_test,
+		test_jiectest_enter_test,
+		test_jiectest_teardown,
+		test_jiectest_set_max_cycles,
 		test_jiectest_register,
 		test_jiectest_empty,
 		test_jiectest_is_active,
@@ -72,6 +92,13 @@ DEFINE_CONFIGURATION(
 		test_jiectest_failure,
 		// optional message
 		test_optional_message,
-		test_deprecated_msg_aliases
+		test_deprecated_msg_aliases,
+		// failure API
+		test_failure_messages,
+		test_fatal_failure_in_helper,
+		test_fatal_failure_checks,
+		test_array_and_substring,
+		test_tolerant_arrays,
+		test_trace_and_log
 	)
 )

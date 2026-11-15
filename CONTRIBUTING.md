@@ -28,6 +28,8 @@ $ python scripts/run_tests.py
 
 jiecc は、`--jiecc PATH`、環境変数 `JIECC`、`PATH` の順に探します。
 
+失敗の出力やランナーの挙動を変えたときは、`test/golden/` のゴールデン出力を `python scripts/check_golden.py --update <ケース>` で作り直し、差分が意図どおりか確かめてからコミットしてください。
+
 ```
 $ python scripts/run_tests.py --jiecc /path/to/jiecc.exe
 ```
@@ -69,8 +71,10 @@ $ python scripts/run_tests.py --jiecc /path/to/jiecc.exe
     - IEC 61131-3 の定義と重複するため。
   - `h`, `H` で始まり、`_` を含まない変数名
     - キーエンス環境の制約。
-  - 正規表現 `^[rRtTcC]\d+$` にマッチする変数名
-    - キーエンス環境の制約。
+  - アルファベット 1 文字と番号だけの変数名（正規表現 `^[A-Za-z]\d+$`。例: `t1`, `s2`）
+    - キーエンス・三菱環境では、デバイス名（`T1`, `R0`, `C2` など）と重なる。どの文字が重なるかを覚えなくて済むよう、文字を問わず禁止する。意味の分かる名前（`val1_shown` など）にする。
+  - `next`・`text`・`fraction` など、メーカーの命令名・予約語と重なりうる一般的な語だけの変数名
+    - `next_power`・`expr_text`・`ms_fraction` のように、内容を表す語を足す。Sysmac Studio では、`text` は予約語、`fraction` は命令名（FRACTION）と重なり、ビルドエラーになる。
   - `p_`, `P_` で始まる要素名
     - オムロン環境の制約。
   - アルファベット 1 文字の要素名

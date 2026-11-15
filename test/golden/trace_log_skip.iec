@@ -1,0 +1,101 @@
+// SCOPED_TRACE, JIECUNIT_LOG, the position line of SKIP_TEST, and the arrays
+// compared with a tolerance.
+{#include <jiecunit.iec>}
+
+function check_level: bool
+	JIECUNIT_DECLARE_HELPER();
+	var_input
+		level: dint;
+	end
+	EXPECT_LE_DINT(level, 100);
+	ASSERT_GE_DINT(level, 0, 'a message');
+	check_level := true;
+end
+
+function check_levels: bool
+	JIECUNIT_DECLARE_HELPER();
+	var
+		ok: bool;
+	end
+	SCOPED_TRACE('the high level', ok := check_level(150));
+	check_levels := true;
+end
+
+TEST_S(test_traces)
+	var
+		ok: bool;
+		step_index: dint;
+	end
+	JIECUNIT_LOG('a log line');
+	// One trace: the text and the position of SCOPED_TRACE follow the failure.
+	SCOPED_TRACE('the low level', ok := check_level(-1));
+	// Nested traces: the innermost first.
+	SCOPED_TRACE('all levels', ok := check_levels());
+	// A text built at run time.
+	for step_index := 1 to 2 do
+		SCOPED_TRACE(jiec_concat('step ', dint_to_string(step_index)), ok := check_level(100 + step_index));
+	end_for;
+	// No trace after the statements.
+	EXPECT_TRUE(false);
+END_TEST_S
+
+function nest_traces: bool
+	JIECUNIT_DECLARE_HELPER();
+	var_input
+		depth: dint;
+	end
+	var
+		ok: bool;
+	end
+	if depth > 0 then
+		SCOPED_TRACE(jiec_concat('depth ', dint_to_string(depth)), ok := nest_traces(depth - 1));
+	else
+		ADD_FAILURE('at the bottom');
+	end_if;
+	nest_traces := true;
+end
+
+TEST_S(test_trace_depth)
+	var
+		ok: bool;
+	end
+	// JIECUNIT_MAX_TRACE_DEPTH is 8: the ninth trace reports a failure and is not shown.
+	ok := nest_traces(9);
+END_TEST_S
+
+TEST_S(test_skip_single)
+	SKIP_TEST('a reason');
+END_TEST_S
+
+TEST_S(test_skip_without_reason)
+	SKIP_TEST('');
+END_TEST_S
+
+TEST_M(test_skip_in_second_cycle)
+	if CURRENT_CYCLE() = 1 then
+		SKIP_TEST('in the second cycle');
+	end_if;
+END_TEST_M
+
+TEST_S(test_tolerant_arrays)
+	var
+		expected_values: array[0..2] of lreal := [1.0, 2.0, 3.0];
+		actual_values: array[0..2] of lreal := [1.0, 2.25, 9.0];
+		real_values: array[0..1] of real := [0.5, 1.5];
+		other_real_values: array[0..1] of real := [0.5, 1.75];
+	end
+	EXPECT_NEAR_ARRAY(expected_values, actual_values, 3, 0.25, 'a message');
+	EXPECT_DOUBLE_EQ_ARRAY(expected_values, actual_values, 3);
+	EXPECT_FLOAT_EQ_ARRAY(real_values, other_real_values, 2);
+END_TEST_S
+
+DEFINE_CONFIGURATION(
+	_JIEC_TESTNAMES_LIST_(
+		test_traces,
+		test_trace_depth,
+		test_skip_single,
+		test_skip_without_reason,
+		test_skip_in_second_cycle,
+		test_tolerant_arrays
+	)
+)

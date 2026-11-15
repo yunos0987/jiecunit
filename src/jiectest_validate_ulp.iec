@@ -1,0 +1,245 @@
+{#ifndef __JIECTEST_VALIDATE_ULP_IEC__}
+{#define __JIECTEST_VALIDATE_ULP_IEC__}
+
+(*{doc Return 2 to the power of n, for n from -1074 to 1023.
+Computed by squaring, so every intermediate value is an exact power of two.
+@input n The exponent.
+@return 2 to the power of n.}*)
+function JiecTest_pow2: lreal
+	_PROLOGUE_OF_FUNCTION_()
+	var_input
+		(*{doc The exponent.}*)
+		n: dint;
+	end
+	var_temp
+		base: lreal;
+		result: lreal;
+		k: dint;
+	end
+	result := 1.0;
+	if n < 0 then
+		base := 0.5;
+		k := -n;
+	else
+		base := 2.0;
+		k := n;
+	end_if;
+	while k > 0 do
+		if (k - ((k / 2) * 2)) = 1 then
+			result := result * base;
+		end_if;
+		k := k / 2;
+		if k > 0 then
+			base := base * base;
+		end_if;
+	end_while;
+	JiecTest_pow2 := result;
+end
+
+(*{doc Whether two floating-point values are at most 4 ULPs apart, as Google Test compares them in EXPECT_DOUBLE_EQ and EXPECT_FLOAT_EQ.
+The distance is the number of representable values of the format between a
+and b. A NaN is never equal; equal values (also two infinities of the same
+sign, and +0 and -0) are equal; an infinity is not equal to a finite value.
+The values are given as LREAL; a REAL value must be converted exactly.
+@input a The first value.
+@input b The second value.
+@input mantissa_bits The number of the stored mantissa bits: 52 for LREAL, 23 for REAL.
+@input min_exponent The exponent of the smallest normal value: -1022 for LREAL, -126 for REAL.
+@return True if the values are at most 4 ULPs apart.}*)
+function JiecTest_almostEquals: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_input
+		(*{doc The first value.}*)
+		a: lreal;
+		(*{doc The second value.}*)
+		b: lreal;
+		(*{doc The number of the stored mantissa bits: 52 for LREAL, 23 for REAL.}*)
+		mantissa_bits: dint;
+		(*{doc The exponent of the smallest normal value: -1022 for LREAL, -126 for REAL.}*)
+		min_exponent: dint;
+	end
+	var_temp
+		smallest: lreal; // the smallest positive value (the ULP below boundary)
+		boundary: lreal; // below this value, the ULP is smallest
+		x: lreal;        // the smaller magnitude
+		y: lreal;        // the larger magnitude
+		m: lreal;        // x scaled into [1, 2)
+		scale: lreal;    // the power of two with scale <= x < 2 * scale
+		ulp: lreal;      // the ULP at x
+		next_power: lreal;     // the next power of two above x
+		distance: lreal;
+		powers: array[0..9] of lreal; // 2^1, 2^2, 2^4, ..., 2^512
+		i: dint;
+		k: dint;
+	end
+	JiecTest_almostEquals := false;
+	// A NaN is never equal to anything.
+	if (a <> a) or (b <> b) then
+		return;
+	end_if;
+	// Equal values, including two infinities of the same sign and +0 / -0.
+	if a = b then
+		JiecTest_almostEquals := true;
+		return;
+	end_if;
+	// An infinity (x - x is a NaN) is only equal to itself.
+	if ((a - a) <> 0.0) or ((b - b) <> 0.0) then
+		return;
+	end_if;
+
+	smallest := JiecTest_pow2(min_exponent - mantissa_bits);
+	boundary := JiecTest_pow2(min_exponent + 1);
+	if smallest = 0.0 then
+		// The target flushes subnormal LREAL values to zero: only equal values
+		// are equal. (For REAL, the values are computed as LREAL, so this only
+		// applies when LREAL itself flushes; a target that flushes REAL has
+		// already flushed the inputs.)
+		return;
+	end_if;
+
+	// Values of different signs: count the values on both sides of zero.
+	if ((a < 0.0) and (b > 0.0)) or ((a > 0.0) and (b < 0.0)) then
+		JiecTest_almostEquals := (abs(a) / smallest) + (abs(b) / smallest) <= 4.0;
+		return;
+	end_if;
+
+	x := abs(a);
+	y := abs(b);
+	if x > y then
+		m := x;
+		x := y;
+		y := m;
+	end_if;
+
+	if x < boundary then
+		// Subnormal values and the smallest normal binade share one ULP.
+		ulp := smallest;
+		next_power := boundary;
+	else
+		powers[0] := 2.0;
+		for k := 1 to 9 do
+			powers[k] := powers[k - 1] * powers[k - 1];
+		end_for;
+		m := x;
+		scale := 1.0;
+		// (The loops count i up and use k := 9 - i, to avoid a negative BY step.)
+		if m >= 2.0 then
+			for i := 0 to 9 do
+				k := 9 - i;
+				if m >= powers[k] then
+					m := m / powers[k];
+					scale := scale * powers[k];
+				end_if;
+			end_for;
+		elsif m < 1.0 then
+			for i := 0 to 9 do
+				k := 9 - i;
+				if (m * powers[k]) < 2.0 then
+					m := m * powers[k];
+					scale := scale / powers[k];
+				end_if;
+			end_for;
+		end_if;
+		ulp := scale * JiecTest_pow2(-mantissa_bits);
+		next_power := scale * 2.0;
+	end_if;
+
+	// All the subtractions are exact (the values are within a factor of 2,
+	// or the result is a multiple of the ULP).
+	if y < next_power then
+		distance := (y - x) / ulp;
+	else
+		distance := ((next_power - x) / ulp) + ((y - next_power) / (2.0 * ulp));
+	end_if;
+	JiecTest_almostEquals := distance <= 4.0;
+end
+
+(*{doc Validate that two LREAL values are almost equal (at most 4 ULPs apart), like EXPECT_DOUBLE_EQ of Google Test.
+@inout self The JiecTest_t structure.
+@input expected The expected value.
+@input actual The actual value.
+@input message The failure message.
+@input die Whether to abort the test on failure. Default: true
+@input file The source file name.
+@input line The line number.
+@input expected_text The source text of the expected value (optional).
+@input actual_text The source text of the actual value (optional).
+@return True if the values are almost equal, false otherwise.}*)
+function JiecTest_validateDOUBLE_EQ: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc The expected value.}*)
+		expected: lreal;
+		(*{doc The actual value.}*)
+		actual: lreal;
+		(*{doc The failure message.}*)
+		message: string[STRING_MAX_SIZE];
+		(*{doc Whether to abort the test on failure.}*)
+		die: bool := true;
+		(*{doc The source file name.}*)
+		file: string[FILENAME_MAX_SIZE];
+		(*{doc The line number.}*)
+		line: dint;
+		(*{doc The source text of the expected value (optional).}*)
+		expected_text: string[EXPRESSION_MAX_SIZE] := '';
+		(*{doc The source text of the actual value (optional).}*)
+		actual_text: string[EXPRESSION_MAX_SIZE] := '';
+	end
+	JiecTest_validateDOUBLE_EQ := JiecTest_almostEquals(a:=expected, b:=actual, mantissa_bits:=52, min_exponent:=-1022);
+	if JiecTest_validateDOUBLE_EQ then
+		return;
+	end_if;
+
+	JiecTest_beginFailure(self:=self, file:=file, line:=line);
+	JiecTest_print(self, 'Expected equality of these values:');
+	JiecTest_printValue(self:=self, expr_text:=expected_text, value:=lreal_to_string(expected));
+	JiecTest_printValue(self:=self, expr_text:=actual_text, value:=lreal_to_string(actual));
+	JiecTest_endFailure(self:=self, message:=message, die:=die);
+end
+
+(*{doc Validate that two REAL values are almost equal (at most 4 ULPs of REAL apart), like EXPECT_FLOAT_EQ of Google Test.
+@inout self The JiecTest_t structure.
+@input expected The expected value.
+@input actual The actual value.
+@input message The failure message.
+@input die Whether to abort the test on failure. Default: true
+@input file The source file name.
+@input line The line number.
+@input expected_text The source text of the expected value (optional).
+@input actual_text The source text of the actual value (optional).
+@return True if the values are almost equal, false otherwise.}*)
+function JiecTest_validateFLOAT_EQ: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc The expected value.}*)
+		expected: real;
+		(*{doc The actual value.}*)
+		actual: real;
+		(*{doc The failure message.}*)
+		message: string[STRING_MAX_SIZE];
+		(*{doc Whether to abort the test on failure.}*)
+		die: bool := true;
+		(*{doc The source file name.}*)
+		file: string[FILENAME_MAX_SIZE];
+		(*{doc The line number.}*)
+		line: dint;
+		(*{doc The source text of the expected value (optional).}*)
+		expected_text: string[EXPRESSION_MAX_SIZE] := '';
+		(*{doc The source text of the actual value (optional).}*)
+		actual_text: string[EXPRESSION_MAX_SIZE] := '';
+	end
+	JiecTest_validateFLOAT_EQ := JiecTest_almostEquals(a:=real_to_lreal(expected), b:=real_to_lreal(actual), mantissa_bits:=23, min_exponent:=-126);
+	if JiecTest_validateFLOAT_EQ then
+		return;
+	end_if;
+
+	JiecTest_beginFailure(self:=self, file:=file, line:=line);
+	JiecTest_print(self, 'Expected equality of these values:');
+	JiecTest_printValue(self:=self, expr_text:=expected_text, value:=lreal_to_string(real_to_lreal(expected)));
+	JiecTest_printValue(self:=self, expr_text:=actual_text, value:=lreal_to_string(real_to_lreal(actual)));
+	JiecTest_endFailure(self:=self, message:=message, die:=die);
+end
+
+{#endif}

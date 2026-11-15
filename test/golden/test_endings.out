@@ -1,0 +1,23 @@
+[========] Running 5 tests.
+[ RUN    ] test_s_returns_early
+[     OK ] test_s_returns_early (n/a)
+[ RUN    ] test_s_fails_then_returns_early
+test/golden/test_endings.iec:16: Failure
+Expected equality of these values:
+  1
+  2
+[ FAILED ] test_s_fails_then_returns_early (n/a)
+[ RUN    ] test_m_ends_with_eot
+[     OK ] test_m_ends_with_eot (n/a)
+[ RUN    ] test_m_reaches_its_limit
+test/golden/test_endings.iec:27: Failure (cycle 3)
+The test did not finish within 3 cycles (JIECUNIT_MAX_CYCLES_PER_TEST, SET_TEST_MAX_CYCLES). Call EOT() to end a TEST_M test.
+[ FAILED ] test_m_reaches_its_limit (n/a)
+[ RUN    ] test_m_limit_is_reset
+[     OK ] test_m_limit_is_reset (n/a)
+[========] 5 tests ran. (n/a)
+[ PASSED ] 3 tests.
+[ FAILED ] 2 tests, listed below.
+[ FAILED ] test_s_fails_then_returns_early
+[ FAILED ] test_m_reaches_its_limit
+[exit code: 1]

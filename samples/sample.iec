@@ -5,14 +5,6 @@
 
 {#include "sample_pous.iec"}
 
-// List test program names.
-DEFINE_CONFIGURATION(
-	_JIEC_TESTNAMES_LIST_(
-		test_mean,
-		test_RunningMean
-	)
-)
-
 (*{doc A single-cycle test sample of the mean function.}*)
 TEST_S(test_mean)
 	var
@@ -58,3 +50,70 @@ TEST_M(test_RunningMean)
 		EOT();
 	end_case;
 END_TEST_M
+
+(*{doc A test in a suite: the program is Mean_of_negative_values, and the results show Mean.of_negative_values.}*)
+TEST_S(Mean, of_negative_values)
+	var
+		dats: array[BUFFER_SIZE] of lreal;
+	end
+	dats[0] := -1.0;
+	dats[1] := -2.0;
+	EXPECT_DOUBLE_EQ(-1.5, mean(dats, 2));
+END_TEST_S
+
+type
+	(*{doc The fixture of the RunningMeanFixture tests: the samples to feed.}*)
+	RunningMeanFixture: struct
+		(*{doc The samples, one per cycle.}*)
+		samples: array[0..2] of lreal;
+	end
+end
+
+(*{doc Set up the RunningMeanFixture before each of its tests.
+@inout fixture The fixture.}*)
+function RunningMeanFixture_SetUp
+	JIECUNIT_DECLARE_HELPER();
+	var_in_out
+		(*{doc The fixture.}*)
+		fixture: RunningMeanFixture;
+	end
+	fixture.samples[0] := 2.0;
+	fixture.samples[1] := 4.0;
+	fixture.samples[2] := 9.0;
+end
+
+(*{doc Tear down the RunningMeanFixture after each of its tests.
+@inout fixture The fixture.}*)
+function RunningMeanFixture_TearDown
+	JIECUNIT_DECLARE_HELPER();
+	var_in_out
+		(*{doc The fixture.}*)
+		fixture: RunningMeanFixture;
+	end
+	fixture.samples[0] := 0.0;
+end
+
+(*{doc A multiple-cycle test with a fixture: the results show RunningMeanFixture.follows_the_samples.}*)
+TEST_F_M(RunningMeanFixture, follows_the_samples)
+	var
+		rm_instance: RunningMean;
+		mv: lreal;
+		ss: dint;
+	end
+	rm_instance(value:=fixture.samples[CURRENT_CYCLE()], mean_value=>mv, sample_size=>ss);
+	EXPECT_EQ_DINT(CURRENT_CYCLE() + 1, ss);
+	if CURRENT_CYCLE() = 2 then
+		EXPECT_DOUBLE_EQ(5.0, mv);
+		EOT();
+	end_if;
+END_TEST_M
+
+// List the test program names, after all test definitions.
+DEFINE_CONFIGURATION(
+	_JIEC_TESTNAMES_LIST_(
+		test_mean,
+		test_RunningMean,
+		Mean_of_negative_values,
+		RunningMeanFixture_follows_the_samples
+	)
+)

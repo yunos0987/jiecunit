@@ -1,0 +1,12 @@
+[========] Running 2 tests.
+[ RUN    ] test_without_eot
+test/golden/missing_eot.iec:6: Failure (cycle 5)
+The test did not finish within 5 cycles (JIECUNIT_MAX_CYCLES_PER_TEST, SET_TEST_MAX_CYCLES). Call EOT() to end a TEST_M test.
+[ FAILED ] test_without_eot (n/a)
+[ RUN    ] test_after
+[     OK ] test_after (n/a)
+[========] 2 tests ran. (n/a)
+[ PASSED ] 1 tests.
+[ FAILED ] 1 tests, listed below.
+[ FAILED ] test_without_eot
+[exit code: 1]

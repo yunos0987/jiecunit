@@ -1,6 +1,8 @@
 {#ifndef __JIECTEST_VALIDATE_NEAR_REL_IEC__}
 {#define __JIECTEST_VALIDATE_NEAR_REL_IEC__}
 
+{#include "jiectest_validate_near.iec"}
+
 (*{doc Validate that two floating-point values are nearly equal within the specified relative error tolerance.
 The allowed absolute difference is rel_error multiplied by the larger of the magnitudes of the two values.
 @inout self The JiecTest_t structure.
@@ -11,10 +13,12 @@ The allowed absolute difference is rel_error multiplied by the larger of the mag
 @input die Whether to abort the test on failure. Default: true
 @input file The source file name.
 @input line The line number.
+@input val1_text The source text of the first value (optional).
+@input val2_text The source text of the second value (optional).
+@input rel_error_text The source text of the allowed relative error (optional).
 @return True if the values are equal within the tolerance, false otherwise.}*)
 function JiecTest_validateNEARREL: bool
 	_PROLOGUE_OF_FUNCTION_()
-	_DECLARE_CONSOLE_IN_POU_()
 	var_in_out self: JiecTest_t; end
 	var_input
 		(*{doc The first value.}*)
@@ -24,20 +28,32 @@ function JiecTest_validateNEARREL: bool
 		(*{doc The allowed relative error.}*)
 		rel_error: lreal;
 		(*{doc The failure message.}*)
-		message: string[128];
+		message: string[STRING_MAX_SIZE];
 		(*{doc Whether to abort the test on failure.}*)
 		die: bool := true;
 		(*{doc The source file name.}*)
 		file: string[FILENAME_MAX_SIZE];
 		(*{doc The line number.}*)
 		line: dint;
+		(*{doc The source text of the first value (optional).}*)
+		val1_text: string[EXPRESSION_MAX_SIZE] := '';
+		(*{doc The source text of the second value (optional).}*)
+		val2_text: string[EXPRESSION_MAX_SIZE] := '';
+		(*{doc The source text of the allowed relative error (optional).}*)
+		rel_error_text: string[EXPRESSION_MAX_SIZE] := '';
 	end
 	var_temp
 		scale_value: lreal;
 		allowed_value: lreal;
+		difference: lreal;
+		val1_shown: string[STRING_MAX_SIZE];
+		val2_shown: string[STRING_MAX_SIZE];
+		rel_error_shown: string[STRING_MAX_SIZE];
 	end
 	if rel_error < 0.0 then
-		JiecTest_failure(self:=self, message:='Relative error cannot be negative.', die:=die, file:=file, line:=line);
+		JiecTest_beginFailure(self:=self, file:=file, line:=line);
+		JiecTest_print(self, jiec_concat('The relative error must not be negative, but ', lreal_to_string(rel_error), ' was given.'));
+		JiecTest_endFailure(self:=self, message:=message, die:=die);
 		JiecTest_validateNEARREL := false;
 		return;
 	end_if;
@@ -48,17 +64,30 @@ function JiecTest_validateNEARREL: bool
 	end_if;
 	allowed_value := rel_error * scale_value;
 
-	JiecTest_validateNEARREL := abs(val1 - val2) <= allowed_value;
+	// See JiecTest_validateNEAR for equal values and NaN.
+	difference := val1 - val2;
+	// The difference must be finite: with an infinite value, the allowed
+	// difference is infinite too.
+	JiecTest_validateNEARREL := (val1 = val2) or (((difference - difference) = 0.0) and (abs(difference) <= allowed_value) and ((allowed_value - allowed_value) = 0.0));
 	if JiecTest_validateNEARREL then
 		return;
 	end_if;
 
-	puts(jiec_concat('Value1: ', lreal_to_string(val1)));
-	puts(jiec_concat('Value2: ', lreal_to_string(val2)));
-	puts(jiec_concat('Value1 - Value2: ', lreal_to_string(val1 - val2)));
-	puts(jiec_concat('Allowed: ', lreal_to_string(allowed_value)));
-
-	JiecTest_failure(self:=self, message:=message, die:=die, file:=file, line:=line);
+	val1_shown := val1_text;
+	if val1_shown = '' then
+		val1_shown := lreal_to_string(val1);
+	end_if;
+	val2_shown := val2_text;
+	if val2_shown = '' then
+		val2_shown := lreal_to_string(val2);
+	end_if;
+	rel_error_shown := rel_error_text;
+	if rel_error_shown = '' then
+		rel_error_shown := lreal_to_string(rel_error);
+	end_if;
+	JiecTest_beginFailure(self:=self, file:=file, line:=line);
+	JiecTest_printNearFailure(self:=self, val1:=val1, val2:=val2, tolerance:=rel_error, bound:=jiec_concat(rel_error_shown, ' * max(|', val1_shown, '|, |', val2_shown, '|) = ', lreal_to_string(allowed_value)), val1_text:=val1_text, val2_text:=val2_text, tolerance_text:=rel_error_text);
+	JiecTest_endFailure(self:=self, message:=message, die:=die);
 end
 
 {#endif}

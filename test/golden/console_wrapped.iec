@@ -1,0 +1,23 @@
+// golden-args: -D CONSOLE_MAX_ROWS=8 -D JIECUNIT_JIER_CONSOLE_WARNING
+// When the console buffer wraps around, the summary ends with a warning.
+{#include <jiecunit.iec>}
+
+TEST_S(test_one)
+	EXPECT_TRUE(true);
+END_TEST_S
+
+TEST_S(test_two)
+	EXPECT_TRUE(true);
+END_TEST_S
+
+TEST_S(test_three)
+	EXPECT_TRUE(true);
+END_TEST_S
+
+DEFINE_CONFIGURATION(
+	_JIEC_TESTNAMES_LIST_(
+		test_one,
+		test_two,
+		test_three
+	)
+)

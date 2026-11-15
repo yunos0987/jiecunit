@@ -5,7 +5,7 @@
 
 // Defines JiecTest_validateNE_<DATATYPE> (see jiectest_validate_common.iec).
 {#define _JIECTEST_DEFINE_VALIDATE_NE_(DATATYPE, TYPE, TOSTR)
-(*${doc Validate that the expected value is not equal to the actual value.$n$
+(*${doc Validate that the expected value does not equal the actual value.$n$
 @inout self The JiecTest_t structure.$n$
 @input expected The expected value.$n$
 @input actual The actual value.$n$
@@ -13,11 +13,12 @@
 @input die Whether to abort the test on failure.$n$
 @input file The source file name.$n$
 @input line The line number.$n$
+@input expected_text The source text of the first value (optional).$n$
+@input actual_text The source text of the second value (optional).$n$
 @return True if the values are not equal, false otherwise.$n$
 $}*)$n$
 function JiecTest_validateNE_@@DATATYPE: bool$n$
 	_PROLOGUE_OF_FUNCTION_()$n$
-	_DECLARE_CONSOLE_IN_POU_()$n$
 	var_in_out self: JiecTest_t; end$n$
 	var_input$n$
 		(*${doc The expected value.$}*)$n$
@@ -25,23 +26,26 @@ function JiecTest_validateNE_@@DATATYPE: bool$n$
 		(*${doc The actual value.$}*)$n$
 		actual: TYPE;$n$
 		(*${doc The failure message.$}*)$n$
-		message: string[128];$n$
+		message: string[STRING_MAX_SIZE];$n$
 		(*${doc Whether to abort the test on failure.$}*)$n$
 		die: bool := true;$n$
 		(*${doc The source file name.$}*)$n$
 		file: string[FILENAME_MAX_SIZE];$n$
 		(*${doc The line number.$}*)$n$
 		line: dint;$n$
+		(*${doc The source text of the first value (optional).$}*)$n$
+		expected_text: string[EXPRESSION_MAX_SIZE] := '';$n$
+		(*${doc The source text of the second value (optional).$}*)$n$
+		actual_text: string[EXPRESSION_MAX_SIZE] := '';$n$
 	end$n$
 	JiecTest_validateNE_@@DATATYPE := expected <> actual;$n$
 	if JiecTest_validateNE_@@DATATYPE then$n$
 		return;$n$
 	end_if;$n$
 $n$
-	puts(jiec_concat('Expected NOT: ', TOSTR(expected)));$n$
-	puts(jiec_concat('Actual: ', TOSTR(actual)));$n$
-$n$
-	JiecTest_failure(self:=self, message:=message, die:=die, file:=file, line:=line);$n$
+	JiecTest_beginFailure(self:=self, file:=file, line:=line);$n$
+	JiecTest_printComparison(self:=self, op:='<>', lhs_text:=expected_text, rhs_text:=actual_text, lhs_value:=TOSTR(expected), rhs_value:=TOSTR(actual));$n$
+	JiecTest_endFailure(self:=self, message:=message, die:=die);$n$
 end$n$
 }
 

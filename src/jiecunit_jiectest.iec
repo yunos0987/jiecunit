@@ -14,14 +14,131 @@ type
 		(*{doc The names of registered test cases.}*)
 		testnames: array[MAX_TESTS] of string[TESTNAME_MAX_SIZE];
 		//
-		tmp_cycle: dint; // There is a active test, if tmp_cycle >= 0.
+		(*{doc The number of cycles the active test has completed. Kept after the test ends.}*)
+		tmp_cycle: dint;
 		tmp_active_test_index: dint;
-		tmp_is_test_available: bool; // error, if the test specified test is not found.
+		(*{doc Whether a test is running. Set by JiecTest_activate, cleared by JiecTest_deactivate.}*)
+		tmp_is_active: bool;
 		(*{doc Whether the active test has been marked as skipped via JiecTest_skip.}*)
 		tmp_is_skipped: bool;
-		(*{doc The number of failed assertions in the active test.}*)
+		(*{doc The number of times the active test program ran in the current cycle of JiecUnitMain.}*)
+		tmp_exec_count: dint;
+		(*{doc Whether the active test is a single-cycle test (TEST_S).}*)
+		tmp_is_single_cycle: bool;
+		(*{doc The maximum number of cycles of the active test. 0 or a negative value means no limit.}*)
+		tmp_max_cycles: dint;
+		(*{doc The source file of the definition of the active test.}*)
+		tmp_test_file: string[FILENAME_MAX_SIZE];
+		(*{doc The source line of the definition of the active test.}*)
+		tmp_test_line: dint;
+		(*{doc The number of fatal failures (ASSERT_*, FAIL) of the active test.}*)
+		tmp_fatal_failures: dint;
+		(*{doc The number of non-fatal failures (EXPECT_*, ADD_FAILURE) of the active test.}*)
+		tmp_nonfatal_failures: dint;
+		(*{doc The depth of the nested ASSERT_NO_FATAL_FAILURE / EXPECT_NO_FATAL_FAILURE statements.}*)
+		tmp_fatal_mark_depth: dint;
+		(*{doc The number of fatal failures before each nested ASSERT_NO_FATAL_FAILURE / EXPECT_NO_FATAL_FAILURE statement (of the captured ones if it started while failures were captured).}*)
+		tmp_fatal_marks: array[JIECUNIT_MAX_NO_FATAL_FAILURE_DEPTH] of dint;
+		(*{doc Whether each nested ASSERT_NO_FATAL_FAILURE / EXPECT_NO_FATAL_FAILURE statement started while failures were captured.}*)
+		tmp_fatal_marks_captured: array[JIECUNIT_MAX_NO_FATAL_FAILURE_DEPTH] of bool;
+		(*{doc Whether failures are being captured by EXPECT_FATAL_FAILURE / EXPECT_NONFATAL_FAILURE.}*)
+		tmp_capturing: bool;
+		(*{doc The text that a captured failure must contain.}*)
+		tmp_capture_substr: string[STRING_MAX_SIZE];
+		(*{doc Whether a line of a captured failure contained tmp_capture_substr.}*)
+		tmp_capture_matched: bool;
+		(*{doc The number of captured fatal failures.}*)
+		tmp_captured_fatal: dint;
+		(*{doc The number of captured non-fatal failures.}*)
+		tmp_captured_nonfatal: dint;
+		(*{doc The source file of the capturing statement.}*)
+		tmp_capture_file: string[FILENAME_MAX_SIZE];
+		(*{doc The source line of the capturing statement.}*)
+		tmp_capture_line: dint;
+		(*{doc The number of nested captures that were rejected and not yet finished.}*)
+		tmp_capture_rejected: dint;
+		(*{doc The number of failures when an array assertion started to check an element (see JiecTest_markFailures).}*)
+		tmp_failure_mark: dint;
+		(*{doc The depth of the nested SCOPED_TRACE statements.}*)
+		tmp_trace_depth: dint;
+		(*{doc The source file of each nested SCOPED_TRACE statement.}*)
+		tmp_trace_files: array[JIECUNIT_MAX_TRACE_DEPTH] of string[FILENAME_MAX_SIZE];
+		(*{doc The source line of each nested SCOPED_TRACE statement.}*)
+		tmp_trace_lines: array[JIECUNIT_MAX_TRACE_DEPTH] of dint;
+		(*{doc The text of each nested SCOPED_TRACE statement.}*)
+		tmp_trace_texts: array[JIECUNIT_MAX_TRACE_DEPTH] of string[JIECUNIT_TRACE_TEXT_MAX_SIZE];
+		(*{doc The name of the active test shown in the results: suite.name for a test in a suite, otherwise the program name.}*)
+		tmp_display_name: string[TESTNAME_MAX_SIZE];
+		(*{doc Whether the TearDown of the fixture of the active test has still to run.}*)
+		tmp_teardown_pending: bool;
+		(*{doc The number of cycles JiecUnitMain has waited for the TearDown.}*)
+		tmp_teardown_waits: dint;
+		(*{doc The total number of failed assertions of all tests.}*)
 		num_of_failures: dint;
 	end
+end
+
+type
+	(*{doc The result of the test run, published in the global variable g_jiecunit_result for the PLC tools.}*)
+	JiecUnitResult_t: struct
+		(*{doc 0: not started, 1: running, 2: finished.}*)
+		state: dint;
+		(*{doc The number of registered tests.}*)
+		num_of_tests: dint;
+		(*{doc The number of tests that passed so far.}*)
+		num_of_passed: dint;
+		(*{doc The number of tests that failed so far.}*)
+		num_of_failed: dint;
+		(*{doc The number of tests that were skipped so far.}*)
+		num_of_skipped: dint;
+		(*{doc The elapsed time of the finished tests in microseconds (0 on targets without a clock).}*)
+		elapsed_us: udint;
+		(*{doc True when the run has finished (state = 2) without a failure.}*)
+		all_passed: bool;
+		(*{doc The number of runs started since the PLC started (1 for the first run, 2 after the first rerun, ...).}*)
+		run_count: dint;
+	end
+end
+
+(*{doc Reset the per-test fields for a new test.
+Clears the cycle counter, the active and skipped flags, the execution count,
+the single-cycle flag, the definition position, the fatal and non-fatal
+failure counts and marks, the capture state, the traces and the fixture state, sets the
+display name to the program name of the active test, and sets the maximum
+number of cycles to JIECUNIT_MAX_CYCLES_PER_TEST. Does not activate the test.
+@inout self The JiecTest_t structure.
+@return Always returns true.}*)
+function JiecTest_beginTest
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	self.tmp_cycle := 0;
+	self.tmp_is_active := false;
+	self.tmp_is_skipped := false;
+	self.tmp_exec_count := 0;
+	self.tmp_is_single_cycle := false;
+	self.tmp_max_cycles := JIECUNIT_MAX_CYCLES_PER_TEST;
+	self.tmp_test_file := '';
+	self.tmp_test_line := 0;
+	self.tmp_fatal_failures := 0;
+	self.tmp_nonfatal_failures := 0;
+	self.tmp_fatal_mark_depth := 0;
+	self.tmp_capturing := false;
+	self.tmp_capture_substr := '';
+	self.tmp_capture_matched := false;
+	self.tmp_captured_fatal := 0;
+	self.tmp_captured_nonfatal := 0;
+	self.tmp_capture_file := '';
+	self.tmp_capture_line := 0;
+	self.tmp_capture_rejected := 0;
+	self.tmp_failure_mark := 0;
+	self.tmp_trace_depth := 0;
+	self.tmp_teardown_pending := false;
+	self.tmp_teardown_waits := 0;
+	if (0 <= self.tmp_active_test_index) and (self.tmp_active_test_index < self.num_of_tests) then
+		self.tmp_display_name := self.testnames[self.tmp_active_test_index];
+	else
+		self.tmp_display_name := '';
+	end_if;
 end
 
 (*{doc Initialize the JiecTest_t structure.
@@ -40,10 +157,8 @@ function JiecTest_initialize
 		self.testnames[test_index] := '';
 	end_for;
 
-	self.tmp_cycle := dint#__DINT_MIN__;
 	self.tmp_active_test_index := -1;
-	self.tmp_is_test_available := false;
-	self.tmp_is_skipped := false;
+	JiecTest_beginTest(self);
 	self.num_of_failures := 0;
 end
 
@@ -99,8 +214,118 @@ function JiecTest_currentCycle: dint
 	JiecTest_currentCycle := self.tmp_cycle;
 end
 
+(*{doc Print one line of the output of a failure.
+Every line that belongs to a failure goes through this function. While
+failures are captured (EXPECT_FATAL_FAILURE / EXPECT_NONFATAL_FAILURE), the
+line is not printed; it is only searched for the expected text.
+@inout self The JiecTest_t structure.
+@input line The line to print.
+@return Always returns true.}*)
+function JiecTest_print
+	_PROLOGUE_OF_FUNCTION_()
+	_DECLARE_CONSOLE_IN_POU_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc The line to print.}*)
+		line: string[STRING_MAX_SIZE];
+	end
+	if self.tmp_capturing then
+		if (self.tmp_capture_substr = '') or (jiec_find(line, self.tmp_capture_substr) > 0) then
+			self.tmp_capture_matched := true;
+		end_if;
+		return;
+	end_if;
+	puts(line);
+end
+
+(*{doc Start the output of a failure: print its position.
+Prints "<file>:<line>: Failure", followed by " (cycle N)" in a multi-cycle test.
+Without a file name it prints only "Failure".
+@inout self The JiecTest_t structure.
+@input file The source file name.
+@input line The line number.
+@return Always returns true.}*)
+function JiecTest_beginFailure
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc The source file name.}*)
+		file: string[FILENAME_MAX_SIZE];
+		(*{doc The line number.}*)
+		line: dint;
+	end
+	var_temp
+		msg: string[STRING_MAX_SIZE];
+	end
+	if file <> '' then
+		msg := jiec_concat(file, ':', dint_to_string(line), ': Failure');
+	else
+		msg := 'Failure';
+	end_if;
+	if not self.tmp_is_single_cycle then
+		msg := jiec_concat(msg, ' (cycle ', dint_to_string(JiecTest_currentCycle(self)), ')');
+	end_if;
+	// The position is not part of the text a captured failure is searched for.
+	if not self.tmp_capturing then
+		JiecTest_print(self, msg);
+	end_if;
+end
+
+(*{doc Finish the output of a failure and count it.
+Prints the message, if any, then the texts of the SCOPED_TRACE statements
+that are running, and counts the failure: in the total failure
+count and as a fatal (die) or non-fatal failure of the active test. While
+failures are captured, it is counted only as a captured failure.
+@inout self The JiecTest_t structure.
+@input message The failure message (optional).
+@input die Whether the failure aborts the test.
+@return Always returns true.}*)
+function JiecTest_endFailure
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc The failure message (optional).}*)
+		message: string[STRING_MAX_SIZE] := '';
+		(*{doc Whether the failure aborts the test.}*)
+		die: bool := true;
+	end
+	var_temp
+		trace_index: dint;
+	end
+	if message <> '' then
+		JiecTest_print(self, message);
+	end_if;
+	if self.tmp_trace_depth > 0 then
+		// The innermost SCOPED_TRACE first, as in Google Test.
+		JiecTest_print(self, 'JiecUnit trace:');
+		trace_index := self.tmp_trace_depth - 1;
+		if trace_index > JIECUNIT_MAX_TRACE_DEPTH - 1 then
+			trace_index := JIECUNIT_MAX_TRACE_DEPTH - 1;
+		end_if;
+		while trace_index >= 0 do
+			JiecTest_print(self, jiec_concat(self.tmp_trace_files[trace_index], ':', dint_to_string(self.tmp_trace_lines[trace_index]), ': ', self.tmp_trace_texts[trace_index]));
+			trace_index := trace_index - 1;
+		end_while;
+	end_if;
+	if self.tmp_capturing then
+		if die then
+			inc(self.tmp_captured_fatal);
+		else
+			inc(self.tmp_captured_nonfatal);
+		end_if;
+		return;
+	end_if;
+	inc(self.num_of_failures);
+	if die then
+		inc(self.tmp_fatal_failures);
+	else
+		inc(self.tmp_nonfatal_failures);
+	end_if;
+end
+
 (*{doc Report a test failure.
-Outputs failure information to the console and increments the failure counter.
+Prints the position of the failure, then the message, and increments the
+failure counter.
 @inout self The JiecTest_t structure.
 @input message The failure message (optional).
 @input die Whether to abort the test on failure. Default: true
@@ -109,7 +334,6 @@ Outputs failure information to the console and increments the failure counter.
 @return Always returns true.}*)
 function JiecTest_failure
 	_PROLOGUE_OF_FUNCTION_()
-	_DECLARE_CONSOLE_IN_POU_()
 	var_in_out self: JiecTest_t; end
 	var_input
 		(*{doc The failure message (optional).}*)
@@ -121,23 +345,87 @@ function JiecTest_failure
 		(*{doc The line number where the failure occurred.}*)
 		line: dint;
 	end
-	var_temp
-		msg: string[STRING_MAX_SIZE];
-	end
-	msg := jiec_concat(file, ':', dint_to_string(line), '@', dint_to_string(JiecTest_currentCycle(self)));
-	if message <> '' then
-		msg := jiec_concat(msg, ' ', message);
-	end_if;
-	puts(msg);
+	JiecTest_beginFailure(self:=self, file:=file, line:=line);
+	JiecTest_endFailure(self:=self, message:=message, die:=die);
+end
 
-	inc(self.num_of_failures);
+(*{doc Print an expression of a failure and, if it differs, its value.
+Prints "  <text>" and "    Which is: <value>". The second line is left out when
+the text is the same as the value (a literal), and only "  <value>" is printed
+when there is no text.
+@inout self The JiecTest_t structure.
+@input expr_text The source text of the expression.
+@input value The value of the expression as text.
+@return Always returns true.}*)
+function JiecTest_printValue
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc The source text of the expression.}*)
+		expr_text: string[EXPRESSION_MAX_SIZE];
+		(*{doc The value of the expression as text.}*)
+		value: string[STRING_MAX_SIZE];
+	end
+	if expr_text = '' then
+		JiecTest_print(self, jiec_concat('  ', value));
+		return;
+	end_if;
+	JiecTest_print(self, jiec_concat('  ', expr_text));
+	if expr_text <> value then
+		JiecTest_print(self, jiec_concat('    Which is: ', value));
+	end_if;
+end
+
+(*{doc Print the comparison of a failed binary assertion.
+Prints "Expected: (<lhs>) <op> (<rhs>), actual: <lhs value> vs <rhs value>".
+A missing text is replaced with its value.
+@inout self The JiecTest_t structure.
+@input op The operator, as written in ST.
+@input lhs_text The source text of the left-hand side.
+@input rhs_text The source text of the right-hand side.
+@input lhs_value The value of the left-hand side as text.
+@input rhs_value The value of the right-hand side as text.
+@return Always returns true.}*)
+function JiecTest_printComparison
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc The operator, as written in ST.}*)
+		op: string[8];
+		(*{doc The source text of the left-hand side.}*)
+		lhs_text: string[EXPRESSION_MAX_SIZE];
+		(*{doc The source text of the right-hand side.}*)
+		rhs_text: string[EXPRESSION_MAX_SIZE];
+		(*{doc The value of the left-hand side as text.}*)
+		lhs_value: string[STRING_MAX_SIZE];
+		(*{doc The value of the right-hand side as text.}*)
+		rhs_value: string[STRING_MAX_SIZE];
+	end
+	var_temp
+		lhs: string[STRING_MAX_SIZE];
+		rhs: string[STRING_MAX_SIZE];
+	end
+	lhs := lhs_text;
+	if lhs = '' then
+		lhs := lhs_value;
+	end_if;
+	rhs := rhs_text;
+	if rhs = '' then
+		rhs := rhs_value;
+	end_if;
+	JiecTest_print(self, jiec_concat('Expected: (', lhs, ') ', op, ' (', rhs, '), actual: ', lhs_value, ' vs ', rhs_value));
 end
 
 (*{doc Mark the active test as skipped.
 The test is reported as skipped rather than passed or failed. Does not abort the test by itself;
 combine with EOT() (see the SKIP_TEST macro) to end the test immediately.
+Prints "<file>:<line>: Skipped" (followed by " (cycle N)" in a multi-cycle
+test; only "Skipped" without a file name) and then the reason, if any, as
+Google Test does.
 @inout self The JiecTest_t structure.
 @input reason The reason for skipping the test (optional).
+@input file The source file name (optional).
+@input line The line number.
 @return Always returns true.}*)
 function JiecTest_skip
 	_PROLOGUE_OF_FUNCTION_()
@@ -146,10 +434,27 @@ function JiecTest_skip
 	var_input
 		(*{doc The reason for skipping the test (optional).}*)
 		reason: string[STRING_MAX_SIZE] := '';
+		(*{doc The source file name (optional).}*)
+		file: string[FILENAME_MAX_SIZE] := '';
+		(*{doc The line number.}*)
+		line: dint := 0;
+	end
+	var_temp
+		msg: string[STRING_MAX_SIZE];
 	end
 	self.tmp_is_skipped := true;
+	if file <> '' then
+		msg := jiec_concat(file, ':', dint_to_string(line), ': Skipped');
+	else
+		msg := 'Skipped';
+	end_if;
+	if not self.tmp_is_single_cycle then
+		msg := jiec_concat(msg, ' (cycle ', dint_to_string(JiecTest_currentCycle(self)), ')');
+	end_if;
+	// Not a failure, so not printed through JiecTest_print.
+	puts(msg);
 	if reason <> '' then
-		puts(jiec_concat('Skipped: ', reason));
+		puts(reason);
 	end_if;
 end
 
@@ -159,7 +464,7 @@ end
 function JiecTest_isActive: bool
 	_PROLOGUE_OF_FUNCTION_()
 	var_in_out self: JiecTest_t; end
-	JiecTest_isActive := self.tmp_cycle >= 0;
+	JiecTest_isActive := self.tmp_is_active;
 end
 
 (*{doc Get the index of the active test case.
@@ -177,7 +482,13 @@ end
 function JiecTest_activeTestname: string[TESTNAME_MAX_SIZE]
 	_PROLOGUE_OF_FUNCTION_()
 	var_in_out self: JiecTest_t; end
-	JiecTest_activeTestname := self.testnames[self.tmp_active_test_index];
+	// No test is active before the first one starts (index -1), for example
+	// after a fatal registration error: return an empty name.
+	if (0 <= self.tmp_active_test_index) and (self.tmp_active_test_index < self.num_of_tests) then
+		JiecTest_activeTestname := self.testnames[self.tmp_active_test_index];
+	else
+		JiecTest_activeTestname := '';
+	end_if;
 end
 
 (*{doc Activate a test case and set the cycle counter to 0.
@@ -187,25 +498,471 @@ function JiecTest_activate: bool
 	_PROLOGUE_OF_FUNCTION_()
 	var_in_out self: JiecTest_t; end
 	self.tmp_cycle := 0;
+	self.tmp_is_active := true;
 end
 
 (*{doc Deactivate the current test case.
+The cycle counter keeps its value, so that a failure reported after the test
+ended still shows the cycle in which it happened.
 @inout self The JiecTest_t structure.
 @return Always returns true.}*)
 function JiecTest_deactivate: bool
 	_PROLOGUE_OF_FUNCTION_()
 	var_in_out self: JiecTest_t; end
-	self.tmp_cycle := dint#__DINT_MIN__;
+	self.tmp_is_active := false;
 end
 
 (*{doc Increment the cycle counter for the active test case.
+Does nothing if no test is active.
 @inout self The JiecTest_t structure.
-@return False if overflow occurred, true otherwise.}*)
+@return False if the counter is already at its maximum (it is not incremented), true otherwise.}*)
 function JiecTest_nextCycle: bool
 	_PROLOGUE_OF_FUNCTION_()
 	var_in_out self: JiecTest_t; end
-	JiecTest_nextCycle := self.tmp_cycle <> dint#__DINT_MAX__; // false, if overflow happend.
-	self.tmp_cycle := self.tmp_cycle + 1;
+	JiecTest_nextCycle := self.tmp_cycle <> dint#__DINT_MAX__;
+	if self.tmp_is_active and JiecTest_nextCycle then
+		self.tmp_cycle := self.tmp_cycle + 1;
+	end_if;
+end
+
+(*{doc Record that the active test program runs in the current cycle.
+Called by the header of every test every time the active test runs. In its
+first run, it also records the kind, the position and the display name of
+the test, and prints the "[ RUN    ]" line.
+@inout self The JiecTest_t structure.
+@input single_cycle True for a single-cycle test (TEST_S).
+@input file The source file of the test definition.
+@input line The source line of the test definition.
+@input display_name The name shown in the results (suite.name); empty for the program name.
+@return True in the first run of the test (then the fixture is set up).}*)
+function JiecTest_enterTest: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc True for a single-cycle test (TEST_S).}*)
+		single_cycle: bool;
+		(*{doc The source file of the test definition.}*)
+		file: string[FILENAME_MAX_SIZE];
+		(*{doc The source line of the test definition.}*)
+		line: dint;
+		(*{doc The name shown in the results (suite.name); empty for the program name.}*)
+		display_name: string[TESTNAME_MAX_SIZE] := '';
+	end
+	inc(self.tmp_exec_count);
+	JiecTest_enterTest := (self.tmp_cycle = 0) and (self.tmp_exec_count = 1);
+	if not JiecTest_enterTest then
+		return;
+	end_if;
+	self.tmp_is_single_cycle := single_cycle;
+	self.tmp_test_file := file;
+	self.tmp_test_line := line;
+	if display_name <> '' then
+		self.tmp_display_name := display_name;
+	end_if;
+	JiecTest_print(self, jiec_concat('[ RUN    ] ', self.tmp_display_name));
+end
+
+(*{doc Get the name of the active test shown in the results.
+@inout self The JiecTest_t structure.
+@return suite.name for a test in a suite, otherwise the program name.}*)
+function JiecTest_activeDisplayName: string[TESTNAME_MAX_SIZE]
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	JiecTest_activeDisplayName := self.tmp_display_name;
+end
+
+(*{doc Request the TearDown of the fixture of the active test.
+Called by the header of TEST_F_S / TEST_F_M before the SetUp. After the test
+has ended, JiecUnitMain waits a cycle, in which the test program runs the
+TearDown, before it reports the result.
+@inout self The JiecTest_t structure.
+@return Always returns true.}*)
+function JiecTest_requestTearDown: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	self.tmp_teardown_pending := true;
+	self.tmp_teardown_waits := 0;
+end
+
+(*{doc Whether the given test program has to run the TearDown of its fixture now.
+True when the test has ended and its TearDown is pending.
+@inout self The JiecTest_t structure.
+@input test_name The program name of the test.
+@return True if the program has to run its TearDown.}*)
+function JiecTest_isTearDownPending: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc The program name of the test.}*)
+		test_name: string[TESTNAME_MAX_SIZE];
+	end
+	JiecTest_isTearDownPending := self.tmp_teardown_pending and (not self.tmp_is_active)
+		and (0 <= self.tmp_active_test_index) and (self.tmp_active_test_index < self.num_of_tests);
+	if JiecTest_isTearDownPending then
+		JiecTest_isTearDownPending := self.testnames[self.tmp_active_test_index] = test_name;
+	end_if;
+end
+
+(*{doc Record that the TearDown of the fixture of the active test has run.
+@inout self The JiecTest_t structure.
+@return Always returns true.}*)
+function JiecTest_endTearDown: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	self.tmp_teardown_pending := false;
+end
+
+(*{doc Set the maximum number of cycles of the active test.
+The test fails if it is still running after it has run max_cycles cycles.
+The value is reset to JIECUNIT_MAX_CYCLES_PER_TEST when the next test starts.
+@inout self The JiecTest_t structure.
+@input max_cycles The maximum number of cycles. 0 or a negative value means no limit.
+@return Always returns true.}*)
+function JiecTest_setMaxCycles: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc The maximum number of cycles. 0 or a negative value means no limit.}*)
+		max_cycles: dint;
+	end
+	self.tmp_max_cycles := max_cycles;
+end
+
+(*{doc Print a line from a test or a helper (JIECUNIT_LOG).
+The line is always printed, also while failures are captured, and it is not
+part of a failure.
+@inout self The JiecTest_t structure.
+@input line The line to print.
+@return Always returns true.}*)
+function JiecTest_log: bool
+	_PROLOGUE_OF_FUNCTION_()
+	_DECLARE_CONSOLE_IN_POU_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc The line to print.}*)
+		line: string[STRING_MAX_SIZE];
+	end
+	puts(line);
+	JiecTest_log := true;
+end
+
+(*{doc Start a SCOPED_TRACE statement: every failure until JiecTest_popTrace shows the text and its position.
+If the statements are nested deeper than JIECUNIT_MAX_TRACE_DEPTH, a failure
+is reported, and the inner texts are not shown.
+@inout self The JiecTest_t structure.
+@input trace_text The text to show with the failures.
+@input file The source file name.
+@input line The line number.
+@return Always returns true.}*)
+function JiecTest_pushTrace: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc The text to show with the failures.}*)
+		trace_text: string[EXPRESSION_MAX_SIZE];
+		(*{doc The source file name.}*)
+		file: string[FILENAME_MAX_SIZE];
+		(*{doc The line number.}*)
+		line: dint;
+	end
+	JiecTest_pushTrace := true;
+	if (self.tmp_trace_depth >= 0) and (self.tmp_trace_depth < JIECUNIT_MAX_TRACE_DEPTH) then
+		self.tmp_trace_files[self.tmp_trace_depth] := file;
+		self.tmp_trace_lines[self.tmp_trace_depth] := line;
+		self.tmp_trace_texts[self.tmp_trace_depth] := trace_text;
+	elsif self.tmp_trace_depth = JIECUNIT_MAX_TRACE_DEPTH then
+		JiecTest_beginFailure(self:=self, file:=file, line:=line);
+		JiecTest_print(self, jiec_concat('SCOPED_TRACE is nested deeper than ', dint_to_string(JIECUNIT_MAX_TRACE_DEPTH), ' (JIECUNIT_MAX_TRACE_DEPTH); the inner texts are not shown.'));
+		JiecTest_endFailure(self:=self, message:='', die:=false);
+	end_if;
+	inc(self.tmp_trace_depth);
+end
+
+(*{doc Finish a SCOPED_TRACE statement.
+@inout self The JiecTest_t structure.
+@return Always returns true.}*)
+function JiecTest_popTrace: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	JiecTest_popTrace := true;
+	if self.tmp_trace_depth > 0 then
+		dec(self.tmp_trace_depth);
+	end_if;
+end
+
+(*{doc Remember the number of failures, for JiecTest_failedSinceMark.
+An array assertion calls it before it checks an element. While failures are
+captured, the captured ones are counted.
+@inout self The JiecTest_t structure.
+@return Always returns true.}*)
+function JiecTest_markFailures: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	JiecTest_markFailures := true;
+	if self.tmp_capturing then
+		self.tmp_failure_mark := self.tmp_captured_fatal + self.tmp_captured_nonfatal;
+	else
+		self.tmp_failure_mark := self.tmp_fatal_failures + self.tmp_nonfatal_failures;
+	end_if;
+end
+
+(*{doc Whether a failure has been reported since JiecTest_markFailures.
+@inout self The JiecTest_t structure.
+@return True if there has been a failure.}*)
+function JiecTest_failedSinceMark: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	if self.tmp_capturing then
+		JiecTest_failedSinceMark := (self.tmp_captured_fatal + self.tmp_captured_nonfatal) <> self.tmp_failure_mark;
+	else
+		JiecTest_failedSinceMark := (self.tmp_fatal_failures + self.tmp_nonfatal_failures) <> self.tmp_failure_mark;
+	end_if;
+end
+
+(*{doc Act on a fatal failure (ASSERT_*, FAIL) after it has been reported.
+In the body of a test, it ends the test. In a helper (a POU that uses
+JIECUNIT_DECLARE_HELPER), the caller only returns from the helper and the
+test goes on, as in Google Test; use ASSERT_NO_FATAL_FAILURE to stop it.
+While failures are captured, the test is not ended either.
+@inout self The JiecTest_t structure.
+@input in_helper True when the failure happened in a helper.
+@return Always returns true.}*)
+function JiecTest_abort: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc True when the failure happened in a helper.}*)
+		in_helper: bool;
+	end
+	if (not in_helper) and (not self.tmp_capturing) then
+		JiecTest_deactivate(self);
+	end_if;
+end
+
+(*{doc Whether the active test has had a fatal failure (ASSERT_*, FAIL).
+Captured failures are not counted.
+@inout self The JiecTest_t structure.
+@return True if there has been a fatal failure.}*)
+function JiecTest_hasFatalFailure: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	JiecTest_hasFatalFailure := self.tmp_fatal_failures > 0;
+end
+
+(*{doc Whether the active test has had a non-fatal failure (EXPECT_*, ADD_FAILURE).
+Captured failures are not counted.
+@inout self The JiecTest_t structure.
+@return True if there has been a non-fatal failure.}*)
+function JiecTest_hasNonfatalFailure: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	JiecTest_hasNonfatalFailure := self.tmp_nonfatal_failures > 0;
+end
+
+(*{doc Start an ASSERT_NO_FATAL_FAILURE / EXPECT_NO_FATAL_FAILURE statement: remember the number of fatal failures.
+If the statements are nested deeper than JIECUNIT_MAX_NO_FATAL_FAILURE_DEPTH,
+a failure is reported, and the inner statement does not check its result.
+@inout self The JiecTest_t structure.
+@input file The source file name.
+@input line The line number.
+@return Always returns true.}*)
+function JiecTest_beginNoFatalFailure: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc The source file name.}*)
+		file: string[FILENAME_MAX_SIZE];
+		(*{doc The line number.}*)
+		line: dint;
+	end
+	if (self.tmp_fatal_mark_depth >= 0) and (self.tmp_fatal_mark_depth < JIECUNIT_MAX_NO_FATAL_FAILURE_DEPTH) then
+		// Inside EXPECT_FATAL_FAILURE, the fatal failures of the statement are
+		// captured, so count the captured ones; a capture inside the statement
+		// does not change the count of the uncaptured ones (as in Google Test).
+		self.tmp_fatal_marks_captured[self.tmp_fatal_mark_depth] := self.tmp_capturing;
+		if self.tmp_capturing then
+			self.tmp_fatal_marks[self.tmp_fatal_mark_depth] := self.tmp_captured_fatal;
+		else
+			self.tmp_fatal_marks[self.tmp_fatal_mark_depth] := self.tmp_fatal_failures;
+		end_if;
+	elsif self.tmp_fatal_mark_depth = JIECUNIT_MAX_NO_FATAL_FAILURE_DEPTH then
+		JiecTest_beginFailure(self:=self, file:=file, line:=line);
+		JiecTest_print(self, jiec_concat('ASSERT_NO_FATAL_FAILURE / EXPECT_NO_FATAL_FAILURE are nested deeper than ', dint_to_string(JIECUNIT_MAX_NO_FATAL_FAILURE_DEPTH), ' (JIECUNIT_MAX_NO_FATAL_FAILURE_DEPTH); the inner ones are not checked.'));
+		JiecTest_endFailure(self:=self, message:='', die:=false);
+	end_if;
+	inc(self.tmp_fatal_mark_depth);
+end
+
+(*{doc Finish an ASSERT_NO_FATAL_FAILURE / EXPECT_NO_FATAL_FAILURE statement.
+If the statement generated new fatal failures, it reports a failure that says so.
+@inout self The JiecTest_t structure.
+@input statement_text The source text of the statement.
+@input message The failure message.
+@input die Whether the failure is fatal (ASSERT_NO_FATAL_FAILURE).
+@input file The source file name.
+@input line The line number.
+@return True if the statement generated new fatal failures.}*)
+function JiecTest_endNoFatalFailure: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc The source text of the statement.}*)
+		statement_text: string[EXPRESSION_MAX_SIZE];
+		(*{doc The failure message.}*)
+		message: string[STRING_MAX_SIZE];
+		(*{doc Whether the failure is fatal (ASSERT_NO_FATAL_FAILURE).}*)
+		die: bool;
+		(*{doc The source file name.}*)
+		file: string[FILENAME_MAX_SIZE];
+		(*{doc The line number.}*)
+		line: dint;
+	end
+	JiecTest_endNoFatalFailure := false;
+	if self.tmp_fatal_mark_depth <= 0 then
+		return;
+	end_if;
+	dec(self.tmp_fatal_mark_depth);
+	if self.tmp_fatal_mark_depth >= JIECUNIT_MAX_NO_FATAL_FAILURE_DEPTH then
+		return;
+	end_if;
+	if self.tmp_fatal_marks_captured[self.tmp_fatal_mark_depth] then
+		if self.tmp_captured_fatal <= self.tmp_fatal_marks[self.tmp_fatal_mark_depth] then
+			return;
+		end_if;
+	elsif self.tmp_fatal_failures <= self.tmp_fatal_marks[self.tmp_fatal_mark_depth] then
+		return;
+	end_if;
+	JiecTest_endNoFatalFailure := true;
+	JiecTest_beginFailure(self:=self, file:=file, line:=line);
+	JiecTest_print(self, jiec_concat('Expected: ', statement_text, ' does not generate new fatal failures.'));
+	JiecTest_print(self, '  Actual: it does.');
+	JiecTest_endFailure(self:=self, message:=message, die:=die);
+end
+
+(*{doc Start capturing failures for EXPECT_FATAL_FAILURE / EXPECT_NONFATAL_FAILURE.
+While failures are captured, they are not printed or counted; JiecTest_print
+only searches their lines for substr. Capturing cannot be nested.
+@inout self The JiecTest_t structure.
+@input substr The text that the captured failure must contain.
+@input file The source file name.
+@input line The line number.
+@return False if failures were already being captured (the nested capture is not started; JiecTest_endCapture reports it).}*)
+function JiecTest_beginCapture: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc The text that the captured failure must contain.}*)
+		substr: string[STRING_MAX_SIZE];
+		(*{doc The source file name.}*)
+		file: string[FILENAME_MAX_SIZE];
+		(*{doc The line number.}*)
+		line: dint;
+	end
+	JiecTest_beginCapture := not self.tmp_capturing;
+	if not JiecTest_beginCapture then
+		inc(self.tmp_capture_rejected);
+		return;
+	end_if;
+	self.tmp_capture_substr := substr;
+	self.tmp_capture_matched := false;
+	self.tmp_captured_fatal := 0;
+	self.tmp_captured_nonfatal := 0;
+	self.tmp_capture_file := file;
+	self.tmp_capture_line := line;
+	self.tmp_capturing := true;
+end
+
+(*{doc Finish capturing failures and check them, for EXPECT_FATAL_FAILURE / EXPECT_NONFATAL_FAILURE.
+The statement must have generated exactly one failure of the expected kind,
+and one of the lines of that failure (not its position) must contain the
+expected text. Otherwise a non-fatal failure is reported.
+@inout self The JiecTest_t structure.
+@input fatal True for EXPECT_FATAL_FAILURE, false for EXPECT_NONFATAL_FAILURE.
+@input statement_text The source text of the statement.
+@input file The source file name.
+@input line The line number.
+@return True if the captured failures are as expected.}*)
+function JiecTest_endCapture: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	var_input
+		(*{doc True for EXPECT_FATAL_FAILURE, false for EXPECT_NONFATAL_FAILURE.}*)
+		fatal: bool;
+		(*{doc The source text of the statement.}*)
+		statement_text: string[EXPRESSION_MAX_SIZE];
+		(*{doc The source file name.}*)
+		file: string[FILENAME_MAX_SIZE];
+		(*{doc The line number.}*)
+		line: dint;
+	end
+	var_temp
+		kind: string[16];
+		expected_count: bool;
+	end
+	if fatal then
+		kind := 'fatal';
+	else
+		kind := 'non-fatal';
+	end_if;
+	if self.tmp_capture_rejected > 0 then
+		// The end of a nested capture that JiecTest_beginCapture rejected.
+		// Report it outside the capture of the outer statement, so that it
+		// is always printed and counted.
+		dec(self.tmp_capture_rejected);
+		JiecTest_endCapture := false;
+		self.tmp_capturing := false;
+		JiecTest_beginFailure(self:=self, file:=file, line:=line);
+		JiecTest_print(self, 'EXPECT_FATAL_FAILURE / EXPECT_NONFATAL_FAILURE cannot be nested.');
+		JiecTest_endFailure(self:=self, message:='', die:=false);
+		self.tmp_capturing := true;
+		return;
+	end_if;
+	self.tmp_capturing := false;
+	if fatal then
+		expected_count := (self.tmp_captured_fatal = 1) and (self.tmp_captured_nonfatal = 0);
+	else
+		expected_count := (self.tmp_captured_nonfatal = 1) and (self.tmp_captured_fatal = 0);
+	end_if;
+	JiecTest_endCapture := expected_count and self.tmp_capture_matched;
+	if JiecTest_endCapture then
+		return;
+	end_if;
+	JiecTest_beginFailure(self:=self, file:=file, line:=line);
+	JiecTest_print(self, jiec_concat('Expected: ', statement_text, ' generates 1 ', kind, ' failure containing ', jiec_quote(self.tmp_capture_substr)));
+	if not expected_count then
+		JiecTest_print(self, jiec_concat('  Actual: ', dint_to_string(self.tmp_captured_fatal), ' fatal and ', dint_to_string(self.tmp_captured_nonfatal), ' non-fatal failures'));
+	else
+		JiecTest_print(self, jiec_concat('  Actual: 1 ', kind, ' failure, without the text'));
+	end_if;
+	JiecTest_endFailure(self:=self, message:='', die:=false);
+end
+
+(*{doc Clean up what a statement left by returning from the test.
+Called by JiecUnitMain at the start of each cycle. The statements of
+ASSERT_NO_FATAL_FAILURE / EXPECT_NO_FATAL_FAILURE and of EXPECT_FATAL_FAILURE /
+EXPECT_NONFATAL_FAILURE and of SCOPED_TRACE end within one cycle, so their
+marks and traces are cleared. If
+failures are still being captured, the statement of EXPECT_FATAL_FAILURE /
+EXPECT_NONFATAL_FAILURE returned from the test (an ASSERT written directly in
+it): the capture is ended, a failure is reported and the test is ended (also
+a TEST_M, as the ASSERT would have done without the capture).
+@inout self The JiecTest_t structure.
+@return True if a capture was left.}*)
+function JiecTest_endLeftCapture: bool
+	_PROLOGUE_OF_FUNCTION_()
+	var_in_out self: JiecTest_t; end
+	self.tmp_fatal_mark_depth := 0;
+	self.tmp_trace_depth := 0;
+	self.tmp_capture_rejected := 0;
+	JiecTest_endLeftCapture := self.tmp_capturing;
+	if not self.tmp_capturing then
+		return;
+	end_if;
+	self.tmp_capturing := false;
+	JiecTest_deactivate(self);
+	JiecTest_beginFailure(self:=self, file:=self.tmp_capture_file, line:=self.tmp_capture_line);
+	JiecTest_print(self, 'The statement of EXPECT_FATAL_FAILURE / EXPECT_NONFATAL_FAILURE returned from the test. Call a function (a helper with JIECUNIT_DECLARE_HELPER) that contains the assertion.');
+	JiecTest_endFailure(self:=self, message:='', die:=false);
 end
 
 (*{doc Get the test name at the specified index.
@@ -228,6 +985,7 @@ end
 
 // ------------------------ Define validator functions ------------------------ //
 
+{#include "jiectest_validate_bool.iec"}
 {#include "jiectest_validate_eq.iec"}
 {#include "jiectest_validate_ne.iec"}
 {#include "jiectest_validate_lt.iec"}
@@ -236,5 +994,7 @@ end
 {#include "jiectest_validate_gt.iec"}
 {#include "jiectest_validate_near.iec"}
 {#include "jiectest_validate_near_rel.iec"}
+{#include "jiectest_validate_ulp.iec"}
+{#include "jiectest_validate_str.iec"}
 
 {#endif}

@@ -1,0 +1,11 @@
+[========] Running 3 tests.
+[ RUN    ] test_one
+[     OK ] test_one (n/a)
+[ RUN    ] test_two
+[     OK ] test_two (n/a)
+[ RUN    ] test_three
+[     OK ] test_three (n/a)
+[========] 3 tests ran. (n/a)
+[ PASSED ] 3 tests.
+[ WARNING] The console buffer is full (CONSOLE_MAX_ROWS=8); older lines may have been overwritten.
+[exit code: 0]

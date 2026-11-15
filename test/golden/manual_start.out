@@ -1,0 +1,7 @@
+starter: before the request: state=0 run_count=0
+[========] Running 1 tests.
+[ RUN    ] runs_after_the_request
+[     OK ] runs_after_the_request (n/a)
+[========] 1 tests ran. (n/a)
+[ PASSED ] 1 tests.
+[exit code: 0]

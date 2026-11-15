@@ -1,0 +1,72 @@
+// More failure outputs: NaN, a negative tolerance, quoting of string values,
+// and the comparison of other types.
+{#include <jiecunit.iec>}
+
+TEST_S(test_near_nan)
+	var
+		big: lreal := 1.0e308;
+		nan_value: lreal;
+	end
+	big := big * 10.0;
+	nan_value := big - big;
+	EXPECT_NEAR(nan_value, 1.0, 0.5);
+	EXPECT_NEAR(big, -big, 0.5);
+	// Two infinities of the same sign are near (no failure).
+	EXPECT_NEAR(big, big, 0.5);
+	EXPECT_NEAR_REL(big, big, 0.5);
+	// An infinity is not near a finite value, even with a relative error.
+	EXPECT_NEAR_REL(big, 1.0, 0.5);
+	// As in Google Test, an infinite difference is within an infinite error (passes).
+	EXPECT_NEAR(big, 1.0, big);
+	EXPECT_NEAR(1.0, 1.0, -0.5);
+	EXPECT_NEAR_REL(1.0, 1.0, -0.5);
+END_TEST_S
+
+TEST_S(test_string_quoting)
+	var
+		s: string[32] := 'a$'b$$c';
+	end
+	EXPECT_EQ_STRING('', s);
+	EXPECT_NE_STRING('a$'b$$c', s);
+	EXPECT_LT_STRING(s, 'a');
+END_TEST_S
+
+TEST_S(test_other_types)
+	var
+		t: time := time#1500ms;
+		u: udint := 7;
+		b: bool := true;
+	end
+	EXPECT_EQ_TIME(time#2s, t);
+	EXPECT_GT_UINT(3, u);
+	EXPECT_EQ_BOOL(false, b);
+END_TEST_S
+
+TEST_S(test_ulp)
+	var
+		x: lreal := 1.0;
+		r: real := 1.0;
+	end
+	EXPECT_DOUBLE_EQ(1.1, x);
+	EXPECT_FLOAT_EQ(1.5, r, 'REAL');
+	EXPECT_EQ_REAL(1.25, r);
+END_TEST_S
+
+TEST_S(test_array_and_substring)
+	var
+		expected_values: array[0..2] of dint := [1, 2, 3];
+		actual_values: array[0..2] of dint := [1, 5, 3];
+	end
+	EXPECT_EQ_ARRAY_DINT(expected_values, actual_values, 3);
+	EXPECT_STR_CONTAINS('abc', 'bd', 'a message');
+END_TEST_S
+
+DEFINE_CONFIGURATION(
+	_JIEC_TESTNAMES_LIST_(
+		test_near_nan,
+		test_string_quoting,
+		test_other_types,
+		test_ulp,
+		test_array_and_substring
+	)
+)

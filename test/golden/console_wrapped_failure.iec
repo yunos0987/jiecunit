@@ -1,0 +1,18 @@
+// golden-args: -D CONSOLE_MAX_ROWS=8 -D JIECUNIT_JIER_CONSOLE_WARNING
+// The console warning also follows the list of failed tests.
+{#include <jiecunit.iec>}
+
+TEST_S(test_fails)
+	EXPECT_EQ_INT(1, 2);
+END_TEST_S
+
+TEST_S(test_passes)
+	EXPECT_TRUE(true);
+END_TEST_S
+
+DEFINE_CONFIGURATION(
+	_JIEC_TESTNAMES_LIST_(
+		test_fails,
+		test_passes
+	)
+)

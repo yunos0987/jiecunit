@@ -1,0 +1,25 @@
+[========] Running 6 tests.
+[ RUN    ] test_ok
+[     OK ] test_ok (n/a)
+[ RUN    ] test_not_assigned
+[  ERROR ] The program 'test_not_assigned' was not found in active tasks.
+[ FAILED ] test_not_assigned (n/a)
+[ RUN    ] test_runs_twice
+[  ERROR ] The program 'test_runs_twice' ran 2 times in one cycle of JiecUnitMain. Assign it to the task of JiecUnitMain.
+[ FAILED ] test_runs_twice (n/a)
+[ RUN    ] test_stops_running
+[  ERROR ] The program 'test_stops_running' did not run in cycle 1. Assign it to the task of JiecUnitMain.
+[ FAILED ] test_stops_running (n/a)
+[ RUN    ] test_teardown_never_runs
+[  ERROR ] The TearDown of the fixture of 'test_teardown_never_runs' did not run.
+[ FAILED ] test_teardown_never_runs (n/a)
+[ RUN    ] test_ok_multi
+[     OK ] test_ok_multi (n/a)
+[========] 6 tests ran. (n/a)
+[ PASSED ] 2 tests.
+[ FAILED ] 4 tests, listed below.
+[ FAILED ] test_not_assigned
+[ FAILED ] test_runs_twice
+[ FAILED ] test_stops_running
+[ FAILED ] test_teardown_never_runs
+[exit code: 1]

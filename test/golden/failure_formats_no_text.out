@@ -1,0 +1,23 @@
+[========] Running 1 tests.
+[ RUN    ] test_no_text
+test/golden/failure_formats_no_text.iec:11: Failure
+Expected equality of these values:
+  5
+  4
+test/golden/failure_formats_no_text.iec:12: Failure
+Expected: (4) < (2), actual: 4 vs 2
+test/golden/failure_formats_no_text.iec:13: Failure
+Value of: (condition)
+  Actual: false
+Expected: true
+test/golden/failure_formats_no_text.iec:14: Failure
+The difference between 1.5 and 1.0 is 0.5, which exceeds 0.1, where
+1.5 evaluates to 1.5,
+1.0 evaluates to 1.0, and
+0.1 evaluates to 0.1.
+[ FAILED ] test_no_text (n/a)
+[========] 1 tests ran. (n/a)
+[ PASSED ] 0 tests.
+[ FAILED ] 1 tests, listed below.
+[ FAILED ] test_no_text
+[exit code: 1]

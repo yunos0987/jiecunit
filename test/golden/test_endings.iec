@@ -1,0 +1,47 @@
+// How a test ends: EOT(), the end of a TEST_S, an early return, and the
+// per-test cycle limit.
+{#include <jiecunit.iec>}
+
+TEST_S(test_s_returns_early)
+	var
+		x: dint := 1;
+	end
+	if x = 1 then
+		return;
+	end_if;
+	FAIL('not reached');
+END_TEST_S
+
+TEST_S(test_s_fails_then_returns_early)
+	EXPECT_EQ_INT(1, 2);
+	return;
+END_TEST_S
+
+TEST_M(test_m_ends_with_eot)
+	EXPECT_LT_INT(CURRENT_CYCLE(), 3);
+	if CURRENT_CYCLE() = 2 then
+		EOT();
+	end_if;
+END_TEST_M
+
+TEST_M(test_m_reaches_its_limit)
+	SET_TEST_MAX_CYCLES(3);
+	EXPECT_LT_INT(CURRENT_CYCLE(), 3);
+END_TEST_M
+
+TEST_M(test_m_limit_is_reset)
+	// The limit set by the previous test does not apply here.
+	if CURRENT_CYCLE() = 5 then
+		EOT();
+	end_if;
+END_TEST_M
+
+DEFINE_CONFIGURATION(
+	_JIEC_TESTNAMES_LIST_(
+		test_s_returns_early,
+		test_s_fails_then_returns_early,
+		test_m_ends_with_eot,
+		test_m_reaches_its_limit,
+		test_m_limit_is_reset
+	)
+)

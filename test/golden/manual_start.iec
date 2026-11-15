@@ -1,0 +1,36 @@
+// golden-args: -D JIECUNIT_MANUAL_START --max-cycles 200
+// With JIECUNIT_MANUAL_START nothing runs until g_jiecunit_rerun is set: the
+// state stays 0 (not run) and the test programs do nothing. A starter program
+// (as the PLC tools would do) sets g_jiecunit_rerun in its fifth cycle.
+{#include <jiecunit.iec>}
+
+TEST_S(runs_after_the_request)
+	EXPECT_TRUE(true);
+END_TEST_S
+
+program starter
+	DECLARE_EXTERNAL_JIECUNIT_RESULT();
+	_DECLARE_CONSOLE_IN_POU_();
+	var
+		cycles: dint;
+	end
+	cycles := cycles + 1;
+	if cycles = 5 then
+		puts(jiec_concat('starter: before the request: state=', dint_to_string(_JIECUNIT_RESULT_.state), ' run_count=', dint_to_string(_JIECUNIT_RESULT_.run_count)));
+		_JIECUNIT_RERUN_ := true;
+	end_if;
+end
+
+{#define _GOLDEN_GLOBALS_AND_TASKS()
+	var_global
+		_JIECTESTNAMES_: array[MAX_TESTS] of string[TESTNAME_MAX_SIZE] := ['runs_after_the_request', (MAX_TESTS - 1)('')];
+		_JIECTEST_: JiecTest_t;
+		_JIECUNIT_RESULT_: JiecUnitResult_t;
+		_JIECUNIT_RERUN_: bool;
+	end
+	task JiecUnitTask(priority := 0);
+	program JiecUnitMain with JiecUnitTask: JiecUnitMain();
+	program runs_after_the_request with JiecUnitTask: runs_after_the_request();
+	program starter with JiecUnitTask: starter();
+}
+DEFINE_CONFIGURATION(_GOLDEN_GLOBALS_AND_TASKS())

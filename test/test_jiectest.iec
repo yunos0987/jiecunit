@@ -11,8 +11,13 @@ TEST_S(test_jiectest_initialize)
 	jt.testnames[1] := 'dummy1';
 	jt.tmp_cycle := 12;
 	jt.tmp_active_test_index := 7;
-	jt.tmp_is_test_available := true;
+	jt.tmp_is_active := true;
 	jt.tmp_is_skipped := true;
+	jt.tmp_exec_count := 2;
+	jt.tmp_is_single_cycle := true;
+	jt.tmp_max_cycles := 3;
+	jt.tmp_test_file := 'x.iec';
+	jt.tmp_test_line := 4;
 	jt.num_of_failures := 9;
 		// Act
 	JiecTest_initialize(jt);
@@ -20,17 +25,159 @@ TEST_S(test_jiectest_initialize)
 	EXPECT_EQ_INT(0, jt.num_of_tests);
 	EXPECT_EQ_STRING('', jt.testnames[0]);
 	EXPECT_EQ_STRING('', jt.testnames[1]);
-	EXPECT_EQ_INT(dint#__DINT_MIN__, jt.tmp_cycle);
+	EXPECT_EQ_INT(0, jt.tmp_cycle);
 	EXPECT_EQ_INT(-1, jt.tmp_active_test_index);
-	EXPECT_FALSE(jt.tmp_is_test_available);
+	EXPECT_FALSE(jt.tmp_is_active);
 	EXPECT_FALSE(jt.tmp_is_skipped);
+	EXPECT_EQ_INT(0, jt.tmp_exec_count);
+	EXPECT_FALSE(jt.tmp_is_single_cycle);
+	EXPECT_EQ_INT(JIECUNIT_MAX_CYCLES_PER_TEST, jt.tmp_max_cycles);
+	EXPECT_EQ_STRING('', jt.tmp_test_file);
+	EXPECT_EQ_INT(0, jt.tmp_test_line);
 	EXPECT_EQ_INT(0, jt.num_of_failures);
+END_TEST_S
+
+TEST_S(test_jiectest_begin_test)
+	var
+		jt: JiecTest_t;
+	end
+	// Fact: JiecTest_beginTest resets every per-test field but keeps the registration and the failure count.
+		// Arrange
+	JiecTest_initialize(jt);
+	JiecTest_register(jt, 'test_alpha');
+	jt.tmp_active_test_index := 0;
+	jt.num_of_failures := 5;
+	JiecTest_activate(jt);
+	jt.tmp_cycle := 12;
+	jt.tmp_is_skipped := true;
+	jt.tmp_exec_count := 2;
+	jt.tmp_is_single_cycle := true;
+	jt.tmp_max_cycles := 3;
+	jt.tmp_test_file := 'x.iec';
+	jt.tmp_test_line := 4;
+		// Act
+	JiecTest_beginTest(jt);
+		// Assert
+	EXPECT_EQ_INT(0, jt.tmp_cycle);
+	EXPECT_FALSE(jt.tmp_is_active);
+	EXPECT_FALSE(jt.tmp_is_skipped);
+	EXPECT_EQ_INT(0, jt.tmp_exec_count);
+	EXPECT_FALSE(jt.tmp_is_single_cycle);
+	EXPECT_EQ_INT(JIECUNIT_MAX_CYCLES_PER_TEST, jt.tmp_max_cycles);
+	EXPECT_EQ_STRING('', jt.tmp_test_file);
+	EXPECT_EQ_INT(0, jt.tmp_test_line);
+	EXPECT_EQ_INT(1, jt.num_of_tests);
+	EXPECT_EQ_INT(0, jt.tmp_active_test_index);
+	EXPECT_EQ_INT(5, jt.num_of_failures);
+END_TEST_S
+
+TEST_S(test_jiectest_enter_test)
+	var
+		jt: JiecTest_t;
+		first: bool;
+	end
+	// Fact: in the first run, JiecTest_enterTest returns true, counts the run and records the kind, the position and the display name.
+		// Arrange
+	JiecTest_initialize(jt);
+	JiecTest_register(jt, 'prog');
+	jt.tmp_active_test_index := 0;
+	JiecTest_beginTest(jt);
+	JiecTest_activate(jt);
+	jt.tmp_capturing := true; // do not print the RUN line of this local test
+		// Act
+	first := JiecTest_enterTest(self:=jt, single_cycle:=true, file:='a.iec', line:=10, display_name:='Suite.name');
+		// Assert
+	EXPECT_TRUE(first);
+	EXPECT_EQ_INT(1, jt.tmp_exec_count);
+	EXPECT_TRUE(jt.tmp_is_single_cycle);
+	EXPECT_EQ_STRING('a.iec', jt.tmp_test_file);
+	EXPECT_EQ_INT(10, jt.tmp_test_line);
+	EXPECT_EQ_STRING('Suite.name', JiecTest_activeDisplayName(jt));
+
+	// Fact: a second run in the same cycle returns false and keeps the recorded values.
+		// Act
+	first := JiecTest_enterTest(self:=jt, single_cycle:=false, file:='b.iec', line:=20, display_name:='Other');
+		// Assert
+	EXPECT_FALSE(first);
+	EXPECT_EQ_INT(2, jt.tmp_exec_count);
+	EXPECT_TRUE(jt.tmp_is_single_cycle);
+	EXPECT_EQ_STRING('Suite.name', JiecTest_activeDisplayName(jt));
+
+	// Fact: a run after cycle 0 returns false and keeps the recorded kind and position.
+		// Arrange
+	jt.tmp_cycle := 1;
+	jt.tmp_exec_count := 0;
+		// Act
+	first := JiecTest_enterTest(self:=jt, single_cycle:=false, file:='b.iec', line:=20);
+		// Assert
+	EXPECT_FALSE(first);
+	EXPECT_EQ_INT(1, jt.tmp_exec_count);
+	EXPECT_TRUE(jt.tmp_is_single_cycle);
+	EXPECT_EQ_STRING('a.iec', jt.tmp_test_file);
+	EXPECT_EQ_INT(10, jt.tmp_test_line);
+
+	// Fact: without a display name, the program name is shown.
+		// Arrange
+	JiecTest_beginTest(jt);
+	JiecTest_activate(jt);
+	jt.tmp_capturing := true;
+		// Act
+	first := JiecTest_enterTest(self:=jt, single_cycle:=true, file:='a.iec', line:=10);
+		// Assert
+	EXPECT_TRUE(first);
+	EXPECT_EQ_STRING('prog', JiecTest_activeDisplayName(jt));
+END_TEST_S
+
+TEST_S(test_jiectest_teardown)
+	var
+		jt: JiecTest_t;
+	end
+	// Fact: the TearDown is pending for the active test after it has ended, and only for it.
+		// Arrange
+	JiecTest_initialize(jt);
+	JiecTest_register(jt, 'prog');
+	jt.tmp_active_test_index := 0;
+	JiecTest_beginTest(jt);
+	JiecTest_activate(jt);
+		// Act
+	JiecTest_requestTearDown(jt);
+		// Assert
+	EXPECT_TRUE(jt.tmp_teardown_pending);
+	EXPECT_FALSE(JiecTest_isTearDownPending(self:=jt, test_name:='prog'));
+	JiecTest_deactivate(jt);
+	EXPECT_TRUE(JiecTest_isTearDownPending(self:=jt, test_name:='prog'));
+	EXPECT_FALSE(JiecTest_isTearDownPending(self:=jt, test_name:='other'));
+
+	// Fact: JiecTest_endTearDown clears the request, and JiecTest_beginTest clears it too.
+		// Act
+	JiecTest_endTearDown(jt);
+		// Assert
+	EXPECT_FALSE(JiecTest_isTearDownPending(self:=jt, test_name:='prog'));
+	JiecTest_requestTearDown(jt);
+	jt.tmp_teardown_waits := 3;
+	JiecTest_beginTest(jt);
+	EXPECT_FALSE(jt.tmp_teardown_pending);
+	EXPECT_EQ_INT(0, jt.tmp_teardown_waits);
+	EXPECT_EQ_STRING('prog', jt.tmp_display_name);
+END_TEST_S
+
+TEST_S(test_jiectest_set_max_cycles)
+	var
+		jt: JiecTest_t;
+	end
+	// Fact: JiecTest_setMaxCycles sets the limit of the active test.
+		// Arrange
+	JiecTest_initialize(jt);
+		// Act
+	JiecTest_setMaxCycles(self:=jt, max_cycles:=7);
+		// Assert
+	EXPECT_EQ_INT(7, jt.tmp_max_cycles);
 END_TEST_S
 
 TEST_S(test_jiectest_register)
 	var
 		jt: JiecTest_t;
-		jt_full: JiecTest_t;
+		slot_index: dint;
 		result: dint;
 	end
 	// Fact: JiecTest_register returns 1 and stores the first test name.
@@ -83,25 +230,28 @@ TEST_S(test_jiectest_register)
 
 	// Fact: JiecTest_register succeeds at MAX_TESTS-1 and fails at MAX_TESTS.
 		// Arrange
-	JiecTest_initialize(jt_full);
-	jt_full.num_of_tests := MAX_TESTS - 1;
-	jt_full.testnames[MAX_TESTS - 2] := 'tail';
+	JiecTest_initialize(jt);
+	jt.num_of_tests := MAX_TESTS - 1;
+	// The slots through a variable (an index written as a constant expression, [N - 1], is rejected by Sysmac Studio as out of range).
+	slot_index := MAX_TESTS - 2;
+	jt.testnames[slot_index] := 'tail';
+	slot_index := MAX_TESTS - 1;
 		// Act
-	result := JiecTest_register(jt_full, 'last_slot');
+	result := JiecTest_register(jt, 'last_slot');
 		// Assert
 	EXPECT_EQ_INT(MAX_TESTS, result);
-	EXPECT_EQ_INT(MAX_TESTS, jt_full.num_of_tests);
-	EXPECT_EQ_STRING('last_slot', jt_full.testnames[MAX_TESTS - 1]);
+	EXPECT_EQ_INT(MAX_TESTS, jt.num_of_tests);
+	EXPECT_EQ_STRING('last_slot', jt.testnames[slot_index]);
 
 	// Fact: JiecTest_register keeps the last slot unchanged when overflow is rejected.
 		// Arrange
 	// (keep full state)
 		// Act
-	result := JiecTest_register(jt_full, 'overflow');
+	result := JiecTest_register(jt, 'overflow');
 		// Assert
 	EXPECT_EQ_INT(-2, result);
-	EXPECT_EQ_INT(MAX_TESTS, jt_full.num_of_tests);
-	EXPECT_EQ_STRING('last_slot', jt_full.testnames[MAX_TESTS - 1]);
+	EXPECT_EQ_INT(MAX_TESTS, jt.num_of_tests);
+	EXPECT_EQ_STRING('last_slot', jt.testnames[slot_index]);
 END_TEST_S
 
 TEST_S(test_jiectest_empty)
@@ -156,28 +306,20 @@ TEST_S(test_jiectest_is_active)
 		// Assert
 	EXPECT_FALSE(alive);
 
-	// Fact: JiecTest_isActive returns false at the boundary tmp_cycle = -1.
+	// Fact: JiecTest_isActive does not depend on the cycle counter.
 		// Arrange
-	jt.tmp_cycle := -1;
+	jt.tmp_cycle := 5;
 		// Act
 	alive := JiecTest_isActive(jt);
 		// Assert
 	EXPECT_FALSE(alive);
-
-	// Fact: JiecTest_isActive returns true at the boundary tmp_cycle = 0.
-		// Arrange
-	jt.tmp_cycle := 0;
-		// Act
-	alive := JiecTest_isActive(jt);
-		// Assert
-	EXPECT_TRUE(alive);
 END_TEST_S
 
 TEST_S(test_jiectest_activate)
 	var
 		jt: JiecTest_t;
 	end
-	// Fact: JiecTest_activate sets tmp_cycle to 0.
+	// Fact: JiecTest_activate sets tmp_cycle to 0 and makes the test active.
 		// Arrange
 	JiecTest_initialize(jt);
 	jt.tmp_cycle := 123;
@@ -185,6 +327,7 @@ TEST_S(test_jiectest_activate)
 	JiecTest_activate(jt);
 		// Assert
 	EXPECT_EQ_INT(0, jt.tmp_cycle);
+	EXPECT_TRUE(jt.tmp_is_active);
 
 	// Fact: JiecTest_activate does not modify tmp_active_test_index.
 		// Arrange
@@ -199,14 +342,16 @@ TEST_S(test_jiectest_deactivate)
 	var
 		jt: JiecTest_t;
 	end
-	// Fact: JiecTest_deactivate sets tmp_cycle to DINT minimum.
+	// Fact: JiecTest_deactivate makes the test inactive and keeps the cycle counter.
 		// Arrange
 	JiecTest_initialize(jt);
 	JiecTest_activate(jt);
+	jt.tmp_cycle := 3;
 		// Act
 	JiecTest_deactivate(jt);
 		// Assert
-	EXPECT_EQ_INT(dint#__DINT_MIN__, jt.tmp_cycle);
+	EXPECT_FALSE(jt.tmp_is_active);
+	EXPECT_EQ_INT(3, jt.tmp_cycle);
 
 	// Fact: JiecTest_deactivate is idempotent.
 		// Arrange
@@ -214,7 +359,8 @@ TEST_S(test_jiectest_deactivate)
 		// Act
 	JiecTest_deactivate(jt);
 		// Assert
-	EXPECT_EQ_INT(dint#__DINT_MIN__, jt.tmp_cycle);
+	EXPECT_FALSE(jt.tmp_is_active);
+	EXPECT_EQ_INT(3, jt.tmp_cycle);
 END_TEST_S
 
 TEST_S(test_jiectest_current_cycle)
@@ -222,13 +368,13 @@ TEST_S(test_jiectest_current_cycle)
 		jt: JiecTest_t;
 		cycle: dint;
 	end
-	// Fact: JiecTest_currentCycle returns DINT minimum right after initialization.
+	// Fact: JiecTest_currentCycle returns 0 right after initialization.
 		// Arrange
 	JiecTest_initialize(jt);
 		// Act
 	cycle := JiecTest_currentCycle(jt);
 		// Assert
-	EXPECT_EQ_INT(dint#__DINT_MIN__, cycle);
+	EXPECT_EQ_INT(0, cycle);
 
 	// Fact: JiecTest_currentCycle returns 0 after activation.
 		// Arrange
@@ -262,22 +408,24 @@ TEST_S(test_jiectest_next_cycle)
 	EXPECT_TRUE(alive);
 	EXPECT_EQ_INT(1, jt.tmp_cycle);
 
-	// Fact: JiecTest_nextCycle transitions from -1 to 0 and returns true.
-		// Arrange
-	jt.tmp_cycle := -1;
-		// Act
-	alive := JiecTest_nextCycle(jt);
-		// Assert
-	EXPECT_TRUE(alive);
-	EXPECT_EQ_INT(0, jt.tmp_cycle);
-
-	// Fact: JiecTest_nextCycle returns false at DINT max overflow boundary.
+	// Fact: JiecTest_nextCycle returns false at DINT max and does not wrap the counter.
 		// Arrange
 	jt.tmp_cycle := dint#__DINT_MAX__;
 		// Act
 	alive := JiecTest_nextCycle(jt);
 		// Assert
 	EXPECT_FALSE(alive);
+	EXPECT_EQ_INT(dint#__DINT_MAX__, jt.tmp_cycle);
+
+	// Fact: JiecTest_nextCycle does not change the counter of an inactive test.
+		// Arrange
+	JiecTest_initialize(jt);
+	jt.tmp_cycle := 4;
+		// Act
+	alive := JiecTest_nextCycle(jt);
+		// Assert
+	EXPECT_TRUE(alive);
+	EXPECT_EQ_INT(4, jt.tmp_cycle);
 END_TEST_S
 
 TEST_S(test_jiectest_active_test_index)
@@ -326,6 +474,14 @@ TEST_S(test_jiectest_active_testname)
 	name := JiecTest_activeTestname(jt);
 		// Assert
 	EXPECT_EQ_STRING('test_alpha', name);
+
+	// Fact: JiecTest_activeTestname returns an empty name when no test is active (index -1 or out of range).
+		// Arrange
+	jt.tmp_active_test_index := -1;
+		// Act/Assert
+	EXPECT_EQ_STRING('', JiecTest_activeTestname(jt));
+	jt.tmp_active_test_index := jt.num_of_tests;
+	EXPECT_EQ_STRING('', JiecTest_activeTestname(jt));
 END_TEST_S
 
 TEST_S(test_jiectest_testname)
