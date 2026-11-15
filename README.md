@@ -323,6 +323,7 @@ JiecUnitのサンプル単体テストを実行するには、以下の環境が
   * Jiecc 9.4.0の動作環境はWindows 10（1903以降）、およびLinux（WSL）Ubuntu 22.04.5 LTS以降です。
   * `jiecc --run`（jierインタプリタによる直接実行）や`scripts/run_tests.py`も、Jiecc 9.4.0以降を使用します。
   * JiecUnitは、Jiecc 9.4.0未満では`{#error}`でコンパイルを止めます。
+  * Jiecc 9.4.0と9.6.0で、`scripts/run_tests.py`のすべての検査が通ることを確認しています。
 * [Sysmac Studio](https://www.fa.omron.co.jp/products/family/3077/download/software.html)（試用期間制限あり）、[KV Studio](https://www.keyence.co.jp/support/user/controls/installer/)（試用回数制限あり）、または[CODESYS](https://content.helpme-codesys.com/en/CODESYS%20Installer/_inst_start_page.html)
   * いずれも同梱シミュレータでテスト可能。必要に応じてPLC本体もご用意ください。
   * `jiecc --run`による直接実行のみで検証する場合は、ベンダIDEは不要です。

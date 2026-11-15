@@ -87,6 +87,7 @@
 - 検証関数の `message` 引数の長さを `string[128]` から `string[STRING_MAX_SIZE]` にそろえました（失敗の出力を行う `JiecTest_failure` と同じ長さです）。
 - `scripts/check_golden.py` を追加しました。`test/golden/*.iec` を `jiecc --run` で実行し、標準出力と終了コードを `test/golden/*.out` と比べます。所要時間の表示とパスの区切りは比べる前に正規化します。`--update` で期待値を作り直します。`scripts/run_tests.py` は、この検査を `golden` フェーズとして実行します（`--skip-golden` で省略できます。`--compile-only`・`--run-only` のときも実行しません）。CI でも、jier の実行と同じく任意のステップとして実行します。
 - `scripts/run_tests.py` の `--max-cycles` の既定値を 200 から 100000 に変えました。jier の実行は集計の後の `halt` で止まるので、この値は集計に達しない実行を打ち切るときだけ効きます。
+- 必要な Jiecc は 9.4.0 以降のままです。Jiecc 9.6.0 でも `scripts/run_tests.py` のすべての検査が通ることを確認しました。
 
 ## 7.0.0 (2026-11-08)
 
